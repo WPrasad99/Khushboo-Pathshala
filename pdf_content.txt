@@ -1,0 +1,257 @@
+================================================================================
+TECHNOLOGY SPECIFICATION
+================================================================================
+
+1 
+ ? Technology Specification Document 
+Khushboo Scholar Learning & Engagement Dashboard  
+ 
+Organization:  Cybage ? Khushboo Scholarship Program 
+Project Type:  Hackathon Prototype / Academic Innovation Project 
+Prepared By:  Prasad Wadkar 
+Version:  1.0 
+ 
+1. Purpose of This Document 
+This document provides a detailed breakdown of system technology stack, and 
+deployment architecture  for the Khushboo Scholar Learning & Engagement Dashboard. It 
+complements the Product Requirement Document (PRD) by explaining what the system 
+will contain and how it will be built  at a technical and functional level. 
+ 
+2. Technology Stack 
+Frontend 
+? React.js 
+? Responsive UI design 
+? Component-based architecture 
+Backend 
+? Node.js 
+? Express.js  REST APIs 
+? Role-based access validation 
+Database 
+? PostgreSQL  
+? Structured relational schema 
+Database Platform 
+? Supabase  (PostgreSQL hosting, authentication support) 
+ 
+
+2 
+ 3. Deployment Architecture 
+Application Hosting 
+? Render 
+? Cloud-based deployment for frontend and backend 
+Database Hosting 
+? Supabase  
+? Secure PostgreSQL instance 
+Version Control 
+? GitHub 
+? Branch-based development workflow 
+ 
+4. Security & Compliance 
+? Dummy data usage only 
+? Role-based access enforcement 
+? Secure API endpoints 
+? No real student or personal data stored 
+ 
+5. Limitations 
+? Prototype-level scalability 
+? No third-party integrations 
+? No production deployment 
+? Limited analytics (hackathon scope) 
+ 
+6. Conclusion 
+This Feature & Technology Specification document outlines a clear, professional, and 
+hackathon-ready implementation approach for the Khushboo Scholar Learning & 
+Engagement Dashboard. The selected technology stack and modular design align with 
+modern web development practices while respecting Cybage CSR compliance 
+requirements. 
+ 
+ 
+
+
+
+
+================================================================================
+PRODUCT FEATURES SPECIFICATION
+================================================================================
+
+? Product Requirement Document (PRD) 
+Khushboo Scholar Learning & Engagement Dashboard  
+ 
+Organization:  Cybage ? Khushboo Scholarship Program 
+Project Type:  Hackathon Prototype / Academic Innovation Project 
+Prepared By:  Prasad Wadkar 
+Version:  1.0 
+Status: Approved for Prototype Development (Dummy Data Only) 
+ 
+1. Executive Summary 
+The Khushboo Scholar Learning & Engagement Dashboard  is a centralized digital 
+platform envisioned for the Cybage Khushboo Scholarship Program. The objective of this 
+platform is to enhance student learning, engagement, tracking, and mentor?mentee 
+collaboration through a single, structured system. 
+This dashboard aims to replace fragmented tools such as WhatsApp messages, Excel 
+sheets, and manual tracking processes with a scalable, transparent, and role-based 
+solution.
+ 
+2. Background & Problem Statement 
+Currently, multiple activities under the Khushboo Scholarship Program?such as learning 
+session updates, attendance tracking, resource sharing, and mentor interactions?are 
+managed across disconnected platforms. This results in: 
+? Manual and error-prone attendance processes 
+? Limited visibility into student engagement and learning continuity 
+? Communication overload via WhatsApp groups 
+? Difficulty in tracking holistic student progress 
+There is a clear need for a single integrated platform  that centralizes learning, 
+communication, and reporting. 
+ 
+
+3. Project Objectives 
+The primary objectives of this project are to: 
+? Create a centralized learning and engagement platform for Khushboo scholars 
+? Enable automatic and transparent attendance tracking 
+? Improve visibility into session engagement and learning continuity 
+? Facilitate structured mentor?mentee interactions 
+? Provide a single source of truth for announcements and updates 
+? Generate meaningful progress and engagement reports 
+ 
+4. Stakeholders 
+Stakeholder Role 
+Students (Khushboo Scholars) Primary users of the learning 
+platform 
+Mentors Learning facilitators and 
+progress reviewers 
+Cybage CSR/Admin Team Program oversight and 
+reporting 
+Hackathon Review Panel Evaluation and feedback 
+ 
+5. User Roles & Access Control 
+5.1 Student 
+? Access learning resources and session videos 
+? Automatic attendance via session completion 
+? View personal dashboard (attendance, achievements, updates) 
+? Participate in Q&A discussion forum 
+? View mentor feedback and progress reports 
+5.2 Mentor 
+? Upload learning resources and session videos 
+? Upload offline attendance using CSV files 
+? Track student engagement and session continuity 
+? Manage mentor?mentee meetings and feedback 
+ 
+
+5.3 Admin (CSR Team) 
+? Manage users and roles 
+? Publish announcements and event updates 
+? Monitor platform usage and analytics 
+? View consolidated student and mentor reports 
+ 
+6. Functional Requirements 
+6.1 Learning Resources Management 
+? Centralized repository for free educational resources 
+? Resource categories: 
+o Technical Skills 
+o Soft Skills 
+o Career Guidance 
+? Upload permissions for Admin/Mentor 
+? Read-only access for Students 
+ 
+6.2 Learning Sessions & Video Tracking 
+? Upload recorded learning session videos 
+? Track: 
+o Session start and end 
+o Video completion percentage 
+o Drop-off point 
+? Attendance automatically marked when completion ? 80% 
+ 
+6.3 Attendance Management 
+Online Sessions:  - Auto attendance based on video completion logic 
+Offline Sessions:  - Mentor uploads attendance via CSV - System validates and maps data 
+to student records - Attendance reflected on student dashboards 
+ 
+6.4 Student Dashboard 
+Each student will have a personalized dashboard displaying: - Attendance percentage - 
+Completed learning sessions - Achievements / badges (dummy data) - Placement updates 
+(dummy data) - Announcements and alerts 
+
+6.5 Announcements & Communication 
+? Platform-based announcements 
+? Session and event notifications 
+? Acts as a structured replacement for WhatsApp communication 
+ 
+6.6 Q&A / Discussion Forum 
+? Access restricted to Khushboo beneficiaries 
+? Topic-based discussion threads 
+? Question posting and replies 
+ 
+6.7 Mentor?Mentee Program 
+Mentor?Mentee Mapping  - Capture mentor and mentee profiles - Assign mentors to 
+students 
+Meeting Feedback  - Meeting date and duration - Discussion summary - Feedback and 
+remarks 
+Progress Tracking  - Individual student progress reports - Mentor observations and 
+engagement indicators 
+ 
+6.8 Reports & Analytics 
+? Attendance and participation reports 
+? Session engagement insights 
+? Mentor?mentee interaction summaries 
+ 
+7. Non-Functional Requirements 
+? Dummy data usage only 
+? Secure authentication and role-based access 
+? Scalable architecture (prototype-level) 
+? Clean, intuitive, and responsive UI 
+ 
+ 
+ 
+
+8. Assumptions & Constraints 
+? No real student or mentor data will be used 
+? No third-party system integrations 
+? Prototype will not be deployed to production 
+? Internet connectivity assumed for access 
+ 
+9. Out of Scope (Future Enhancements) 
+? AI-driven engagement analysis 
+? Screen activity monitoring 
+? Mobile application 
+? Integration with real placement systems 
+ 
+10. Success Criteria 
+The project will be considered successful if: 
+? End-to-end workflows are clearly demonstrated 
+? Attendance automation works accurately 
+? Dashboards are intuitive and informative 
+? CSR team feedback is positive during review 
+ 
+11. Conclusion 
+This PRD defines a structured and professional roadmap for developing a Learning & 
+Engagement Dashboard tailored to the Cybage Khushboo Scholarship Program. The 
+solution aligns with hackathon objectives while addressing real-world program 
+management challenges. 
+ 
+Appendix A: Feature Summary Matrix  
+Module Key Capabilities 
+Learning Resources Centralized, categorized, mentor-uploaded content 
+Attendance Video-based automation, CSV upload for offline sessions 
+Dashboard Attendance, achievements, placements, updates 
+Communication Platform announcements replacing WhatsApp 
+Engagement Session continuity, completion tracking 
+
+Module Key Capabilities 
+Mentor?Mentee Mapping, feedback, progress reports 
+Reports Attendance, engagement, mentor insights 
+ 
+Appendix B: High-Level User Flow  
+1. User logs in (Student / Mentor / Admin) 
+2. Dashboard displayed based on role 
+3. Student accesses learning sessions and resources 
+4. Attendance automatically tracked 
+5. Mentor uploads offline attendance and feedback 
+6. Admin reviews reports and publishes announcements 
+ 
+Appendix C: Compliance & Data Privacy Statement  
+This prototype is developed strictly for academic and hackathon purposes. All data used 
+within the system is dummy data. No personal, sensitive, or identifiable student 
+information is collected, processed, or stored. The system complies with Cybage CSR 
+legal and compliance expectations. 
+ 
+ 
+

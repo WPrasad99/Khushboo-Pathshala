@@ -1,0 +1,191 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum ResourceCategory {
+  TECHNICAL_SKILLS
+  SOFT_SKILLS
+  CAREER_GUIDANCE
+}
+
+enum AchievementType {
+  BADGE
+  PLACEMENT
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  name            String
+  role            Role      @default(STUDENT)
+  phone           String?
+  gender          String?
+  dateOfBirth     DateTime?
+  educationLevel  String?
+  avatar          String?
+  profileCompleted Boolean  @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  uploadedResources   LearningResource[]
+  sessionTrackings    SessionTracking[]
+  mentorships         Mentorship[]       @relation("MentorRelation")
+  menteeships         Mentorship[]       @relation("MenteeRelation")
+  forumPosts          ForumPost[]
+  forumAnswers        ForumAnswer[]
+  achievements        Achievement[]
+  announcements       Announcement[]
+  activities          Activity[]
+}
+
+model LearningResource {
+  id            String           @id @default(uuid())
+  title         String
+  description   String
+  category      ResourceCategory
+  videoUrl      String
+  duration      Int              // Duration in minutes
+  thumbnailUrl  String?
+  lessonsCount  Int              @default(1)
+  isHot         Boolean          @default(false)
+  uploadedById  String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  uploadedBy        User              @relation(fields: [uploadedById], references: [id])
+  sessionTrackings  SessionTracking[]
+}
+
+model SessionTracking {
+  id                   String   @id @default(uuid())
+  userId               String
+  resourceId           String
+  watchDuration        Int      @default(0)  // Watched duration in seconds
+  totalDuration        Int      // Total duration in seconds
+  dropOffPoint         Int      @default(0)  // Where user stopped watching (seconds)
+  completionPercentage Float    @default(0)
+  attendanceMarked     Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  user     User             @relation(fields: [userId], references: [id])
+  resource LearningResource @relation(fields: [resourceId], references: [id])
+}
+
+model Mentorship {
+  id         String   @id @default(uuid())
+  mentorId   String
+  menteeId   String
+  assignedAt DateTime @default(now())
+
+  // Relations
+  mentor   User      @relation("MentorRelation", fields: [mentorId], references: [id])
+  mentee   User      @relation("MenteeRelation", fields: [menteeId], references: [id])
+  meetings Meeting[]
+}
+
+model Meeting {
+  id                String   @id @default(uuid())
+  mentorshipId      String
+  meetingDate       DateTime
+  duration          Int      // Duration in minutes
+  discussionSummary String?
+  feedback          String?
+  remarks           String?
+  createdAt         DateTime @default(now())
+
+  // Relations
+  mentorship Mentorship @relation(fields: [mentorshipId], references: [id])
+}
+
+model ForumPost {
+  id           String   @id @default(uuid())
+  title        String
+  content      String
+  authorId     String
+  answersCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  author  User          @relation(fields: [authorId], references: [id])
+  answers ForumAnswer[]
+}
+
+model ForumAnswer {
+  id        String   @id @default(uuid())
+  postId    String
+  content   String
+  authorId  String
+  upvotes   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  post   ForumPost @relation(fields: [postId], references: [id])
+  author User      @relation(fields: [authorId], references: [id])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  priority  String   @default("normal") // low, normal, high
+  createdById String
+  createdAt DateTime @default(now())
+
+  // Relations
+  createdBy User @relation(fields: [createdById], references: [id])
+}
+
+model Achievement {
+  id          String          @id @default(uuid())
+  userId      String
+  type        AchievementType
+  title       String
+  description String?
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String   // watched, completed, placement, achievement
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  scheduledAt DateTime
+  duration    Int      // Duration in minutes
+  type        String   @default("online") // online, offline
+  createdAt   DateTime @default(now())
+}
