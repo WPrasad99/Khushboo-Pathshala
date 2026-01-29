@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiEye, FiEyeOff, FiBook, FiUsers, FiSettings } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
 import './Auth.css';
 
 const Login = () => {
-    const [isLogin, setIsLogin] = useState(true);
+    const [isSignupMode, setIsSignupMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
@@ -59,9 +58,9 @@ const Login = () => {
         }
     };
 
-    const toggleAuthMode = () => {
+    const toggleMode = () => {
         setError('');
-        setIsLogin(!isLogin);
+        setIsSignupMode(!isSignupMode);
     };
 
     const roles = [
@@ -71,24 +70,82 @@ const Login = () => {
     ];
 
     return (
-        <div className="auth-page-animated">
-            {/* Left Side - Login Form */}
-            <motion.div
-                className="auth-left-panel"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className="auth-form-wrapper">
-                    {/* Brand Logo */}
-                    <div className="auth-brand-logo">
-                        <img src="/logo.png" alt="Cybage Khushboo" className="brand-logo-img" />
+        <div className={`auth-container-sliding ${isSignupMode ? 'right-panel-active' : ''}`}>
+
+            {/* Sign Up Form Container (Appears on Right) */}
+            <div className="form-container sign-up-container">
+                <form onSubmit={handleSignup} className="slider-form">
+                    <div className="auth-brand-logo small">
+                        <img src="/logo.png" alt="Cybage Khushboo" />
+                    </div>
+                    <h1>Create Account</h1>
+                    <p className="subtitle">Join our learning community</p>
+
+                    {error && isSignupMode && <div className="auth-error">{error}</div>}
+
+                    <div className="scrollable-fields">
+                        <div className="form-field">
+                            <input
+                                type="text"
+                                placeholder="Full Name"
+                                value={signupName}
+                                onChange={(e) => setSignupName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-field">
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={signupEmail}
+                                onChange={(e) => setSignupEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-field">
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={signupPassword}
+                                onChange={(e) => setSignupPassword(e.target.value)}
+                                required
+                                minLength={6}
+                            />
+                        </div>
+
+                        <div className="role-selector">
+                            {roles.map((role) => (
+                                <button
+                                    key={role.id}
+                                    type="button"
+                                    className={`role-pill ${selectedRole === role.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedRole(role.id)}
+                                >
+                                    {role.icon}
+                                    <span>{role.title}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Welcome Text */}
-                    <h1 className="auth-title">Welcome Back</h1>
+                    <button type="submit" className="auth-submit-btn signup-btn" disabled={loading}>
+                        {loading ? 'Creating...' : 'Sign Up'}
+                    </button>
 
-                    {/* Google Login Button */}
+                    <p className="mobile-toggle-text">
+                        Already have an account? <span onClick={toggleMode}>Log In</span>
+                    </p>
+                </form>
+            </div>
+
+            {/* Sign In Form Container (Starts on Left) */}
+            <div className="form-container sign-in-container">
+                <form onSubmit={handleLogin} className="slider-form">
+                    <div className="auth-brand-logo">
+                        <img src="/logo.png" alt="Cybage Khushboo" />
+                    </div>
+                    <h1>Welcome Back</h1>
+
                     <button className="google-login-btn" type="button">
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -99,180 +156,76 @@ const Login = () => {
                         Log in with Google
                     </button>
 
-                    {/* Divider */}
-                    <div className="auth-divider">
-                        <span>OR LOGIN WITH EMAIL</span>
+                    <div className="auth-divider"><span>OR LOGIN WITH EMAIL</span></div>
+
+                    {error && !isSignupMode && <div className="auth-error">{error}</div>}
+
+                    <div className="form-field">
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-field password-field">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            required
+                        />
+                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <FiEyeOff /> : <FiEye />}
+                        </button>
                     </div>
 
-                    {/* Login Form */}
-                    <form onSubmit={handleLogin} className="auth-form">
-                        {error && isLogin && (
-                            <div className="auth-error">{error}</div>
-                        )}
+                    <div className="auth-options-row">
+                        <label className="checkbox-label">
+                            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+                            Keep me logged in
+                        </label>
+                        <a href="#" className="forgot-link">Forgot password?</a>
+                    </div>
 
-                        <div className="form-field">
-                            <label>Email Address</label>
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                value={loginEmail}
-                                onChange={(e) => setLoginEmail(e.target.value)}
-                                required
-                            />
-                        </div>
+                    <button type="submit" className="auth-submit-btn" disabled={loading}>
+                        {loading ? 'Logging in...' : 'Log In'}
+                    </button>
 
-                        <div className="form-field">
-                            <label>Password</label>
-                            <div className="password-field">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="Password"
-                                    value={loginPassword}
-                                    onChange={(e) => setLoginPassword(e.target.value)}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    className="password-toggle"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="auth-options-row">
-                            <label className="checkbox-label">
-                                <input
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                />
-                                Keep me logged in
-                            </label>
-                            <a href="#" className="forgot-link">Forgot your password?</a>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="auth-submit-btn"
-                            disabled={loading}
-                        >
-                            {loading ? 'Logging in...' : 'Log in'}
-                        </button>
-                    </form>
-
-                    <p className="auth-footer-text">
-                        Don't have an account? <button className="link-btn" onClick={toggleAuthMode}>Sign up</button>
+                    <p className="mobile-toggle-text">
+                        Don't have an account? <span onClick={toggleMode}>Sign Up</span>
                     </p>
+                </form>
+            </div>
+
+            {/* Overlay Container (The Sliding Image Panel) */}
+            <div className="overlay-container">
+                <div className="overlay">
+                    {/* Left Overlay - Shows when Signup Mode is Active (Panel on Left) */}
+                    <div className="overlay-panel overlay-left">
+                        <img src="/auth-illustration.jpg" alt="Illustration" className="overlay-image" />
+                        <div className="overlay-content">
+                            <h1>Welcome Back!</h1>
+                            <p>To keep connected with us please login with your personal info</p>
+                            <button className="ghost-btn" onClick={toggleMode}>Log In</button>
+                        </div>
+                        {/* Dark gradient overlay for text readability */}
+                        <div className="image-gradient"></div>
+                    </div>
+
+                    {/* Right Overlay - Shows when Login Mode is Active (Panel on Right) */}
+                    <div className="overlay-panel overlay-right">
+                        <img src="/auth-illustration.jpg" alt="Illustration" className="overlay-image" />
+                        <div className="overlay-content">
+                            <h1>Hello, Friend!</h1>
+                            <p>Enter your personal details and start your journey with us</p>
+                            <button className="ghost-btn" onClick={toggleMode}>Sign Up</button>
+                        </div>
+                        <div className="image-gradient"></div>
+                    </div>
                 </div>
-            </motion.div>
-
-            {/* Right Side - Animated Panel */}
-            <div className="auth-right-panel">
-                <AnimatePresence mode="wait">
-                    {isLogin ? (
-                        /* Image Panel - Full Bleed */
-                        <motion.div
-                            key="image-panel"
-                            className="auth-image-panel-fullbleed"
-                            initial={{ rotateY: 90, opacity: 0 }}
-                            animate={{ rotateY: 0, opacity: 1 }}
-                            exit={{ rotateY: -90, opacity: 0 }}
-                            transition={{ duration: 0.5, ease: "easeInOut" }}
-                        >
-                            <img
-                                src="/auth-illustration.jpg"
-                                alt="Authentication Illustration"
-                                className="auth-illustration-fullbleed"
-                            />
-                        </motion.div>
-                    ) : (
-                        /* Signup Form Panel */
-                        <motion.div
-                            key="signup-panel"
-                            className="auth-signup-panel"
-                            initial={{ rotateY: -90, opacity: 0 }}
-                            animate={{ rotateY: 0, opacity: 1 }}
-                            exit={{ rotateY: 90, opacity: 0 }}
-                            transition={{ duration: 0.5, ease: "easeInOut" }}
-                        >
-                            <div className="signup-form-container">
-                                <h2 className="signup-title">Create Account</h2>
-                                <p className="signup-subtitle">Join our learning community</p>
-
-                                {error && !isLogin && (
-                                    <div className="auth-error">{error}</div>
-                                )}
-
-                                <form onSubmit={handleSignup} className="auth-form">
-                                    <div className="form-field">
-                                        <label>Full Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter your full name"
-                                            value={signupName}
-                                            onChange={(e) => setSignupName(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-field">
-                                        <label>Email Address</label>
-                                        <input
-                                            type="email"
-                                            placeholder="Enter your email"
-                                            value={signupEmail}
-                                            onChange={(e) => setSignupEmail(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-field">
-                                        <label>Password</label>
-                                        <input
-                                            type="password"
-                                            placeholder="Create a password"
-                                            value={signupPassword}
-                                            onChange={(e) => setSignupPassword(e.target.value)}
-                                            required
-                                            minLength={6}
-                                        />
-                                    </div>
-
-                                    <div className="form-field">
-                                        <label>Select Role</label>
-                                        <div className="role-selector">
-                                            {roles.map((role) => (
-                                                <button
-                                                    key={role.id}
-                                                    type="button"
-                                                    className={`role-pill ${selectedRole === role.id ? 'active' : ''}`}
-                                                    onClick={() => setSelectedRole(role.id)}
-                                                >
-                                                    {role.icon}
-                                                    <span>{role.title}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="auth-submit-btn signup-btn"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Creating account...' : 'Sign up'}
-                                    </button>
-                                </form>
-
-                                <p className="auth-footer-text light">
-                                    Already have an account? <button className="link-btn light" onClick={toggleAuthMode}>Log in</button>
-                                </p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
         </div>
     );
