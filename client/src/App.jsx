@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/auth/Login';
 import RoleSelection from './pages/auth/RoleSelection';
 import StudentDashboard from './pages/student/Dashboard';
+import StudentLayout from './components/layout/StudentLayout';
 import LearningResources from './pages/student/LearningResources';
 import SessionTracking from './pages/student/SessionTracking';
 import MentorProgram from './pages/student/MentorProgram';
@@ -88,32 +89,18 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* Student Routes */}
+      {/* Student Routes with Layout */}
       <Route path="/student" element={
         <ProtectedRoute allowedRoles={['STUDENT']}>
-          <StudentDashboard />
+          <StudentLayout />
         </ProtectedRoute>
-      } />
-      <Route path="/student/resources" element={
-        <ProtectedRoute allowedRoles={['STUDENT']}>
-          <LearningResources />
-        </ProtectedRoute>
-      } />
-      <Route path="/student/sessions" element={
-        <ProtectedRoute allowedRoles={['STUDENT']}>
-          <SessionTracking />
-        </ProtectedRoute>
-      } />
-      <Route path="/student/mentor" element={
-        <ProtectedRoute allowedRoles={['STUDENT']}>
-          <MentorProgram />
-        </ProtectedRoute>
-      } />
-      <Route path="/student/forum" element={
-        <ProtectedRoute allowedRoles={['STUDENT']}>
-          <Forum />
-        </ProtectedRoute>
-      } />
+      }>
+        <Route index element={<StudentDashboard />} />
+        <Route path="resources" element={<LearningResources />} />
+        <Route path="sessions" element={<SessionTracking />} />
+        <Route path="mentor" element={<MentorProgram />} />
+        <Route path="forum" element={<Forum />} />
+      </Route>
 
       {/* Mentor Routes */}
       <Route path="/mentor" element={
