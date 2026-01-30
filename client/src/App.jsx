@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/auth/Login';
 import RoleSelection from './pages/auth/RoleSelection';
-import AdditionalInfo from './pages/auth/AdditionalInfo';
 import StudentDashboard from './pages/student/Dashboard';
 import LearningResources from './pages/student/LearningResources';
 import SessionTracking from './pages/student/SessionTracking';
@@ -29,10 +28,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  if (!user.profileCompleted && window.location.pathname !== '/complete-profile') {
-    return <Navigate to="/complete-profile" replace />;
-  }
+  /* 
+    if (!user.profileCompleted && window.location.pathname !== '/complete-profile') {
+      return <Navigate to="/complete-profile" replace />;
+    } */
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard
@@ -74,12 +73,13 @@ function AppRoutes() {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RoleSelection mode="register" />} />
 
-      {/* Profile Completion */}
-      <Route path="/complete-profile" element={
+
+      {/* Profile Completion - REMOVED */}
+      {/* <Route path="/complete-profile" element={
         <ProtectedRoute>
           <AdditionalInfo />
         </ProtectedRoute>
-      } />
+      } /> */}
 
       {/* Dashboard Router */}
       <Route path="/dashboard" element={

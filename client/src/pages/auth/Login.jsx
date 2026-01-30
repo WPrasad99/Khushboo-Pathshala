@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FiEye, FiEyeOff, FiBook, FiUsers, FiSettings } from 'react-icons/fi';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import './Auth.css';
 
 const Login = () => {
-    const [isSignupMode, setIsSignupMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
@@ -15,13 +14,7 @@ const Login = () => {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
 
-    // Signup form state
-    const [signupName, setSignupName] = useState('');
-    const [signupEmail, setSignupEmail] = useState('');
-    const [signupPassword, setSignupPassword] = useState('');
-    const [selectedRole, setSelectedRole] = useState('STUDENT');
-
-    const { login, register } = useAuth();
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -30,12 +23,9 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const user = await login(loginEmail, loginPassword);
-            if (!user.profileCompleted) {
-                navigate('/complete-profile');
-            } else {
-                navigate('/dashboard');
-            }
+            await login(loginEmail, loginPassword);
+            // Direct navigation to dashboard, bypassing profile check
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to login. Please try again.');
         } finally {
@@ -43,107 +33,11 @@ const Login = () => {
         }
     };
 
-    const handleSignup = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            await register(signupEmail, signupPassword, signupName, selectedRole);
-            navigate('/complete-profile');
-        } catch (err) {
-            setError(err.response?.data?.error || 'Failed to register. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleMode = () => {
-        setError('');
-        setIsSignupMode(!isSignupMode);
-    };
-
-    const roles = [
-        { id: 'STUDENT', title: 'Student', icon: <FiBook /> },
-        { id: 'MENTOR', title: 'Mentor', icon: <FiUsers /> },
-        { id: 'ADMIN', title: 'Admin', icon: <FiSettings /> }
-    ];
-
     return (
-        <div className={`auth-container-sliding ${isSignupMode ? 'right-panel-active' : ''}`}>
-
-            {/* Sign Up Form Container (Appears on Right) */}
-            <div className="form-container sign-up-container">
-                <form onSubmit={handleSignup} className="slider-form">
-                    <div className="auth-brand-logo small">
-                        <img src="/logo.png" alt="Cybage Khushboo" />
-                    </div>
-                    <h1>Create Account</h1>
-                    <p className="subtitle">Join our learning community</p>
-
-                    {error && isSignupMode && <div className="auth-error">{error}</div>}
-
-                    <div className="scrollable-fields">
-                        <div className="form-field">
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                value={signupName}
-                                onChange={(e) => setSignupName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-field">
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={signupEmail}
-                                onChange={(e) => setSignupEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-field">
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={signupPassword}
-                                onChange={(e) => setSignupPassword(e.target.value)}
-                                required
-                                minLength={6}
-                            />
-                        </div>
-
-                        <div className="role-selector">
-                            {roles.map((role) => (
-                                <button
-                                    key={role.id}
-                                    type="button"
-                                    className={`role-pill ${selectedRole === role.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedRole(role.id)}
-                                >
-                                    {role.icon}
-                                    <span>{role.title}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <button type="submit" className="auth-submit-btn signup-btn" disabled={loading}>
-                        {loading ? 'Creating...' : 'Sign Up'}
-                    </button>
-
-                    <p className="mobile-toggle-text">
-                        Already have an account? <span onClick={toggleMode}>Log In</span>
-                    </p>
-                </form>
-            </div>
-
-            {/* Sign In Form Container (Starts on Left) */}
-            <div className="form-container sign-in-container">
-                <form onSubmit={handleLogin} className="slider-form">
-                    <div className="auth-brand-logo">
-                        <img src="/logo.png" alt="Cybage Khushboo" />
-                    </div>
+        <div className="auth-container-static">
+            {/* Left Side - Login Form */}
+            <div className="login-left-panel">
+                <form onSubmit={handleLogin} className="static-login-form">
                     <h1>Welcome Back</h1>
 
                     <button className="google-login-btn" type="button">
@@ -158,9 +52,10 @@ const Login = () => {
 
                     <div className="auth-divider"><span>OR LOGIN WITH EMAIL</span></div>
 
-                    {error && !isSignupMode && <div className="auth-error">{error}</div>}
+                    {error && <div className="auth-error">{error}</div>}
 
                     <div className="form-field">
+                        <label>Email Address</label>
                         <input
                             type="email"
                             placeholder="Email Address"
@@ -170,16 +65,19 @@ const Login = () => {
                         />
                     </div>
                     <div className="form-field password-field">
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Password"
-                            value={loginPassword}
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            required
-                        />
-                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <FiEyeOff /> : <FiEye />}
-                        </button>
+                        <label>Password</label>
+                        <div className="password-input-wrapper">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={loginPassword}
+                                onChange={(e) => setLoginPassword(e.target.value)}
+                                required
+                            />
+                            <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <FiEyeOff /> : <FiEye />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="auth-options-row">
@@ -187,45 +85,21 @@ const Login = () => {
                             <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
                             Keep me logged in
                         </label>
-                        <a href="#" className="forgot-link">Forgot password?</a>
+                        <a href="#" className="forgot-link">Forgot your password?</a>
                     </div>
 
                     <button type="submit" className="auth-submit-btn" disabled={loading}>
                         {loading ? 'Logging in...' : 'Log In'}
                     </button>
 
-                    <p className="mobile-toggle-text">
-                        Don't have an account? <span onClick={toggleMode}>Sign Up</span>
-                    </p>
+                    <div className="auth-footer">Powered by Cybage Khushboo</div>
                 </form>
             </div>
 
-            {/* Overlay Container (The Sliding Image Panel) */}
-            <div className="overlay-container">
-                <div className="overlay">
-                    {/* Left Overlay - Shows when Signup Mode is Active (Panel on Left) */}
-                    <div className="overlay-panel overlay-left">
-                        <img src="/auth-illustration.jpg" alt="Illustration" className="overlay-image" />
-                        <div className="overlay-content">
-                            <h1>Welcome Back!</h1>
-                            <p>To keep connected with us please login with your personal info</p>
-                            <button className="ghost-btn" onClick={toggleMode}>Log In</button>
-                        </div>
-                        {/* Dark gradient overlay for text readability */}
-                        <div className="image-gradient"></div>
-                    </div>
-
-                    {/* Right Overlay - Shows when Login Mode is Active (Panel on Right) */}
-                    <div className="overlay-panel overlay-right">
-                        <img src="/auth-illustration.jpg" alt="Illustration" className="overlay-image" />
-                        <div className="overlay-content">
-                            <h1>Hello, Friend!</h1>
-                            <p>Enter your personal details and start your journey with us</p>
-                            <button className="ghost-btn" onClick={toggleMode}>Sign Up</button>
-                        </div>
-                        <div className="image-gradient"></div>
-                    </div>
-                </div>
+            {/* Right Side - Image Panel */}
+            <div className="login-right-panel">
+                <img src="/auth-illustration.jpg" alt="Login Visual" className="static-auth-image" />
+                <div className="image-gradient"></div>
             </div>
         </div>
     );
