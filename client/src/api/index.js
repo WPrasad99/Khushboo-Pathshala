@@ -69,4 +69,14 @@ export const adminAPI = {
     getReports: () => api.get('/admin/reports'),
 };
 
+export const chatAPI = {
+    getGroups: () => api.get('/chat/groups'),
+    getInvites: () => api.get('/chat/invites'),
+    createGroup: (data) => api.post('/chat/groups', data),
+    respondToInvite: (id, status) => api.put(`/chat/invites/${id}`, { status }),
+    getMessages: (groupId) => api.get(`/chat/groups/${groupId}/messages`),
+    sendMessage: (groupId, content) => api.post(`/chat/groups/${groupId}/messages`, { content }),
+    getUsers: () => api.get('/chat/users'),
+};
+
 export default api;

@@ -7,7 +7,7 @@
 
 .student-main-content {
     flex: 1;
-    margin-left: 260px;
+    margin-left: 220px;
     min-height: 100vh;
 }
 
@@ -271,6 +271,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
 }
 
 .stat-label {
@@ -286,6 +287,9 @@
     font-weight: 700;
     color: #1F2937;
     line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
 }
 
 .stat-value-row {

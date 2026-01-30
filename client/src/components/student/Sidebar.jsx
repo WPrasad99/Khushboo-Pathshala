@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiHome, FiBook, FiClock, FiUsers, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBook, FiUsers, FiMessageSquare, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
@@ -26,13 +26,9 @@ const Sidebar = () => {
                         <FiHome />
                         <span>Dashboard</span>
                     </NavLink>
-                    <NavLink to="/student/resources" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <NavLink to="/student/courses" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <FiBook />
-                        <span>Learning Resources</span>
-                    </NavLink>
-                    <NavLink to="/student/sessions" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <FiClock />
-                        <span>Session Tracking</span>
+                        <span>Courses</span>
                     </NavLink>
                 </div>
 

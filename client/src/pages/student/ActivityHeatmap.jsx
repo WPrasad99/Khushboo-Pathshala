@@ -74,7 +74,7 @@ const ActivityHeatmap = ({ loginDates = [] }) => {
                     <div className="heatmap-calendar">
                         <div className="heatmap-months">
                             {months.map((m, i) => (
-                                <span key={i} style={{ left: `${m.index * 14}px` }}>{m.name}</span>
+                                <span key={i} style={{ left: `${(m.index / 52) * 100}%` }}>{m.name}</span>
                             ))}
                         </div>
 

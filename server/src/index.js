@@ -1,11 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"]
+    }
+});
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
@@ -902,13 +911,316 @@ app.get('/api/admin/reports', authenticateToken, requireRole('ADMIN'), async (re
     }
 });
 
+// Seed YouTube Playlists as Courses
+app.post('/api/seed-youtube-courses', async (req, res) => {
+    try {
+        // Get first admin/mentor user
+        const mentor = await prisma.user.findFirst({
+            where: { role: { in: ['MENTOR', 'ADMIN'] } }
+        });
+
+        if (!mentor) {
+            return res.status(400).json({ error: 'No mentor/admin user found' });
+        }
+
+        const youtubeCourses = [
+            {
+                title: 'Python Complete Tutorial',
+                description: 'Complete Python programming tutorial for beginners. Learn Python from scratch with practical examples.',
+                category: 'TECHNICAL_SKILLS',
+                videoUrl: 'PLsyeobzWxl7oa1WO9n4cP3OY9nOtUcZIg',
+                duration: 600,
+                thumbnailUrl: 'https://i.ytimg.com/vi/QXeEoD0pB3E/maxresdefault.jpg',
+                lessonsCount: 30
+            },
+            {
+                title: 'Java Programming Course',
+                description: 'Master Java programming from basics to advanced concepts. Complete Java course with hands-on projects.',
+                category: 'TECHNICAL_SKILLS',
+                videoUrl: 'PLsyeobzWxl7qbKoSgR5ub6jolI8-ocxCF',
+                duration: 480,
+                thumbnailUrl: 'https://i.ytimg.com/vi/eIrMbAQSU34/maxresdefault.jpg',
+                lessonsCount: 25
+            },
+            {
+                title: 'Web Development Bootcamp',
+                description: 'Full web development course covering HTML, CSS, JavaScript and more.',
+                category: 'TECHNICAL_SKILLS',
+                videoUrl: 'PLsyeobzWxl7r566kReuTnjnINHqaRuRFn',
+                duration: 720,
+                thumbnailUrl: 'https://i.ytimg.com/vi/PlxWf493en4/maxresdefault.jpg',
+                lessonsCount: 40
+            },
+            {
+                title: 'Data Structures & Algorithms',
+                description: 'Master DSA concepts with practical implementation. Essential for coding interviews.',
+                category: 'TECHNICAL_SKILLS',
+                videoUrl: 'PLfqMhTWNBTe3LtFWcvwpqTkUSlB32kJop',
+                duration: 900,
+                thumbnailUrl: 'https://i.ytimg.com/vi/8hly31xKli0/maxresdefault.jpg',
+                lessonsCount: 50
+            },
+            {
+                title: 'Soft Skills Mastery',
+                description: 'Develop essential soft skills for career success. Communication, leadership, and teamwork.',
+                category: 'SOFT_SKILLS',
+                videoUrl: 'PL6ZdH9C1KeueFazoYwshjYuao2pL9ihqY',
+                duration: 300,
+                thumbnailUrl: 'https://i.ytimg.com/vi/0FFLFcB9xfQ/maxresdefault.jpg',
+                lessonsCount: 20
+            },
+            {
+                title: 'Career Guidance & Interview Prep',
+                description: 'Complete career guidance course with interview preparation tips and strategies.',
+                category: 'CAREER_GUIDANCE',
+                videoUrl: 'PLOaeOd121eBEEWP14TYgSnFsvaTIjPD22',
+                duration: 360,
+                thumbnailUrl: 'https://i.ytimg.com/vi/WfdtKbAJOmE/maxresdefault.jpg',
+                lessonsCount: 15
+            }
+        ];
+
+        // Delete existing trackings and courses (in correct order for foreign keys)
+        await prisma.sessionTracking.deleteMany({});
+        await prisma.learningResource.deleteMany({});
+
+        // Create new courses
+        const created = await Promise.all(
+            youtubeCourses.map(course =>
+                prisma.learningResource.create({
+                    data: {
+                        ...course,
+                        uploadedById: mentor.id
+                    }
+                })
+            )
+        );
+
+        res.json({ message: 'YouTube courses seeded successfully', count: created.length });
+    } catch (error) {
+        console.error('Seed error:', error);
+        res.status(500).json({ error: 'Failed to seed courses' });
+    }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Khushboo Pathshala API is running!' });
 });
 
-// Start server
-app.listen(PORT, () => {
+// ============ CHAT SYSTEM ROUTES ============
+
+// Get all groups for user
+app.get('/api/chat/groups', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const memberships = await prisma.groupMember.findMany({
+            where: {
+                userId,
+                status: 'accepted'
+            },
+            include: {
+                group: {
+                    include: {
+                        createdBy: { select: { name: true, avatar: true } },
+                        members: {
+                            where: { status: 'accepted' },
+                            include: { user: { select: { name: true, avatar: true } } }
+                        },
+                        messages: {
+                            orderBy: { createdAt: 'desc' },
+                            take: 1,
+                            include: { sender: { select: { name: true } } }
+                        }
+                    }
+                }
+            }
+        });
+
+        const groups = memberships.map(m => ({
+            ...m.group,
+            myRole: m.role
+        }));
+
+        res.json(groups);
+    } catch (error) {
+        console.error('Get groups error:', error);
+        res.status(500).json({ error: 'Failed to fetch groups' });
+    }
+});
+
+// Get pending invites
+app.get('/api/chat/invites', authenticateToken, async (req, res) => {
+    try {
+        const invites = await prisma.groupMember.findMany({
+            where: {
+                userId: req.user.id,
+                status: 'pending'
+            },
+            include: {
+                group: {
+                    include: {
+                        createdBy: { select: { name: true, avatar: true } }
+                    }
+                }
+            }
+        });
+        res.json(invites);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch invites' });
+    }
+});
+
+// Create group (Mentor only)
+app.post('/api/chat/groups', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res) => {
+    try {
+        const { name, description, memberIds } = req.body;
+
+        const group = await prisma.chatGroup.create({
+            data: {
+                name,
+                description,
+                createdById: req.user.id,
+                members: {
+                    create: [
+                        { userId: req.user.id, role: 'admin', status: 'accepted' },
+                        ...memberIds.map(id => ({ userId: id, role: 'member', status: 'pending' }))
+                    ]
+                }
+            },
+            include: {
+                createdBy: { select: { name: true } },
+                members: { include: { user: { select: { name: true } } } }
+            }
+        });
+
+        // Notify invited users via socket
+        memberIds.forEach(userId => {
+            io.to(`user_${userId}`).emit('group_invite', { group });
+        });
+
+        res.status(201).json(group);
+    } catch (error) {
+        console.error('Create group error:', error);
+        res.status(500).json({ error: 'Failed to create group' });
+    }
+});
+
+// Accept/Reject invite
+app.put('/api/chat/invites/:id', authenticateToken, async (req, res) => {
+    try {
+        const { status } = req.body; // 'accepted' or 'rejected'
+
+        const invite = await prisma.groupMember.update({
+            where: { id: req.params.id },
+            data: { status },
+            include: { group: true }
+        });
+
+        if (status === 'accepted') {
+            io.to(`group_${invite.groupId}`).emit('member_joined', {
+                groupId: invite.groupId,
+                userId: req.user.id
+            });
+        }
+
+        res.json(invite);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update invite' });
+    }
+});
+
+// Get messages for a group
+app.get('/api/chat/groups/:groupId/messages', authenticateToken, async (req, res) => {
+    try {
+        const messages = await prisma.chatMessage.findMany({
+            where: { groupId: req.params.groupId },
+            include: {
+                sender: { select: { id: true, name: true, avatar: true } }
+            },
+            orderBy: { createdAt: 'asc' }
+        });
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+// Send message
+app.post('/api/chat/groups/:groupId/messages', authenticateToken, async (req, res) => {
+    try {
+        const { content } = req.body;
+
+        const message = await prisma.chatMessage.create({
+            data: {
+                groupId: req.params.groupId,
+                senderId: req.user.id,
+                content
+            },
+            include: {
+                sender: { select: { id: true, name: true, avatar: true } }
+            }
+        });
+
+        // Broadcast message to group
+        io.to(`group_${req.params.groupId}`).emit('new_message', message);
+
+        res.status(201).json(message);
+    } catch (error) {
+        console.error('Send message error:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+// Get all users for inviting
+app.get('/api/chat/users', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: { role: 'STUDENT' },
+            select: { id: true, name: true, email: true, avatar: true }
+        });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// ============ SOCKET.IO EVENTS ============
+
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    // Join user's personal room
+    socket.on('join_user', (userId) => {
+        socket.join(`user_${userId}`);
+        console.log(`User ${userId} joined personal room`);
+    });
+
+    // Join group room
+    socket.on('join_group', (groupId) => {
+        socket.join(`group_${groupId}`);
+        console.log(`Socket joined group ${groupId}`);
+    });
+
+    // Leave group room
+    socket.on('leave_group', (groupId) => {
+        socket.leave(`group_${groupId}`);
+    });
+
+    // Typing indicator
+    socket.on('typing', ({ groupId, userName }) => {
+        socket.to(`group_${groupId}`).emit('user_typing', { userName });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
+// Start server with Socket.IO
+server.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📚 Khushboo Scholar Learning & Engagement Dashboard API`);
+    console.log(`💬 Real-time chat enabled with Socket.IO`);
 });

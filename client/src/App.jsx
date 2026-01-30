@@ -4,8 +4,8 @@ import Login from './pages/auth/Login';
 import RoleSelection from './pages/auth/RoleSelection';
 import StudentDashboard from './pages/student/Dashboard';
 import StudentLayout from './components/layout/StudentLayout';
-import LearningResources from './pages/student/LearningResources';
-import SessionTracking from './pages/student/SessionTracking';
+import Courses from './pages/student/Courses';
+import CoursePlayer from './pages/student/CoursePlayer';
 import MentorProgram from './pages/student/MentorProgram';
 import Forum from './pages/student/Forum';
 import MentorDashboard from './pages/mentor/Dashboard';
@@ -96,8 +96,9 @@ function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route index element={<StudentDashboard />} />
-        <Route path="resources" element={<LearningResources />} />
-        <Route path="sessions" element={<SessionTracking />} />
+        <Route path="courses" element={<Courses />} />
+        <Route path="courses/:courseId" element={<CoursePlayer />} />
+        <Route path="resources" element={<Courses />} />
         <Route path="mentor" element={<MentorProgram />} />
         <Route path="forum" element={<Forum />} />
       </Route>
