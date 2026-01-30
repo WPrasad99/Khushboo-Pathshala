@@ -11,17 +11,11 @@ const Sidebar = () => {
         <aside className="student-sidebar">
             <div className="sidebar-brand">
                 <div className="sidebar-logo">
-                    <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="8" fill="url(#grad_sidebar)" />
-                        <path d="M10 28V12L20 8L30 12V28L20 32L10 28Z" fill="white" opacity="0.9" />
-                        <defs>
-                            <linearGradient id="grad_sidebar" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#4F46E5" />
-                                <stop offset="1" stopColor="#3730A3" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span>Pathshala</span>
+                    <img src="/logo.png" alt="Cybage Khushboo" className="sidebar-logo-img" />
+                    <div className="brand-text">
+                        <span className="brand-name">Khushboo</span>
+                        <span className="brand-tagline">Pathshala</span>
+                    </div>
                 </div>
             </div>
 

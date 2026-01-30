@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import './ActivityHeatmap.css';
 
-const ActivityHeatmap = () => {
+const ActivityHeatmap = ({ loginDates = [] }) => {
     // Generate dates for the last 365 days
     const heatmapData = useMemo(() => {
         const data = [];
@@ -9,30 +9,31 @@ const ActivityHeatmap = () => {
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(today.getFullYear() - 1);
 
+        // Create a Set of login date strings for quick lookup
+        const loginDateSet = new Set(loginDates);
+
         for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
             const isToday = d.toDateString() === today.toDateString();
-            // Simulate random activity - more sparse for realism
-            const randomValue = Math.random();
+            const hasLogin = loginDateSet.has(dateStr);
+
+            // Set intensity based on login status
             let intensity = 0;
-            if (isToday) {
+            if (hasLogin) {
+                intensity = 4; // Logged in = green
+            } else if (isToday && loginDates.length === 0) {
+                // Today but no login data yet, show as just logged in
                 intensity = 4;
-            } else if (randomValue > 0.85) {
-                intensity = 4;
-            } else if (randomValue > 0.75) {
-                intensity = 3;
-            } else if (randomValue > 0.6) {
-                intensity = 2;
-            } else if (randomValue > 0.4) {
-                intensity = 1;
             }
 
             data.push({
                 date: new Date(d),
-                intensity
+                intensity,
+                dateStr
             });
         }
         return data;
-    }, []);
+    }, [loginDates]);
 
     // Group by months for labels
     const months = useMemo(() => {
@@ -52,11 +53,14 @@ const ActivityHeatmap = () => {
         return monthLabels;
     }, [heatmapData]);
 
+    // Count total active days
+    const totalActiveDays = heatmapData.filter(d => d.intensity > 0).length;
+
     return (
         <div className="activity-heatmap-card">
             <div className="heatmap-header">
                 <h3>Activity Log</h3>
-                <span className="heatmap-subtitle">Your daily learning activity</span>
+                <span className="heatmap-subtitle">{totalActiveDays} active days in the last year</span>
             </div>
 
             <div className="heatmap-container">
@@ -89,9 +93,6 @@ const ActivityHeatmap = () => {
                 <div className="heatmap-legend">
                     <span>Less</span>
                     <div className="legend-cell level-0"></div>
-                    <div className="legend-cell level-1"></div>
-                    <div className="legend-cell level-2"></div>
-                    <div className="legend-cell level-3"></div>
                     <div className="legend-cell level-4"></div>
                     <span>More</span>
                 </div>

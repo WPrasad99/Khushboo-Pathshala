@@ -3,19 +3,25 @@ import { useAuth } from '../../context/AuthContext';
 import { userAPI } from '../../api';
 import {
     FiBell, FiPlayCircle, FiCheckCircle, FiBriefcase,
-    FiCalendar, FiArrowRight, FiActivity
+    FiCalendar, FiArrowRight, FiActivity, FiX
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ActivityHeatmap from './ActivityHeatmap';
 import './Dashboard.css';
 
 const StudentDashboard = () => {
     const { user } = useAuth();
     const [dashboardData, setDashboardData] = useState(null);
+    const [loginDates, setLoginDates] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [notificationCount, setNotificationCount] = useState(0);
+    const [showNotifications, setShowNotifications] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchDashboard();
+        fetchLoginHistory();
+        fetchNotifications();
     }, []);
 
     const fetchDashboard = async () => {
@@ -29,6 +35,25 @@ const StudentDashboard = () => {
         }
     };
 
+    const fetchLoginHistory = async () => {
+        try {
+            const response = await userAPI.getLoginHistory();
+            setLoginDates(response.data.loginDates || []);
+        } catch (error) {
+            console.error('Failed to fetch login history:', error);
+        }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const response = await userAPI.getNotifications();
+            setNotifications(response.data.notifications || []);
+            setNotificationCount(response.data.unreadCount || 0);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        }
+    };
+
     const getActivityIcon = (type) => {
         switch (type) {
             case 'watched': return <FiPlayCircle className="activity-icon watched" />;
@@ -36,6 +61,16 @@ const StudentDashboard = () => {
             case 'placement': return <FiBriefcase className="activity-icon placement" />;
             default: return <FiActivity className="activity-icon" />;
         }
+    };
+
+    const formatTimeAgo = (date) => {
+        const now = new Date();
+        const diff = now - new Date(date);
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        if (hours < 1) return 'Just now';
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
     };
 
     if (loading) {
@@ -47,7 +82,8 @@ const StudentDashboard = () => {
     }
 
     const { stats, recentActivities, upcomingSessions, announcements } = dashboardData || {};
-    const activeDaysCount = stats?.activeDays || 15;
+    const activeDaysThisMonth = stats?.activeDaysThisMonth || 0;
+    const totalDaysInMonth = stats?.totalDaysInMonth || 30;
 
     return (
         <div className="dashboard-content">
@@ -58,12 +94,51 @@ const StudentDashboard = () => {
                     <p className="welcome-subtitle">Here's what's happening with your learning today.</p>
                 </div>
                 <div className="header-actions">
-                    <button className="header-icon-btn">
-                        <FiBell />
-                        <span className="notification-dot"></span>
-                    </button>
-                    <div className="header-avatar">
-                        <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=4F46E5&color=fff`} alt="Profile" />
+                    <div className="notification-wrapper">
+                        <button
+                            className="header-icon-btn"
+                            onClick={() => setShowNotifications(!showNotifications)}
+                        >
+                            <FiBell />
+                            {notificationCount > 0 && (
+                                <span className="notification-badge">{notificationCount}</span>
+                            )}
+                        </button>
+
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <motion.div
+                                    className="notification-dropdown"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <div className="notification-header">
+                                        <h4>Notifications</h4>
+                                        <button onClick={() => setShowNotifications(false)}>
+                                            <FiX />
+                                        </button>
+                                    </div>
+                                    <div className="notification-list">
+                                        {notifications.length > 0 ? (
+                                            notifications.map((notif, i) => (
+                                                <div key={i} className="notification-item">
+                                                    <div className={`notif-icon ${notif.type}`}>
+                                                        <FiBell size={14} />
+                                                    </div>
+                                                    <div className="notif-content">
+                                                        <span className="notif-title">{notif.title}</span>
+                                                        <span className="notif-time">{formatTimeAgo(notif.createdAt)}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="no-notifications">No notifications</div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </header>
@@ -135,10 +210,10 @@ const StudentDashboard = () => {
                         <FiActivity size={24} />
                     </div>
                     <div className="stat-info">
-                        <span className="stat-label">Active Days</span>
+                        <span className="stat-label">Active This Month</span>
                         <div className="stat-value-row">
-                            <span className="stat-value">{activeDaysCount}</span>
-                            <span className="streak-badge">🔥 Streak</span>
+                            <span className="stat-value">{activeDaysThisMonth}</span>
+                            <span className="stat-of">of {totalDaysInMonth}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -160,17 +235,19 @@ const StudentDashboard = () => {
                             <button className="btn-link">View All</button>
                         </div>
                         <div className="activities-list">
-                            {recentActivities?.slice(0, 4).map((activity, i) => (
-                                <div key={i} className="activity-item">
-                                    {getActivityIcon(activity.type)}
-                                    <div className="activity-info">
-                                        <span className="activity-title">{activity.title}</span>
-                                        <span className="activity-time">Today</span>
+                            {recentActivities && recentActivities.length > 0 ? (
+                                recentActivities.slice(0, 4).map((activity, i) => (
+                                    <div key={i} className="activity-item">
+                                        {getActivityIcon(activity.type)}
+                                        <div className="activity-info">
+                                            <span className="activity-title">{activity.title}</span>
+                                            <span className="activity-time">{formatTimeAgo(activity.createdAt)}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            )) || (
-                                    <div className="empty-state">No recent activities</div>
-                                )}
+                                ))
+                            ) : (
+                                <div className="empty-state">No recent activities</div>
+                            )}
                         </div>
                     </motion.div>
 
@@ -186,22 +263,26 @@ const StudentDashboard = () => {
                             <button className="btn-icon"><FiArrowRight /></button>
                         </div>
                         <div className="sessions-list">
-                            {upcomingSessions?.slice(0, 3).map((session, i) => (
-                                <div key={i} className="session-item">
-                                    <div className="session-date">
-                                        <span className="date-day">{new Date(session.scheduledAt).getDate()}</span>
-                                        <span className="date-month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
+                            {upcomingSessions && upcomingSessions.length > 0 ? (
+                                upcomingSessions.slice(0, 3).map((session, i) => (
+                                    <div key={i} className="session-item">
+                                        <div className="session-date">
+                                            <span className="date-day">{new Date(session.scheduledAt).getDate()}</span>
+                                            <span className="date-month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
+                                        </div>
+                                        <div className="session-info">
+                                            <span className="session-title">{session.title}</span>
+                                            <span className="session-time">
+                                                <FiCalendar size={12} />
+                                                {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                        {i === 0 && <span className="badge-soon">Soon</span>}
                                     </div>
-                                    <div className="session-info">
-                                        <span className="session-title">{session.title}</span>
-                                        <span className="session-time">
-                                            <FiCalendar size={12} />
-                                            {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    </div>
-                                    {i === 0 && <span className="badge-soon">Soon</span>}
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <div className="empty-state">No upcoming sessions</div>
+                            )}
                         </div>
                     </motion.div>
                 </div>
@@ -218,25 +299,27 @@ const StudentDashboard = () => {
                             <h3>Announcements</h3>
                         </div>
                         <div className="announcements-timeline">
-                            {announcements?.slice(0, 4).map((ann, i) => (
-                                <div key={i} className="timeline-item">
-                                    <div className="timeline-dot"></div>
-                                    <div className="timeline-content">
-                                        <h4>{ann.title}</h4>
-                                        <p>{ann.description || 'Important update for your learning journey.'}</p>
-                                        <span className="time-ago">2h ago</span>
-                                    </div>
-                                </div>
-                            )) || (
-                                    <div className="timeline-item">
+                            {announcements && announcements.length > 0 ? (
+                                announcements.slice(0, 4).map((ann, i) => (
+                                    <div key={i} className="timeline-item">
                                         <div className="timeline-dot"></div>
                                         <div className="timeline-content">
-                                            <h4>Welcome to Pathshala!</h4>
-                                            <p>Start your learning journey today.</p>
-                                            <span className="time-ago">Just now</span>
+                                            <h4>{ann.title}</h4>
+                                            <p>{ann.content || 'Important update for your learning journey.'}</p>
+                                            <span className="time-ago">{formatTimeAgo(ann.createdAt)}</span>
                                         </div>
                                     </div>
-                                )}
+                                ))
+                            ) : (
+                                <div className="timeline-item">
+                                    <div className="timeline-dot"></div>
+                                    <div className="timeline-content">
+                                        <h4>Welcome to Pathshala!</h4>
+                                        <p>Start your learning journey today.</p>
+                                        <span className="time-ago">Just now</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </div>
@@ -249,7 +332,7 @@ const StudentDashboard = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
             >
-                <ActivityHeatmap />
+                <ActivityHeatmap loginDates={loginDates} />
             </motion.div>
         </div>
     );

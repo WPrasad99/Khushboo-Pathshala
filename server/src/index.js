@@ -103,6 +103,27 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
+        // Record login for heatmap and active days tracking
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const existingLog = await prisma.loginLog.findFirst({
+            where: {
+                userId: user.id,
+                loginDate: {
+                    gte: today,
+                    lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+                }
+            }
+        });
+        if (!existingLog) {
+            await prisma.loginLog.create({
+                data: {
+                    userId: user.id,
+                    loginDate: new Date()
+                }
+            });
+        }
+
         res.json({
             token,
             user: {
@@ -182,6 +203,80 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
     }
 });
 
+// Get login history for heatmap (last 365 days)
+app.get('/api/users/login-history', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+        const loginLogs = await prisma.loginLog.findMany({
+            where: {
+                userId,
+                loginDate: { gte: oneYearAgo }
+            },
+            orderBy: { loginDate: 'asc' }
+        });
+
+        // Return array of date strings (YYYY-MM-DD)
+        const loginDates = loginLogs.map(log =>
+            log.loginDate.toISOString().split('T')[0]
+        );
+
+        res.json({ loginDates });
+    } catch (error) {
+        console.error('Login history error:', error);
+        res.status(500).json({ error: 'Failed to fetch login history' });
+    }
+});
+
+// Get notifications for bell icon
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get recent activities and announcements as notifications
+        const [activities, announcements] = await Promise.all([
+            prisma.activity.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                take: 5
+            }),
+            prisma.announcement.findMany({
+                orderBy: { createdAt: 'desc' },
+                take: 5
+            })
+        ]);
+
+        const notifications = [
+            ...announcements.map(a => ({
+                id: a.id,
+                type: 'announcement',
+                title: a.title,
+                content: a.content,
+                createdAt: a.createdAt,
+                read: false
+            })),
+            ...activities.map(a => ({
+                id: a.id,
+                type: 'activity',
+                title: a.title,
+                content: a.description,
+                createdAt: a.createdAt,
+                read: false
+            }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+
+        res.json({
+            notifications,
+            unreadCount: notifications.length
+        });
+    } catch (error) {
+        console.error('Notifications error:', error);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+});
+
 // Get dashboard data for current user
 app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
     try {
@@ -216,17 +311,34 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
             // Calculate stats
             const totalSessions = trackings.length;
             const attendedSessions = trackings.filter(t => t.attendanceMarked).length;
-            const attendancePercentage = totalSessions > 0 ? Math.round((attendedSessions / totalSessions) * 100) : 85;
+            const attendancePercentage = totalSessions > 0 ? Math.round((attendedSessions / totalSessions) * 100) : 0;
             const completedCourses = trackings.filter(t => t.completionPercentage >= 80).length;
             const badges = achievements.filter(a => a.type === 'BADGE');
-            const placements = achievements.filter(a => a.type === 'PLACEMENT');
+
+            // Calculate active days this month
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const totalDaysInMonth = endOfMonth.getDate();
+
+            const loginLogsThisMonth = await prisma.loginLog.findMany({
+                where: {
+                    userId,
+                    loginDate: {
+                        gte: startOfMonth,
+                        lte: endOfMonth
+                    }
+                }
+            });
+            const activeDaysThisMonth = loginLogsThisMonth.length;
 
             res.json({
                 stats: {
                     attendancePercentage,
                     completedCourses,
                     badgesCount: badges.length,
-                    placementStatus: placements.length > 0 ? placements[0].title : 'Pending'
+                    activeDaysThisMonth,
+                    totalDaysInMonth
                 },
                 recentActivities: activities,
                 upcomingSessions: sessions,

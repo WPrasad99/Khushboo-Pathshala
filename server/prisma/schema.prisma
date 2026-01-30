@@ -52,6 +52,7 @@ model User {
   achievements        Achievement[]
   announcements       Announcement[]
   activities          Activity[]
+  loginLogs           LoginLog[]
 }
 
 model LearningResource {
@@ -189,3 +190,15 @@ model Session {
   type        String   @default("online") // online, offline
   createdAt   DateTime @default(now())
 }
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  userId    String
+  loginDate DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([userId, loginDate])
+}
+

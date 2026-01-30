@@ -28,6 +28,32 @@
     color: #1F2937;
 }
 
+.sidebar-logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.brand-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #7C3AED;
+    letter-spacing: -0.3px;
+}
+
+.brand-tagline {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #9CA3AF;
+    letter-spacing: 0.5px;
+}
+
 .sidebar-nav {
     flex: 1;
     padding: 24px;
