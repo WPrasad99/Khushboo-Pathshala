@@ -44,6 +44,11 @@ const Login = () => {
         }
     };
 
+    const handleGoogleLogin = () => {
+        // Redirect to your backend's Google OAuth initiation endpoint
+        window.location.href = 'http://localhost:5000/api/auth/google';
+    };
+
     return (
         <>
             {loading && (

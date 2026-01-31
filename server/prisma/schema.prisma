@@ -244,8 +244,8 @@ model ChatMessage {
   createdAt DateTime @default(now())
   
   // Relations
-  // ... existing relations
-  sender User      @relation(fields: [senderId], references: [id])
+  group   ChatGroup @relation(fields: [groupId], references: [id])
+  sender  User      @relation(fields: [senderId], references: [id])
 }
 
 model Notification {

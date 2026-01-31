@@ -8,6 +8,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
+
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -19,8 +23,68 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
 app.use(express.json());
+
+// Session config
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'keyboard_cat',
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Passport config
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id } });
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
+});
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/api/auth/google/callback"
+},
+    async (accessToken, refreshToken, profile, done) => {
+        try {
+            // Check if user exists
+            let user = await prisma.user.findUnique({
+                where: { email: profile.emails[0].value }
+            });
+
+            if (user) {
+                return done(null, user);
+            }
+
+            // Create new user
+            user = await prisma.user.create({
+                data: {
+                    email: profile.emails[0].value,
+                    name: profile.displayName,
+                    password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+                    role: 'STUDENT',
+                    avatar: profile.photos[0].value,
+                    profileCompleted: false
+                }
+            });
+            done(null, user);
+        } catch (err) {
+            done(err, null);
+        }
+    }));
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'khushboo-secret-key';
@@ -94,6 +158,25 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(500).json({ error: 'Failed to register user' });
     }
 });
+
+// Google Auth Routes
+app.get('/api/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/api/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        // Successful authentication
+        const token = jwt.sign(
+            { id: req.user.id, email: req.user.email, role: req.user.role },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+        // Redirect to frontend with token
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?token=${token}`);
+    }
+);
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
