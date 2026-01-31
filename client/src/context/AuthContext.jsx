@@ -74,6 +74,13 @@ export const AuthProvider = ({ children }) => {
         return response.data;
     };
 
+    const setSession = (newToken, userData) => {
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(userData);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setToken(null);
@@ -87,6 +94,7 @@ export const AuthProvider = ({ children }) => {
             token,
             loading,
             login,
+            setSession,
             register,
             updateProfile,
             logout,
