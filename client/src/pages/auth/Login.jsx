@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { authAPI } from '../../api';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { authAPI, userAPI } from '../../api';
 import './Auth.css';
 
 const Login = () => {
@@ -18,6 +17,33 @@ const Login = () => {
 
     const { setSession } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleGoogleRedirect = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            if (token) {
+                setLoading(true);
+                try {
+                    // Temporarily store token for the API request
+                    localStorage.setItem('token', token);
+
+                    // Fetch user details using the new token
+                    const response = await userAPI.getMe();
+
+                    // Set full session
+                    setSession(token, response.data);
+                    navigate('/dashboard');
+                } catch (err) {
+                    console.error('Google login error:', err);
+                    setError('Google Login failed. Please try again.');
+                    localStorage.removeItem('token');
+                    setLoading(false);
+                }
+            }
+        };
+        handleGoogleRedirect();
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -54,12 +80,7 @@ const Login = () => {
             {loading && (
                 <div className="login-loader-overlay">
                     <div className="loader-content">
-                        <DotLottieReact
-                            src="https://lottie.host/897a2bc8-dc6b-481d-b7b3-f1728677a47d/giR3l29pyS.lottie"
-                            loop
-                            autoplay
-                            style={{ width: '100%', height: '100%', display: 'block' }}
-                        />
+                        <div>Loading...</div>
                     </div>
                 </div>
             )}
@@ -69,7 +90,7 @@ const Login = () => {
                     <form onSubmit={handleLogin} className="static-login-form">
                         <h1>Welcome Back</h1>
 
-                        <button className="google-login-btn" type="button">
+                        <button className="google-login-btn" type="button" onClick={handleGoogleLogin}>
                             <svg width="18" height="18" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />

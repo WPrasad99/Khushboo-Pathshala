@@ -161,7 +161,7 @@ app.post('/api/auth/register', async (req, res) => {
 
 // Google Auth Routes
 app.get('/api/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })
 );
 
 app.get('/api/auth/google/callback',
