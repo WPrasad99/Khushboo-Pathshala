@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mentorshipAPI } from '../../api';
 import { FiArrowLeft, FiSearch, FiBell, FiUser, FiLogOut, FiCalendar, FiMessageCircle } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Dashboard.css';
+import './MentorProgram.css';
 
 const MentorProgram = () => {
     const { user, logout } = useAuth();
@@ -12,6 +13,10 @@ const MentorProgram = () => {
     const [mentorship, setMentorship] = useState(null);
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [showMsgModal, setShowMsgModal] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [formData, setFormData] = useState({ date: '', message: '' });
 
     useEffect(() => {
         fetchMentorshipData();
@@ -32,177 +37,216 @@ const MentorProgram = () => {
         }
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
+    const handleAction = async (type) => {
+        if (!mentorship?.mentor) {
+            alert("No mentor assigned yet.");
+            return;
+        }
+        setActionLoading(true);
+        try {
+            if (type === 'schedule') {
+                await mentorshipAPI.createMeeting({
+                    mentorId: mentorship.mentor.id,
+                    meetingDate: formData.date,
+                    discussionSummary: `Meeting requested by ${user.name}`
+                });
+                alert("Meeting request sent!");
+            } else {
+                await mentorshipAPI.sendMessage({
+                    recipientId: mentorship.mentor.id,
+                    content: formData.message
+                });
+                alert("Message sent!");
+            }
+            setShowScheduleModal(false);
+            setShowMsgModal(false);
+            setFormData({ date: '', message: '' });
+            fetchMentorshipData();
+        } catch (error) {
+            alert("Failed to perform action.");
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return {
             day: date.getDate(),
-            month: date.toLocaleDateString('en-US', { month: 'short' })
+            month: date.toLocaleDateString('en-US', { month: 'short' }),
+            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            full: date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
         };
     };
 
     return (
-        <div className="dashboard-page">
-            {/* Navbar */}
-            <nav className="navbar">
-                <div className="navbar-brand">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="40" height="40" rx="10" fill="url(#gradient)" />
-                        <path d="M10 28V12L20 8L30 12V28L20 32L10 28Z" fill="white" opacity="0.9" />
-                        <path d="M15 18L20 16L25 18V24L20 26L15 24V18Z" fill="#4A90E2" />
-                        <defs>
-                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#4A90E2" />
-                                <stop offset="1" stopColor="#357ABD" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
+        <div className="mentor-program-page">
+            {/* Header Removed */}
 
-                <div className="navbar-actions">
-                    <div className="search-box">
-                        <FiSearch />
-                        <input type="text" placeholder="Search..." />
-                    </div>
-                    <button className="icon-btn">
-                        <FiBell />
-                    </button>
-                    <button className="icon-btn">
-                        <FiUser />
-                    </button>
-                    <div className="user-menu">
-                        <img src={user?.avatar} alt={user?.name} className="avatar" />
-                        <button className="icon-btn" onClick={handleLogout}>
-                            <FiLogOut />
-                        </button>
-                    </div>
+            {loading ? (
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
                 </div>
-            </nav>
-
-            {/* Main Content */}
-            <div className="dashboard-content">
-                <div className="page-header">
-                    <button className="back-btn" onClick={() => navigate('/student')}>
-                        <FiArrowLeft /> Back to Dashboard
-                    </button>
-                    <h1>Mentor–Mentee Program</h1>
-                </div>
-
-                {loading ? (
-                    <div className="glass-card" style={{ padding: 'var(--spacing-2xl)', textAlign: 'center' }}>
-                        <div className="loading-spinner" style={{ margin: '0 auto' }}></div>
-                        <p style={{ marginTop: 'var(--spacing-md)' }}>Loading mentorship data...</p>
-                    </div>
-                ) : (
-                    <div className="mentor-grid">
-                        {/* Your Mentor */}
+            ) : (
+                <div className="mentorship-content">
+                    {/* Top Row: Mentor & Actions */}
+                    <div className="hub-grid">
+                        {/* Mentor Card */}
                         <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            className="mentor-main-card"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
                         >
-                            <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>Your Mentor</h3>
-
+                            <div className="card-badge">Your Mentor</div>
                             {mentorship?.mentor ? (
-                                <div className="mentor-card">
-                                    <img
-                                        src={mentorship.mentor.avatar}
-                                        alt={mentorship.mentor.name}
-                                        className="avatar avatar-xl"
-                                    />
-                                    <div className="mentor-info">
-                                        <h4>{mentorship.mentor.name}</h4>
-                                        <p>Senior Software Engineer</p>
-                                        <p style={{ fontSize: 'var(--text-xs)' }}>{mentorship.mentor.email}</p>
+                                <div className="mentor-details">
+                                    <div className="avatar-wrapper">
+                                        <img src={mentorship.mentor.avatar} alt={mentorship.mentor.name} />
+                                        <div className="status-indicator"></div>
+                                    </div>
+                                    <div className="info">
+                                        <h2>{mentorship.mentor.name}</h2>
+                                        <p className="specialization">Expert Guide & Mentor</p>
+                                        <div className="contact-pills">
+                                            <span>{mentorship.mentor.email}</span>
+                                            {mentorship.mentor.phone && <span>{mentorship.mentor.phone}</span>}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)', color: 'var(--text-muted)' }}>
-                                    <FiUser style={{ fontSize: '48px', marginBottom: 'var(--spacing-md)', opacity: 0.5 }} />
-                                    <p>No mentor assigned yet.</p>
+                                <div className="no-mentor">
+                                    <FiUser size={40} />
+                                    <p>Assignment in progress...</p>
                                 </div>
                             )}
+                        </motion.div>
 
-                            <h3 style={{ marginTop: 'var(--spacing-xl)', marginBottom: 'var(--spacing-lg)' }}>Recent Meetings</h3>
+                        {/* Action Cards */}
+                        <div className="action-stack">
+                            <motion.div
+                                className="action-card primary"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setShowScheduleModal(true)}
+                            >
+                                <div className="icon-box"><FiCalendar /></div>
+                                <div className="text">
+                                    <h3>Schedule Meet</h3>
+                                    <p>Book a 1:1 session</p>
+                                </div>
+                            </motion.div>
 
-                            <div className="meetings-list">
+                            <motion.div
+                                className="action-card secondary"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setShowMsgModal(true)}
+                            >
+                                <div className="icon-box"><FiMessageCircle /></div>
+                                <div className="text">
+                                    <h3>Drop a Message</h3>
+                                    <p>Direct chat with mentor</p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+
+                    {/* Bottom Row: Meetings & Updates */}
+                    <div className="updates-section">
+                        <section className="meetings-hub">
+                            <div className="section-header">
+                                <h2>Upcoming Sessions</h2>
+                                <span className="count">{meetings.length}</span>
+                            </div>
+                            <div className="meetings-container">
                                 {meetings.length === 0 ? (
-                                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>No meetings scheduled yet.</p>
+                                    <div className="empty-state">
+                                        <p>No upcoming sessions found</p>
+                                    </div>
                                 ) : (
-                                    meetings.slice(0, 3).map((meeting) => {
-                                        const { day, month } = formatDate(meeting.meetingDate);
+                                    meetings.map((meeting) => {
+                                        const date = formatDate(meeting.meetingDate);
                                         return (
-                                            <div key={meeting.id} className="meeting-item">
-                                                <div style={{ textAlign: 'center', minWidth: '50px' }}>
-                                                    <div className="meeting-date">{day}</div>
-                                                    <div className="meeting-month">{month}</div>
+                                            <div key={meeting.id} className="meeting-row">
+                                                <div className="date-badge">
+                                                    <span className="day">{date.day}</span>
+                                                    <span className="month">{date.month}</span>
                                                 </div>
-                                                <div className="meeting-content">
-                                                    <h4>Feedback:</h4>
-                                                    <p>"{meeting.feedback || meeting.discussionSummary}"</p>
+                                                <div className="meeting-info">
+                                                    <h4>{meeting.discussionSummary || 'Mentorship Session'}</h4>
+                                                    <p>{date.time} • {meeting.duration} mins</p>
                                                 </div>
-                                                <button className="btn btn-secondary btn-sm">View</button>
+                                                <div className="meeting-status">Scheduled</div>
                                             </div>
                                         );
                                     })
                                 )}
                             </div>
-                        </motion.div>
+                        </section>
+                    </div>
+                </div>
+            )}
 
-                        {/* Your Profile & Resources */}
+            {/* Modals */}
+            <AnimatePresence>
+                {showScheduleModal && (
+                    <div className="modal-overlay">
                         <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
+                            className="modal-card"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
                         >
-                            <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>Your Profile</h3>
-
-                            <div className="mentor-card" style={{ marginBottom: 'var(--spacing-xl)' }}>
-                                <img
-                                    src={user?.avatar}
-                                    alt={user?.name}
-                                    className="avatar avatar-xl"
-                                />
-                                <div className="mentor-info">
-                                    <h4>{user?.name}</h4>
-                                    <p>{user?.educationLevel || 'B.Tech'} Student</p>
-                                    <p style={{ fontSize: 'var(--text-xs)' }}>{user?.email}</p>
-                                </div>
-                            </div>
-
-                            <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>Quick Actions</h3>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-                                <button className="btn btn-primary w-full" disabled>
-                                    <FiCalendar /> Schedule Meeting
+                            <h2>Schedule Session</h2>
+                            <input
+                                type="datetime-local"
+                                className="modal-input"
+                                value={formData.date}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            />
+                            <div className="modal-actions">
+                                <button onClick={() => setShowScheduleModal(false)}>Cancel</button>
+                                <button
+                                    className="confirm"
+                                    onClick={() => handleAction('schedule')}
+                                    disabled={actionLoading || !formData.date}
+                                >
+                                    {actionLoading ? 'Sending...' : 'Request Meet'}
                                 </button>
-                                <button className="btn btn-secondary w-full" disabled>
-                                    <FiMessageCircle /> Send Message
-                                </button>
-                            </div>
-
-                            <div style={{
-                                marginTop: 'var(--spacing-xl)',
-                                padding: 'var(--spacing-md)',
-                                background: 'rgba(74, 144, 226, 0.1)',
-                                borderRadius: 'var(--radius-md)',
-                                fontSize: 'var(--text-sm)',
-                                color: 'var(--text-secondary)'
-                            }}>
-                                <strong>Tip:</strong> Regular meetings with your mentor help you stay on track.
-                                Schedule at least one session per month to discuss your progress and goals.
                             </div>
                         </motion.div>
                     </div>
                 )}
-            </div>
+
+                {showMsgModal && (
+                    <div className="modal-overlay">
+                        <motion.div
+                            className="modal-card"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                        >
+                            <h2>Send Message</h2>
+                            <textarea
+                                className="modal-input"
+                                placeholder="Type your message here..."
+                                value={formData.message}
+                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                            />
+                            <div className="modal-actions">
+                                <button onClick={() => setShowMsgModal(false)}>Cancel</button>
+                                <button
+                                    className="confirm"
+                                    onClick={() => handleAction('message')}
+                                    disabled={actionLoading || !formData.message}
+                                >
+                                    {actionLoading ? 'Sending...' : 'Send Message'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

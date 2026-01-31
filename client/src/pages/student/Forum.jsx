@@ -5,6 +5,7 @@ import { forumAPI } from '../../api';
 import { FiArrowLeft, FiSearch, FiBell, FiUser, FiLogOut, FiMessageSquare, FiThumbsUp, FiSend } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Dashboard.css';
+import './Forum.css';
 
 const Forum = () => {
     const { user, logout } = useAuth();
@@ -15,6 +16,7 @@ const Forum = () => {
     const [expandedPost, setExpandedPost] = useState(null);
     const [newAnswer, setNewAnswer] = useState('');
     const [posting, setPosting] = useState(false);
+    const [showAskBox, setShowAskBox] = useState(false);
 
     useEffect(() => {
         fetchPosts();
@@ -41,6 +43,7 @@ const Forum = () => {
                 content: newQuestion
             });
             setNewQuestion('');
+            setShowAskBox(false);
             fetchPosts();
         } catch (error) {
             console.error('Failed to post question:', error);
@@ -73,190 +76,157 @@ const Forum = () => {
         }
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
     const formatTimeAgo = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
-        const diffHours = Math.floor((now - date) / (1000 * 60 * 60));
+        const diffSeconds = Math.floor((now - date) / 1000);
 
-        if (diffHours < 1) return 'Just now';
-        if (diffHours < 24) return `${diffHours} hours ago`;
+        if (diffSeconds < 60) return 'Just now';
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        if (diffMinutes < 60) return `${diffMinutes}m ago`;
+        const diffHours = Math.floor(diffMinutes / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
         const diffDays = Math.floor(diffHours / 24);
-        if (diffDays === 1) return '1 day ago';
-        return `${diffDays} days ago`;
+        return `${diffDays}d ago`;
     };
 
     return (
-        <div className="dashboard-page">
-            {/* Navbar */}
-            <nav className="navbar">
-                <div className="navbar-brand">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="40" height="40" rx="10" fill="url(#gradient)" />
-                        <path d="M10 28V12L20 8L30 12V28L20 32L10 28Z" fill="white" opacity="0.9" />
-                        <path d="M15 18L20 16L25 18V24L20 26L15 24V18Z" fill="#4A90E2" />
-                        <defs>
-                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#4A90E2" />
-                                <stop offset="1" stopColor="#357ABD" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-
-                <div className="navbar-actions">
-                    <div className="search-box">
-                        <FiSearch />
-                        <input type="text" placeholder="Search discussions..." />
-                    </div>
-                    <button className="icon-btn">
-                        <FiBell />
-                    </button>
-                    <button className="icon-btn">
-                        <FiUser />
-                    </button>
-                    <div className="user-menu">
-                        <img src={user?.avatar} alt={user?.name} className="avatar" />
-                        <button className="icon-btn" onClick={handleLogout}>
-                            <FiLogOut />
-                        </button>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Main Content */}
-            <div className="dashboard-content">
-                <div className="page-header">
+        <div className="forum-page">
+            <header className="page-header">
+                <div className="header-left">
                     <button className="back-btn" onClick={() => navigate('/student')}>
-                        <FiArrowLeft /> Back to Dashboard
+                        <FiArrowLeft />
                     </button>
-                    <h1>Q&A Discussion Forum</h1>
+                    <h1>Community Forum</h1>
                 </div>
-
-                <motion.div
-                    className="glass-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <button
+                    className="ask-trigger-btn"
+                    onClick={() => setShowAskBox(!showAskBox)}
                 >
-                    {/* Ask Question */}
-                    <div className="forum-header">
-                        <input
-                            type="text"
-                            className="input"
-                            placeholder="Ask a Question..."
+                    {showAskBox ? 'Cancel' : 'Ask a Question'}
+                </button>
+            </header>
+
+            <AnimatePresence>
+                {showAskBox && (
+                    <motion.div
+                        className="ask-question-box"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                    >
+                        <textarea
+                            placeholder="What's on your mind? Type your question here..."
                             value={newQuestion}
                             onChange={(e) => setNewQuestion(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handlePostQuestion()}
                         />
-                        <button
-                            className="btn btn-primary"
-                            onClick={handlePostQuestion}
-                            disabled={posting || !newQuestion.trim()}
-                        >
-                            Post
-                        </button>
-                    </div>
+                        <div className="box-actions">
+                            <button
+                                className="post-btn"
+                                onClick={handlePostQuestion}
+                                disabled={posting || !newQuestion.trim()}
+                            >
+                                {posting ? 'Posting...' : 'Post Question'}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                    {/* Posts List */}
-                    <div className="forum-posts">
-                        {loading ? (
-                            <div style={{ padding: 'var(--spacing-2xl)', textAlign: 'center' }}>
-                                <div className="loading-spinner" style={{ margin: '0 auto' }}></div>
-                            </div>
-                        ) : posts.length === 0 ? (
-                            <div style={{ padding: 'var(--spacing-2xl)', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                <FiMessageSquare style={{ fontSize: '48px', marginBottom: 'var(--spacing-md)', opacity: 0.5 }} />
-                                <p>No discussions yet. Be the first to ask a question!</p>
-                            </div>
-                        ) : (
-                            posts.map((post) => (
-                                <motion.div
-                                    key={post.id}
-                                    className="forum-post"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                >
+            <main className="forum-content">
+                {loading ? (
+                    <div className="loading-state">
+                        <div className="loading-spinner"></div>
+                    </div>
+                ) : posts.length === 0 ? (
+                    <div className="empty-forum">
+                        <FiMessageSquare size={48} />
+                        <h2>No discussions yet</h2>
+                        <p>Start the conversation by asking a question!</p>
+                    </div>
+                ) : (
+                    <div className="posts-list">
+                        {posts.map((post) => (
+                            <motion.article
+                                key={post.id}
+                                className={`post-card ${expandedPost === post.id ? 'expanded' : ''}`}
+                                layout
+                            >
+                                <div className="post-main" onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
                                     <div className="post-header">
-                                        <img src={post.author?.avatar} alt={post.author?.name} className="avatar avatar-sm" />
-                                        <span style={{ fontWeight: '500' }}>{post.author?.name}</span>
-                                        <span className="post-meta">
-                                            <span>• {formatTimeAgo(post.createdAt)}</span>
-                                        </span>
-                                        <span className="answers-badge" style={{ marginLeft: 'auto' }}>
-                                            {post.answersCount} Answers
-                                        </span>
+                                        <div className="author-info">
+                                            <img src={post.author?.avatar} alt={post.author?.name} />
+                                            <div className="meta">
+                                                <span className="name">{post.author?.name}</span>
+                                                <span className="time">{formatTimeAgo(post.createdAt)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="answer-count">
+                                            {post.answersCount} {post.answersCount === 1 ? 'answer' : 'answers'}
+                                        </div>
                                     </div>
+                                    <h2 className="post-title">{post.title}</h2>
+                                </div>
 
-                                    <h4
-                                        className="post-title"
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
-                                    >
-                                        {post.title}
-                                    </h4>
-
-                                    <AnimatePresence>
-                                        {expandedPost === post.id && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                            >
-                                                <p className="post-content">{post.content}</p>
-
-                                                {/* Answers */}
-                                                <div className="post-answers">
-                                                    {post.answers?.map((answer) => (
-                                                        <div key={answer.id} className="answer-item">
-                                                            <div className="answer-header">
-                                                                <img src={answer.author?.avatar} alt={answer.author?.name} className="avatar avatar-sm" />
-                                                                <span style={{ fontWeight: '500' }}>{answer.author?.name}</span>
-                                                                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
-                                                                    • {formatTimeAgo(answer.createdAt)}
-                                                                </span>
+                                <AnimatePresence>
+                                    {expandedPost === post.id && (
+                                        <motion.div
+                                            className="post-details"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                        >
+                                            <div className="answers-section">
+                                                <h3>Discussion</h3>
+                                                {post.answers?.length === 0 ? (
+                                                    <p className="no-answers">No answers yet. Be the first to reply!</p>
+                                                ) : (
+                                                    <div className="answers-list">
+                                                        {post.answers.map((answer) => (
+                                                            <div key={answer.id} className="answer-item">
+                                                                <div className="answer-header">
+                                                                    <img src={answer.author?.avatar} alt={answer.author?.name} />
+                                                                    <div className="meta">
+                                                                        <span className="name">{answer.author?.name}</span>
+                                                                        <span className="time">{formatTimeAgo(answer.createdAt)}</span>
+                                                                    </div>
+                                                                    <button
+                                                                        className="upvote-btn"
+                                                                        onClick={() => handleUpvote(answer.id)}
+                                                                    >
+                                                                        <FiThumbsUp /> {answer.upvotes}
+                                                                    </button>
+                                                                </div>
+                                                                <p className="answer-text">{answer.content}</p>
                                                             </div>
-                                                            <p className="answer-content">{answer.content}</p>
-                                                            <button
-                                                                className="upvote-btn"
-                                                                onClick={() => handleUpvote(answer.id)}
-                                                            >
-                                                                <FiThumbsUp /> {answer.upvotes} Upvotes
-                                                            </button>
-                                                        </div>
-                                                    ))}
-
-                                                    {/* Add Answer */}
-                                                    <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-md)' }}>
-                                                        <input
-                                                            type="text"
-                                                            className="input"
-                                                            placeholder="Write your answer..."
-                                                            value={newAnswer}
-                                                            onChange={(e) => setNewAnswer(e.target.value)}
-                                                            style={{ flex: 1 }}
-                                                        />
-                                                        <button
-                                                            className="btn btn-primary btn-sm"
-                                                            onClick={() => handlePostAnswer(post.id)}
-                                                            disabled={posting || !newAnswer.trim()}
-                                                        >
-                                                            <FiSend />
-                                                        </button>
+                                                        ))}
                                                     </div>
+                                                )}
+
+                                                <div className="reply-box">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Write a helpful reply..."
+                                                        value={newAnswer}
+                                                        onChange={(e) => setNewAnswer(e.target.value)}
+                                                        onKeyPress={(e) => e.key === 'Enter' && handlePostAnswer(post.id)}
+                                                    />
+                                                    <button
+                                                        onClick={() => handlePostAnswer(post.id)}
+                                                        disabled={posting || !newAnswer.trim()}
+                                                    >
+                                                        <FiSend />
+                                                    </button>
                                                 </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.div>
-                            ))
-                        )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.article>
+                        ))}
                     </div>
-                </motion.div>
-            </div>
+                )}
+            </main>
         </div>
     );
 };

@@ -45,12 +45,26 @@ const CoursePlayer = () => {
     // Generate video list from playlist
     const getVideoList = () => {
         if (!course) return [];
+
+        // Use real lessons if available
+        if (course.lessons && Array.isArray(course.lessons) && course.lessons.length > 0) {
+            return course.lessons.map((lesson, i) => ({
+                index: i,
+                title: lesson.title,
+                videoId: lesson.videoId,
+                duration: lesson.durationStr,
+                completed: completedVideos.has(i),
+                locked: i > 0 && !completedVideos.has(i - 1)
+            }));
+        }
+
+        // Fallback for courses without lesson details
         const count = course.lessonsCount || 1;
         const videos = [];
         for (let i = 0; i < count; i++) {
             videos.push({
                 index: i,
-                title: `Video ${i + 1}: Lesson ${i + 1}`,
+                title: `Lesson ${i + 1}`,
                 completed: completedVideos.has(i),
                 locked: i > 0 && !completedVideos.has(i - 1)
             });
@@ -65,11 +79,11 @@ const CoursePlayer = () => {
         setCompletedVideos(newCompleted);
 
         // Update progress on backend
-        const completionPercentage = (newCompleted.size / (course.lessonsCount || 1)) * 100;
+        const count = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
         try {
             await resourceAPI.trackProgress(courseId, {
                 watchDuration: newCompleted.size * 600, // Approximate
-                totalDuration: (course.lessonsCount || 1) * 600,
+                totalDuration: count * 600,
                 dropOffPoint: newCompleted.size * 600
             });
         } catch (error) {
@@ -77,7 +91,7 @@ const CoursePlayer = () => {
         }
 
         // Auto-advance to next video if available
-        if (currentVideoIndex < (course.lessonsCount || 1) - 1) {
+        if (currentVideoIndex < count - 1) {
             setCurrentVideoIndex(currentVideoIndex + 1);
         }
     };
@@ -95,7 +109,8 @@ const CoursePlayer = () => {
 
     const courseProgress = () => {
         if (!course) return 0;
-        return (completedVideos.size / (course.lessonsCount || 1)) * 100;
+        const count = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
+        return (completedVideos.size / count) * 100;
     };
 
     if (loading) {
@@ -117,7 +132,11 @@ const CoursePlayer = () => {
     }
 
     const videos = getVideoList();
-    const playlistId = course.videoUrl;
+    const currentVideo = videos[currentVideoIndex];
+    // Use direct video ID if available, otherwise fallback to playlist index
+    const videoSrc = currentVideo?.videoId
+        ? `https://www.youtube.com/embed/${currentVideo.videoId}`
+        : `https://www.youtube.com/embed/videoseries?list=${course.videoUrl}&index=${currentVideoIndex}`;
 
     return (
         <div className="course-player-page">
@@ -128,7 +147,7 @@ const CoursePlayer = () => {
                     <span>Back to Courses</span>
                 </button>
                 <div className="header-progress">
-                    <span className="progress-text">{completedVideos.size}/{course.lessonsCount || 1} Videos</span>
+                    <span className="progress-text">{completedVideos.size}/{videos.length} Videos</span>
                     <div className="header-progress-bar">
                         <div
                             className="header-progress-fill"
@@ -146,10 +165,11 @@ const CoursePlayer = () => {
                         className="video-wrapper"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        key={currentVideoIndex}
                     >
                         <iframe
-                            src={`https://www.youtube.com/embed/videoseries?list=${playlistId}&index=${currentVideoIndex}`}
-                            title={`${course.title} - Video ${currentVideoIndex + 1}`}
+                            src={videoSrc}
+                            title={`${course.title} - ${currentVideo?.title || 'Video'}`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                             frameBorder="0"
@@ -158,17 +178,17 @@ const CoursePlayer = () => {
 
                     {/* Course Info */}
                     <div className="course-info-panel">
-                        <h1>{course.title}</h1>
+                        <h1>{currentVideo?.title || course.title}</h1>
                         <p className="course-desc">{course.description}</p>
 
                         <div className="course-stats">
                             <div className="stat-item">
                                 <FiBook />
-                                <span>{course.lessonsCount || 1} Videos</span>
+                                <span>{videos.length} Videos</span>
                             </div>
                             <div className="stat-item">
                                 <FiClock />
-                                <span>{course.duration} min total</span>
+                                <span>{currentVideo?.duration || '10:00'}</span>
                             </div>
                             <div className="stat-item">
                                 <FiCheckCircle />
@@ -190,7 +210,7 @@ const CoursePlayer = () => {
                         {/* Notice */}
                         <div className="notice-box">
                             <strong>Note:</strong> You must complete each video fully before unlocking the next one.
-                            Completed videos: {completedVideos.size}/{course.lessonsCount || 1}
+                            Completed videos: {completedVideos.size}/{videos.length}
                         </div>
                     </div>
                 </div>
@@ -216,6 +236,7 @@ const CoursePlayer = () => {
                                 </div>
                                 <div className="video-item-info">
                                     <span className="video-item-title">{video.title}</span>
+                                    {video.duration && <span className="video-item-duration">{video.duration}</span>}
                                     {video.locked && <span className="video-item-status">Complete previous</span>}
                                     {video.completed && <span className="video-item-status completed">Completed</span>}
                                 </div>

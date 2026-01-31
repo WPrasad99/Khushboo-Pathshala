@@ -56,6 +56,7 @@ model User {
   createdGroups       ChatGroup[]        @relation("GroupCreator")
   groupMemberships    GroupMember[]
   chatMessages        ChatMessage[]
+  notifications       Notification[]
 }
 
 model LearningResource {
@@ -67,6 +68,7 @@ model LearningResource {
   duration      Int              // Duration in minutes
   thumbnailUrl  String?
   lessonsCount  Int              @default(1)
+  lessons       Json?            // Array of { title, videoId, duration }
   isHot         Boolean          @default(false)
   uploadedById  String
   createdAt     DateTime         @default(now())
@@ -242,6 +244,19 @@ model ChatMessage {
   createdAt DateTime @default(now())
   
   // Relations
-  group  ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // ... existing relations
   sender User      @relation(fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
 }

@@ -678,35 +678,53 @@ app.get('/api/mentorship/meetings', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/mentorship/meetings', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+app.post('/api/mentorship/meetings', authenticateToken, async (req, res) => {
     try {
-        const { menteeId, meetingDate, duration, discussionSummary, feedback, remarks } = req.body;
+        const { menteeId, mentorId, meetingDate, duration, discussionSummary, feedback, remarks, type } = req.body;
+        const role = req.user.role;
+        const targetUserId = role === 'MENTOR' ? menteeId : mentorId;
 
         // Find or create mentorship
-        let mentorship = await prisma.mentorship.findFirst({
-            where: {
-                mentorId: req.user.id,
-                menteeId
-            }
-        });
-
-        if (!mentorship) {
-            mentorship = await prisma.mentorship.create({
-                data: {
-                    mentorId: req.user.id,
-                    menteeId
-                }
+        let mentorship;
+        if (role === 'MENTOR') {
+            mentorship = await prisma.mentorship.findFirst({
+                where: { mentorId: req.user.id, menteeId }
             });
+            if (!mentorship) {
+                mentorship = await prisma.mentorship.create({
+                    data: { mentorId: req.user.id, menteeId }
+                });
+            }
+        } else {
+            // For student, mentorship must exist or we find default
+            mentorship = await prisma.mentorship.findFirst({
+                where: { menteeId: req.user.id }
+            });
+            // If no mentor assigned to student yet, we can't schedule
+            if (!mentorship && !mentorId) {
+                return res.status(400).json({ error: "No mentor assigned yet." });
+            }
         }
 
         const meeting = await prisma.meeting.create({
             data: {
                 mentorshipId: mentorship.id,
                 meetingDate: new Date(meetingDate),
-                duration,
-                discussionSummary,
+                duration: duration || 30,
+                discussionSummary: discussionSummary || (role === 'STUDENT' ? 'Meeting Requested by Student' : 'Scheduled by Mentor'),
                 feedback,
                 remarks
+            }
+        });
+
+        // Create Notification for the other party
+        const otherPartyId = role === 'MENTOR' ? mentorship.menteeId : mentorship.mentorId;
+        await prisma.notification.create({
+            data: {
+                userId: otherPartyId,
+                title: 'New Meeting Scheduled',
+                message: `${req.user.name} has scheduled a meeting on ${new Date(meetingDate).toLocaleDateString()}`,
+                type: 'info'
             }
         });
 
@@ -714,6 +732,26 @@ app.post('/api/mentorship/meetings', authenticateToken, requireRole('MENTOR'), a
     } catch (error) {
         console.error('Create meeting error:', error);
         res.status(500).json({ error: 'Failed to create meeting' });
+    }
+});
+
+// Mock Send Message Endpoint
+app.post('/api/mentorship/message', authenticateToken, async (req, res) => {
+    try {
+        const { recipientId, content } = req.body;
+        // In a real app, this would save to a ChatMessage model
+        // For now, just create a notification
+        await prisma.notification.create({
+            data: {
+                userId: recipientId,
+                title: `New Message from ${req.user.name}`,
+                message: content,
+                type: 'info'
+            }
+        });
+        res.json({ success: true, message: 'Message sent' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send message' });
     }
 });
 
@@ -923,6 +961,17 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
             return res.status(400).json({ error: 'No mentor/admin user found' });
         }
 
+        const playlistDataPath = require('path').join(__dirname, '../../playlist_data.json');
+        let playlistData = {};
+        try {
+            const fs = require('fs');
+            if (fs.existsSync(playlistDataPath)) {
+                playlistData = JSON.parse(fs.readFileSync(playlistDataPath, 'utf8'));
+            }
+        } catch (e) {
+            console.error('Failed to read playlist data:', e);
+        }
+
         const youtubeCourses = [
             {
                 title: 'Python Complete Tutorial',
@@ -931,7 +980,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PLsyeobzWxl7oa1WO9n4cP3OY9nOtUcZIg',
                 duration: 600,
                 thumbnailUrl: 'https://i.ytimg.com/vi/QXeEoD0pB3E/maxresdefault.jpg',
-                lessonsCount: 30
+                lessonsCount: playlistData['Python']?.length || 30,
+                lessons: playlistData['Python'] || []
             },
             {
                 title: 'Java Programming Course',
@@ -940,7 +990,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PLsyeobzWxl7qbKoSgR5ub6jolI8-ocxCF',
                 duration: 480,
                 thumbnailUrl: 'https://i.ytimg.com/vi/eIrMbAQSU34/maxresdefault.jpg',
-                lessonsCount: 25
+                lessonsCount: playlistData['Java']?.length || 25,
+                lessons: playlistData['Java'] || []
             },
             {
                 title: 'Web Development Bootcamp',
@@ -949,7 +1000,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PLsyeobzWxl7r566kReuTnjnINHqaRuRFn',
                 duration: 720,
                 thumbnailUrl: 'https://i.ytimg.com/vi/PlxWf493en4/maxresdefault.jpg',
-                lessonsCount: 40
+                lessonsCount: playlistData['WebDev']?.length || 40,
+                lessons: playlistData['WebDev'] || []
             },
             {
                 title: 'Data Structures & Algorithms',
@@ -958,7 +1010,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PLfqMhTWNBTe3LtFWcvwpqTkUSlB32kJop',
                 duration: 900,
                 thumbnailUrl: 'https://i.ytimg.com/vi/8hly31xKli0/maxresdefault.jpg',
-                lessonsCount: 50
+                lessonsCount: playlistData['DSA']?.length || 50,
+                lessons: playlistData['DSA'] || []
             },
             {
                 title: 'Soft Skills Mastery',
@@ -967,7 +1020,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PL6ZdH9C1KeueFazoYwshjYuao2pL9ihqY',
                 duration: 300,
                 thumbnailUrl: 'https://i.ytimg.com/vi/0FFLFcB9xfQ/maxresdefault.jpg',
-                lessonsCount: 20
+                lessonsCount: playlistData['SoftSkills']?.length || 20,
+                lessons: playlistData['SoftSkills'] || []
             },
             {
                 title: 'Career Guidance & Interview Prep',
@@ -976,7 +1030,8 @@ app.post('/api/seed-youtube-courses', async (req, res) => {
                 videoUrl: 'PLOaeOd121eBEEWP14TYgSnFsvaTIjPD22',
                 duration: 360,
                 thumbnailUrl: 'https://i.ytimg.com/vi/WfdtKbAJOmE/maxresdefault.jpg',
-                lessonsCount: 15
+                lessonsCount: playlistData['Career']?.length || 15,
+                lessons: playlistData['Career'] || []
             }
         ];
 

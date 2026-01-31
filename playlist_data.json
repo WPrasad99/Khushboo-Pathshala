@@ -1,0 +1,1310 @@
+{
+  "Python": [
+    {
+      "title": "#21 Class And Object Theory in Java",
+      "videoId": "Znmz_WxMxp4",
+      "duration": 348,
+      "durationStr": "5:48"
+    },
+    {
+      "title": "#23 JDK JRE JVM in Java",
+      "videoId": "s7UgQ7_1KQY",
+      "duration": 322,
+      "durationStr": "5:22"
+    },
+    {
+      "title": "#24 Methods in Java",
+      "videoId": "KSS3MUbBWLk",
+      "duration": 690,
+      "durationStr": "11:30"
+    },
+    {
+      "title": "#25 Method Overloading in Java",
+      "videoId": "KpwBVAYbPDA",
+      "duration": 363,
+      "durationStr": "6:03"
+    },
+    {
+      "title": "#26 Stack And Heap in Java",
+      "videoId": "_GK3WoFFKUE",
+      "duration": 757,
+      "durationStr": "12:37"
+    },
+    {
+      "title": "#27 Need of an Array in Java",
+      "videoId": "uidBSlGLUK4",
+      "duration": 231,
+      "durationStr": "3:51"
+    },
+    {
+      "title": "#28 Creation of Array in Java",
+      "videoId": "239ubH043lI",
+      "duration": 449,
+      "durationStr": "7:29"
+    },
+    {
+      "title": "#29 Multi Dimensional Array in Java",
+      "videoId": "v4J2bEQF6jk",
+      "duration": 788,
+      "durationStr": "13:08"
+    },
+    {
+      "title": "#30 jagged and 3D Array in Java",
+      "videoId": "IPBK2VdSNX0",
+      "duration": 338,
+      "durationStr": "5:38"
+    },
+    {
+      "title": "#31 Drawbacks of Array in Java",
+      "videoId": "82z4XJx6y3M",
+      "duration": 170,
+      "durationStr": "2:50"
+    },
+    {
+      "title": "#32 Array of Objects in Java",
+      "videoId": "2j64wdFNWyE",
+      "duration": 532,
+      "durationStr": "8:52"
+    },
+    {
+      "title": "#33 Enhanced for Loop in Java",
+      "videoId": "KcJX6XGmB-o",
+      "duration": 327,
+      "durationStr": "5:27"
+    },
+    {
+      "title": "#34 What is String in Java",
+      "videoId": "cV-sOpOgof8",
+      "duration": 444,
+      "durationStr": "7:24"
+    },
+    {
+      "title": "#35 Mutable vs Immutable String in Java",
+      "videoId": "JjIewPuyexA",
+      "duration": 383,
+      "durationStr": "6:23"
+    },
+    {
+      "title": "#36 StringBuffer and StringBuilder in Java",
+      "videoId": "WQ4aA4-MESE",
+      "duration": 341,
+      "durationStr": "5:41"
+    },
+    {
+      "title": "#37 Static Variable in Java",
+      "videoId": "7HYaQOyvw7Q",
+      "duration": 426,
+      "durationStr": "7:06"
+    },
+    {
+      "title": "#39 Static Block in java",
+      "videoId": "_7q4kMfJPDw",
+      "duration": 438,
+      "durationStr": "7:18"
+    },
+    {
+      "title": "#38 Static Method in Java",
+      "videoId": "zySudOTN05I",
+      "duration": 284,
+      "durationStr": "4:44"
+    },
+    {
+      "title": "#41 Getters and Setters in Java",
+      "videoId": "VCHq1FEbZ3I",
+      "duration": 175,
+      "durationStr": "2:55"
+    },
+    {
+      "title": "#40 Encapsulation in Java",
+      "videoId": "YbqneqDIZh8",
+      "duration": 702,
+      "durationStr": "11:42"
+    },
+    {
+      "title": "#42 This keyword in Java",
+      "videoId": "k_SJOnVa_G0",
+      "duration": 585,
+      "durationStr": "9:45"
+    },
+    {
+      "title": "#43 Constructor in Java",
+      "videoId": "UC_aqNUFyVI",
+      "duration": 425,
+      "durationStr": "7:05"
+    },
+    {
+      "title": "#44 Default vs Parameterized Constructor in Java",
+      "videoId": "49ptL_q7sxU",
+      "duration": 303,
+      "durationStr": "5:03"
+    },
+    {
+      "title": "Premium Java and spring boot Courses",
+      "videoId": "ifu2UlqIoYM",
+      "duration": 51,
+      "durationStr": "0:51"
+    },
+    {
+      "title": "#51 This and Super Method in Java",
+      "videoId": "u2oT-qogaFI",
+      "duration": 731,
+      "durationStr": "12:11"
+    },
+    {
+      "title": "#45 Naming Convention in Java",
+      "videoId": "QZ1bsTqxmAw",
+      "duration": 266,
+      "durationStr": "4:26"
+    },
+    {
+      "title": "#46 Anonymous Object in java",
+      "videoId": "ndTM5I2vtYQ",
+      "duration": 288,
+      "durationStr": "4:48"
+    },
+    {
+      "title": "#47 Need of Inheritance in Java",
+      "videoId": "SVXyBkwYySA",
+      "duration": 378,
+      "durationStr": "6:18"
+    },
+    {
+      "title": "#48 What is Inheritance in Java",
+      "videoId": "dFuVh_Bzy9c",
+      "duration": 527,
+      "durationStr": "8:47"
+    },
+    {
+      "title": "#49 Single and Multilevel inheritance in java",
+      "videoId": "W91VFTTAM3s",
+      "duration": 231,
+      "durationStr": "3:51"
+    },
+    {
+      "title": "#50 Multiple Inheritance in Java",
+      "videoId": "NTN8lO6yeqw",
+      "duration": 396,
+      "durationStr": "6:36"
+    },
+    {
+      "title": "#52 Method Overriding in Java",
+      "videoId": "CLzgS08equQ",
+      "duration": 477,
+      "durationStr": "7:57"
+    },
+    {
+      "title": "#53 Packages in Java",
+      "videoId": "Bua6LQO2vQ8",
+      "duration": 740,
+      "durationStr": "12:20"
+    },
+    {
+      "title": "#54 Access Modifiers in Java",
+      "videoId": "mlVYooy93sE",
+      "duration": 503,
+      "durationStr": "8:23"
+    },
+    {
+      "title": "#55 Polymorphism in Java",
+      "videoId": "6U-0aUBiO5A",
+      "duration": 235,
+      "durationStr": "3:55"
+    },
+    {
+      "title": "#56 Dynamic Method Dispatch in Java",
+      "videoId": "8C_YRYXCuwc",
+      "duration": 484,
+      "durationStr": "8:04"
+    },
+    {
+      "title": "#57 Final keyword in java",
+      "videoId": "OBYeDzgsOxc",
+      "duration": 375,
+      "durationStr": "6:15"
+    },
+    {
+      "title": "#58 Object Class equals toString hashcode in Java",
+      "videoId": "dCt9sfZV8Sg",
+      "duration": 720,
+      "durationStr": "12:00"
+    },
+    {
+      "title": "#59 Upcasting and Downcasting in Java",
+      "videoId": "Q8cTydJSawQ",
+      "duration": 397,
+      "durationStr": "6:37"
+    },
+    {
+      "title": "#61 Abstract Keyword in Java",
+      "videoId": "VJh2u7NLLDg",
+      "duration": 729,
+      "durationStr": "12:09"
+    }
+  ],
+  "Java": [
+    {
+      "title": "#1 What is Spring Framework?",
+      "videoId": "Zxwq3aW9ctU",
+      "duration": 269,
+      "durationStr": "4:29"
+    },
+    {
+      "title": "#2  Project for Spring Tutorial",
+      "videoId": "Ia90r-SrKZk",
+      "duration": 307,
+      "durationStr": "5:07"
+    },
+    {
+      "title": "#3  Prerequisite and Tools required for Spring",
+      "videoId": "6C6L3Q7nDJU",
+      "duration": 302,
+      "durationStr": "5:02"
+    },
+    {
+      "title": "#4  IoC and DI in Spring",
+      "videoId": "5cRaQqQb14Q",
+      "duration": 473,
+      "durationStr": "7:53"
+    },
+    {
+      "title": "#5 What is Spring Boot?",
+      "videoId": "L0v_3MzC1io",
+      "duration": 732,
+      "durationStr": "12:12"
+    },
+    {
+      "title": "#6  Dependency Injection using Spring Boot",
+      "videoId": "9EoAXpjnsxM",
+      "duration": 814,
+      "durationStr": "13:34"
+    },
+    {
+      "title": "#7 Autowire using Spring Boot",
+      "videoId": "ET39IFffr24",
+      "duration": 916,
+      "durationStr": "15:16"
+    },
+    {
+      "title": "#8 Spring without Boot",
+      "videoId": "42X_fDrP-Vg",
+      "duration": 806,
+      "durationStr": "13:26"
+    },
+    {
+      "title": "#9 Spring XML Config",
+      "videoId": "fKwAU1_bn24",
+      "duration": 606,
+      "durationStr": "10:06"
+    },
+    {
+      "title": "#10 Constructor and Setter Injection in Spring",
+      "videoId": "02Mv2lc-h-8",
+      "duration": 947,
+      "durationStr": "15:47"
+    },
+    {
+      "title": "Premium Java and spring boot Courses",
+      "videoId": "ifu2UlqIoYM",
+      "duration": 51,
+      "durationStr": "0:51"
+    },
+    {
+      "title": "#11 Autowire in Spring",
+      "videoId": "AYcFlw3FT_M",
+      "duration": 731,
+      "durationStr": "12:11"
+    },
+    {
+      "title": "#12 Need for Spring Boot MVC",
+      "videoId": "UmOO6vvWx8I",
+      "duration": 504,
+      "durationStr": "8:24"
+    },
+    {
+      "title": "#13 Spring Boot Web",
+      "videoId": "Pg90Xbsg078",
+      "duration": 1128,
+      "durationStr": "18:48"
+    },
+    {
+      "title": "#14 Spring MVC and Layers",
+      "videoId": "5jHC0Cy87c4",
+      "duration": 1034,
+      "durationStr": "17:14"
+    },
+    {
+      "title": "#15 Spring Web Http methods GET and POST",
+      "videoId": "iUAV9msD1NU",
+      "duration": 1255,
+      "durationStr": "20:55"
+    },
+    {
+      "title": "#16 Spring Web PUT and DELETE",
+      "videoId": "HWkI0sQPgM4",
+      "duration": 723,
+      "durationStr": "12:03"
+    },
+    {
+      "title": "#17 Spring Data JPA",
+      "videoId": "GkkcZXF-mD8",
+      "duration": 661,
+      "durationStr": "11:01"
+    },
+    {
+      "title": "#18 Spring Data JPA and H2 Setup",
+      "videoId": "YD_ga0r87wU",
+      "duration": 565,
+      "durationStr": "9:25"
+    },
+    {
+      "title": "#19 Spring Data JPA with JpaRepository",
+      "videoId": "wQLva08PcJY",
+      "duration": 667,
+      "durationStr": "11:07"
+    },
+    {
+      "title": "#20 Understanding React Frontend",
+      "videoId": "LsCBXqiFMR0",
+      "duration": 562,
+      "durationStr": "9:22"
+    },
+    {
+      "title": "#21 Project using Spring | Project Setup with Model",
+      "videoId": "htZbweM4fMM",
+      "duration": 728,
+      "durationStr": "12:08"
+    },
+    {
+      "title": "#22 Project using Spring | Loading data in H2",
+      "videoId": "_49KFUV7TVY",
+      "duration": 706,
+      "durationStr": "11:46"
+    },
+    {
+      "title": "#23 CORS Error in Spring Boot",
+      "videoId": "iC1a8cUzGgc",
+      "duration": 323,
+      "durationStr": "5:23"
+    },
+    {
+      "title": "#24 Spring Boot Project | Response Entity and GetByID",
+      "videoId": "eznebH5QJrA",
+      "duration": 800,
+      "durationStr": "13:20"
+    },
+    {
+      "title": "#25 Project using Spring Add Product with Image",
+      "videoId": "JIWdBBtCrjM",
+      "duration": 1076,
+      "durationStr": "17:56"
+    },
+    {
+      "title": "#26 Project using Spring | Fetching Image",
+      "videoId": "YCvwG_cYpsI",
+      "duration": 426,
+      "durationStr": "7:06"
+    },
+    {
+      "title": "#27 Project using Spring | Update and Delete",
+      "videoId": "OOsHxFKaVJM",
+      "duration": 773,
+      "durationStr": "12:53"
+    },
+    {
+      "title": "#28 Project using Spring Search Feature",
+      "videoId": "sjLMt7Yefng",
+      "duration": 919,
+      "durationStr": "15:19"
+    },
+    {
+      "title": "#29 Spring Security 6 | Getting Started",
+      "videoId": "2tf0UY6gV3Y",
+      "duration": 845,
+      "durationStr": "14:05"
+    },
+    {
+      "title": "#30 Spring Security | Custom Login",
+      "videoId": "VffearGGWCw",
+      "duration": 912,
+      "durationStr": "15:12"
+    },
+    {
+      "title": "#31 Spring Security | CSRF Token",
+      "videoId": "8QDORHQvdu8",
+      "duration": 1076,
+      "durationStr": "17:56"
+    },
+    {
+      "title": "#32 Spring Security | Custom Configuration",
+      "videoId": "d33a1pK4OYs",
+      "duration": 1050,
+      "durationStr": "17:30"
+    },
+    {
+      "title": "#33 Spring Security | Verify User from Database",
+      "videoId": "bOX1VYNqKCY",
+      "duration": 1984,
+      "durationStr": "33:04"
+    },
+    {
+      "title": "#34 Spring Security | Bcrypt Password Encoder",
+      "videoId": "RI3UpqUZq50",
+      "duration": 1116,
+      "durationStr": "18:36"
+    },
+    {
+      "title": "#35 What is JWT and Why",
+      "videoId": "CELcrLHQmZs",
+      "duration": 887,
+      "durationStr": "14:47"
+    },
+    {
+      "title": "#36 Spring Security Project Setup for JWT",
+      "videoId": "dFzvVoS-sRE",
+      "duration": 1003,
+      "durationStr": "16:43"
+    },
+    {
+      "title": "Premium Java and spring boot Courses",
+      "videoId": "ifu2UlqIoYM",
+      "duration": 51,
+      "durationStr": "0:51"
+    },
+    {
+      "title": "#37 Spring Security | Generating JWT Token",
+      "videoId": "e2xut5xpmmk",
+      "duration": 734,
+      "durationStr": "12:14"
+    },
+    {
+      "title": "#38 Spring Security | Validating JWT Token",
+      "videoId": "ZhtF4i-iB1A",
+      "duration": 1236,
+      "durationStr": "20:36"
+    }
+  ],
+  "WebDev": [
+    {
+      "title": "#1 Docker Introduction",
+      "videoId": "zF12bwNuiw8",
+      "duration": 49,
+      "durationStr": "0:49"
+    },
+    {
+      "title": "#2 Why we need Docker?",
+      "videoId": "kyFo2p8Ew0g",
+      "duration": 310,
+      "durationStr": "5:10"
+    },
+    {
+      "title": "#3 Solution with Virtualization",
+      "videoId": "_cOO0Ank110",
+      "duration": 601,
+      "durationStr": "10:01"
+    },
+    {
+      "title": "#4 Solution with Containerization",
+      "videoId": "lPD44WHEeNg",
+      "duration": 351,
+      "durationStr": "5:51"
+    },
+    {
+      "title": "#5 What is Docker?",
+      "videoId": "dJZuTI-r34I",
+      "duration": 274,
+      "durationStr": "4:34"
+    },
+    {
+      "title": "#6 Docker Setup",
+      "videoId": "gUNkbsnp6ks",
+      "duration": 444,
+      "durationStr": "7:24"
+    },
+    {
+      "title": "#7 Running First Container",
+      "videoId": "HmFd9qf7sM0",
+      "duration": 615,
+      "durationStr": "10:15"
+    },
+    {
+      "title": "#8 Docker commands",
+      "videoId": "fE2wB5k5upU",
+      "duration": 620,
+      "durationStr": "10:20"
+    },
+    {
+      "title": "#9 Docker Architecture",
+      "videoId": "feKtkFdTaeg",
+      "duration": 211,
+      "durationStr": "3:31"
+    },
+    {
+      "title": "#10 Running JDK Docker Container",
+      "videoId": "UyAYZGqyazs",
+      "duration": 460,
+      "durationStr": "7:40"
+    },
+    {
+      "title": "#11 Packing the Spring Boot web app",
+      "videoId": "ZBC7a7fbKlw",
+      "duration": 488,
+      "durationStr": "8:08"
+    },
+    {
+      "title": "#12 Running Spring Boot Web App on Docker",
+      "videoId": "2garoItuZIY",
+      "duration": 523,
+      "durationStr": "8:43"
+    },
+    {
+      "title": "#13 DockerFile for Docker Images",
+      "videoId": "dsteyW-wPbs",
+      "duration": 511,
+      "durationStr": "8:31"
+    },
+    {
+      "title": "#14 Web app with Postgres",
+      "videoId": "prdpZbINzpw",
+      "duration": 968,
+      "durationStr": "16:08"
+    },
+    {
+      "title": "#15 Docker Compose",
+      "videoId": "Ofae28_lkxM",
+      "duration": 765,
+      "durationStr": "12:45"
+    },
+    {
+      "title": "#16 Running Multiple Containers",
+      "videoId": "spJMvPDympM",
+      "duration": 465,
+      "durationStr": "7:45"
+    },
+    {
+      "title": "#17 Docker Volumes",
+      "videoId": "XMz4il0XLyY",
+      "duration": 327,
+      "durationStr": "5:27"
+    }
+  ],
+  "DSA": [
+    {
+      "title": "Introduction to Java Language | Lecture 1 | Complete Placement Course",
+      "videoId": "yRpLlJmRo2w",
+      "duration": 1126,
+      "durationStr": "18:46"
+    },
+    {
+      "title": "Variables in Java | Input Output | Complete Placement Course | Lecture 2",
+      "videoId": "LusTv0RlnSU",
+      "duration": 2556,
+      "durationStr": "42:36"
+    },
+    {
+      "title": "Conditional Statements | If-else, Switch Break | Complete Java Placement Course | Lecture 3",
+      "videoId": "I5srDu75h_M",
+      "duration": 1508,
+      "durationStr": "25:08"
+    },
+    {
+      "title": "Loops in Java | Java Placement Full Course | Lecture 4",
+      "videoId": "0r1SfRoLuzU",
+      "duration": 1773,
+      "durationStr": "29:33"
+    },
+    {
+      "title": "9 Best Patterns Questions In Java (for Beginners) | Java Placement Course | Lecture 5",
+      "videoId": "GjHNGM7KN3w",
+      "duration": 3505,
+      "durationStr": "58:25"
+    },
+    {
+      "title": "Advanced Pattern Questions | Java | Complete Placement Course - Lecture 6",
+      "videoId": "Dr4PpNa7AYo",
+      "duration": 2345,
+      "durationStr": "39:05"
+    },
+    {
+      "title": "Functions & Methods | Java  Complete Placement Course | Lecture 7",
+      "videoId": "qcSz4ef9UHA",
+      "duration": 1609,
+      "durationStr": "26:49"
+    },
+    {
+      "title": "Functions in Java | Practice Questions | Complete Placement Course | Lecture 8",
+      "videoId": "pFPZ83mgH00",
+      "duration": 93,
+      "durationStr": "1:33"
+    },
+    {
+      "title": "Basics of Time Complexity and Space Complexity | Java | Complete Placement Course | Lecture 9",
+      "videoId": "bQssdSrSGNE",
+      "duration": 1315,
+      "durationStr": "21:55"
+    },
+    {
+      "title": "Arrays Introduction | Java Complete Placement Course | Lecture 10",
+      "videoId": "NTHVTY6w2Co",
+      "duration": 1544,
+      "durationStr": "25:44"
+    },
+    {
+      "title": "2D Arrays | Java Complete Placement Course | Lecture 11",
+      "videoId": "18Zt5I4S45o",
+      "duration": 1193,
+      "durationStr": "19:53"
+    },
+    {
+      "title": "Strings | Lecture 12 | Java Placement Series",
+      "videoId": "vCRD36bG8xQ",
+      "duration": 1567,
+      "durationStr": "26:07"
+    },
+    {
+      "title": "String Builder | Java Placement Course Lecture 13",
+      "videoId": "ZLDwskEhIFg",
+      "duration": 1471,
+      "durationStr": "24:31"
+    },
+    {
+      "title": "Operators & Binary Number System | Java Lecture 14",
+      "videoId": "Oud4alVQU4s",
+      "duration": 2178,
+      "durationStr": "36:18"
+    },
+    {
+      "title": "Bit Manipulation | Java Placement Course | Lecture 15",
+      "videoId": "OSoO8eCEEC8",
+      "duration": 1598,
+      "durationStr": "26:38"
+    },
+    {
+      "title": "Sorting in Java | Bubble Sort, Selection Sort & Insertion Sort | Java Placement Course",
+      "videoId": "PkJIc5tBRUE",
+      "duration": 2009,
+      "durationStr": "33:29"
+    },
+    {
+      "title": "Recursion in One Shot | Theory + Question Practice + Code | Level 1 - Easy",
+      "videoId": "5Boqfjissv0",
+      "duration": 5104,
+      "durationStr": "1:25:04"
+    },
+    {
+      "title": "Recursion in One Shot | 9 Best Problems",
+      "videoId": "u-HgzgYe8KA",
+      "duration": 5825,
+      "durationStr": "1:37:05"
+    },
+    {
+      "title": "Recursion One Shot - Advanced Level Questions | Placement (Tech)",
+      "videoId": "xZykmhcWGuY",
+      "duration": 3026,
+      "durationStr": "50:26"
+    },
+    {
+      "title": "Backtracking | N Queens Problem | Permutations |  The Java Placement Course | Apna College |",
+      "videoId": "bRs6E_SL2Tk",
+      "duration": 2793,
+      "durationStr": "46:33"
+    },
+    {
+      "title": "Java Sudoku Solver | Backtracking | Java Placement Course",
+      "videoId": "tRj4VlVTat8",
+      "duration": 1543,
+      "durationStr": "25:43"
+    },
+    {
+      "title": "Merge Sort | For Beginners | Java Placement Course",
+      "videoId": "unxAnJBy12Q",
+      "duration": 1285,
+      "durationStr": "21:25"
+    },
+    {
+      "title": "Quick Sort For Beginners | Java Placement Course | @ApnaCollegeOfficial",
+      "videoId": "QXum8HQd_l4",
+      "duration": 1410,
+      "durationStr": "23:30"
+    },
+    {
+      "title": "Java OOPs in One Shot | Object Oriented Programming | Java Language | Placement Course",
+      "videoId": "bSrm9RXwBaI",
+      "duration": 3987,
+      "durationStr": "1:06:27"
+    },
+    {
+      "title": "ArrayList In Java + Notes | Java Placement Course",
+      "videoId": "liFyhzZl9uw",
+      "duration": 1033,
+      "durationStr": "17:13"
+    },
+    {
+      "title": "Java Collections Framework | Java Placement Course",
+      "videoId": "VphowcSkBX4",
+      "duration": 1073,
+      "durationStr": "17:53"
+    },
+    {
+      "title": "Introduction to Linked List | Data Structures & Algorithms | Java Placement Course",
+      "videoId": "oAja8-Ulz6o",
+      "duration": 2930,
+      "durationStr": "48:50"
+    },
+    {
+      "title": "How to Reverse a Linked List? | Iterative + Recursive | Java Placement Course",
+      "videoId": "t7YaoQOFXzk",
+      "duration": 1223,
+      "durationStr": "20:23"
+    },
+    {
+      "title": "Most IMPORTANT Linked List Questions for Placements | Java Full Course",
+      "videoId": "cL4gHVuFOvk",
+      "duration": 2720,
+      "durationStr": "45:20"
+    },
+    {
+      "title": "Stack Data Structure in One Video | Java Placement Course",
+      "videoId": "7m1DMYAbdiY",
+      "duration": 2205,
+      "durationStr": "36:45"
+    },
+    {
+      "title": "Complete Queue Data Structure | in One Shot | Java Placement Course",
+      "videoId": "va_6RmSrKCg",
+      "duration": 2750,
+      "durationStr": "45:50"
+    },
+    {
+      "title": "Binary Tree in Data Structures | All about Binary Tree | DSA Course",
+      "videoId": "-DzowlcaUmE",
+      "duration": 4933,
+      "durationStr": "1:22:13"
+    },
+    {
+      "title": "Binary Search Trees | BST in One Video | Java Placement Course | Data Structures & Algorithms",
+      "videoId": "qAeitQWjNNg",
+      "duration": 4156,
+      "durationStr": "1:09:16"
+    },
+    {
+      "title": "HashSet in Java | Hashing | Java Placement Course | Data Structures & Algorithms",
+      "videoId": "eJiGN1h8XzM",
+      "duration": 1248,
+      "durationStr": "20:48"
+    },
+    {
+      "title": "HashMap in Java | Hashing | Java Placement Course | Data Structures & Algorithms",
+      "videoId": "WeF3_nk-UqY",
+      "duration": 1450,
+      "durationStr": "24:10"
+    },
+    {
+      "title": "HashMap Implementation in Java | HashMap | Java with DSA",
+      "videoId": "KDZ_IXvpMG4",
+      "duration": 3499,
+      "durationStr": "58:19"
+    },
+    {
+      "title": "Hashing in Java | One Shot | 5 Best Questions",
+      "videoId": "rTRcntABSZ4",
+      "duration": 5853,
+      "durationStr": "1:37:33"
+    },
+    {
+      "title": "Trie Data Structure | Java DSA Course",
+      "videoId": "m9zawMC6QAI",
+      "duration": 8195,
+      "durationStr": "2:16:35"
+    },
+    {
+      "title": "Graph Data Structure | Tutorial for Graphs in Data Structures",
+      "videoId": "59fUtYYz7ZU",
+      "duration": 24240,
+      "durationStr": "6:44:00"
+    }
+  ],
+  "SoftSkills": [
+    {
+      "title": "3 cuts to cut cake into 8 equal pieces \ud83c\udf82 l Geeks for Geeks solution l Shape based puzzle l PUZZLE 1",
+      "videoId": "RPUv3a2mkxk",
+      "duration": 243,
+      "durationStr": "4:03"
+    },
+    {
+      "title": "Chessboard and Dominos \u265f\ufe0fl Geeks for Geeks solution l Shape based puzzle l PUZZLE 2",
+      "videoId": "eKXkrBQT45c",
+      "duration": 183,
+      "durationStr": "3:03"
+    },
+    {
+      "title": "Matchstick Puzzle\ud83c\udf61 l Geeks for Geeks solution l Shape based puzzle l PUZZLE 3",
+      "videoId": "nPDxSXMAMQI",
+      "duration": 293,
+      "durationStr": "4:53"
+    },
+    {
+      "title": "Pieces that can be cut from Circle using 6 lines \ud83d\udd34 l Geeks for Geeks l Shape based puzzlel PUZZLE 4",
+      "videoId": "2eksBDvNebc",
+      "duration": 167,
+      "durationStr": "2:47"
+    },
+    {
+      "title": "Splitting Cake with a Missing Piece in two equal\ud83e\uddc1 l Geeks for Geeks l Shape based puzzle l PUZZLE 5",
+      "videoId": "bBSyz9dqws8",
+      "duration": 260,
+      "durationStr": "4:20"
+    },
+    {
+      "title": "3 ants and triangle \ud83d\udc1c l 8 ants and cube \ud83e\uddca l Geeks for Geeks l Shape based puzzle l PUZZLE 6",
+      "videoId": "Zn5NwDWeX6s",
+      "duration": 650,
+      "durationStr": "10:50"
+    },
+    {
+      "title": "10 coins game \ud83e\ude99 l Geeks for Geeks solution l Arrangement based puzzle l PUZZLE 1",
+      "videoId": "zOIYdIfuG2o",
+      "duration": 298,
+      "durationStr": "4:58"
+    },
+    {
+      "title": "Days of a month using 2 dice \ud83c\udfb2 l Geeks for Geeks solution l Arrangement based puzzle l PUZZLE 2",
+      "videoId": "KzmWFbYP3gw",
+      "duration": 368,
+      "durationStr": "6:08"
+    },
+    {
+      "title": "Tic Tac Toe Puzzle \ud83e\udde9| Geeks for Geeks solution l Arrangement based puzzle l PUZZLE 3",
+      "videoId": "QD9lVuhBYXU",
+      "duration": 362,
+      "durationStr": "6:02"
+    },
+    {
+      "title": "Last Palindrome Date Before 10/02/2001 \ud83d\udcc5 l Geeks for Geeks l Arrangement based puzzle l PUZZLE 4",
+      "videoId": "U3d2r-NC2Lc",
+      "duration": 499,
+      "durationStr": "8:19"
+    },
+    {
+      "title": "10 balls in 5 lines \u26bdl Geeks for Geeks solution l Arrangement based puzzle l PUZZLE 5",
+      "videoId": "ci2tBibOgDw",
+      "duration": 181,
+      "durationStr": "3:01"
+    },
+    {
+      "title": "Round table coin game \ud83c\udfd3 l Geeks for Geeks solution l Arrangement based puzzle l PUZZLE 6",
+      "videoId": "wjnb0mclaN8",
+      "duration": 306,
+      "durationStr": "5:06"
+    },
+    {
+      "title": "Blind Game \ud83e\uddd1\u200d\ud83e\uddaf l Geeks for Geeks solution l Logical puzzle l PUZZLE 1 l Interview Puzzle",
+      "videoId": "KIWpwU9le44",
+      "duration": 511,
+      "durationStr": "8:31"
+    },
+    {
+      "title": "Mislabeled JARS \ud83c\udf6f l Geeks for Geeks solution l Logical puzzle l PUZZLE 3 l Interview Puzzle",
+      "videoId": "esu4L6i5tVw",
+      "duration": 349,
+      "durationStr": "5:49"
+    },
+    {
+      "title": "Measuring 6l water from 4l and 8l bucket \ud83d\udca6 l Geeks for Geeks Logical puzzle l PUZZLE 4 l Interview",
+      "videoId": "PgLQ1p5lhGA",
+      "duration": 278,
+      "durationStr": "4:38"
+    },
+    {
+      "title": "Water jug problem \ud83c\udffal Geeks for Geeks solution l Logical puzzle l PUZZLE 5 l Interview Puzzle",
+      "videoId": "cz5t5z6MpYA",
+      "duration": 398,
+      "durationStr": "6:38"
+    },
+    {
+      "title": "Distribute the water \ud83d\udca7| Geeks for Geeks solution l Logical puzzle l PUZZLE 6 l Interview Puzzle",
+      "videoId": "ygF5Z3FL8Vo",
+      "duration": 313,
+      "durationStr": "5:13"
+    },
+    {
+      "title": "Blind man and pills \ud83d\udc69\u200d\ud83e\uddaf\ud83d\udc8al Geeks for Geeks solution l Logical puzzle l PUZZLE 7 l Interview Puzzle",
+      "videoId": "4aQB4h4W9n4",
+      "duration": 207,
+      "durationStr": "3:27"
+    },
+    {
+      "title": "MELTING CANDLES \ud83d\udd6f\ufe0fl Geeks for Geeks solution l Logical puzzle l PUZZLE 8 l Interview Puzzle",
+      "videoId": "ocXc-StyEEI",
+      "duration": 510,
+      "durationStr": "8:30"
+    },
+    {
+      "title": "THE BURNING CANDLES \ud83d\udd6f\ufe0f \ud83d\udd6f\ufe0fl Geeks for Geeks solution l Logical puzzle l PUZZLE 9 l Interview Puzzle",
+      "videoId": "R5c4sI6t_PE",
+      "duration": 166,
+      "durationStr": "2:46"
+    },
+    {
+      "title": "8 BALLS PROBLEM \ud83c\udfc8\u26bd\ufe0f l Geeks for Geeks solution l Logical puzzle l PUZZLE 10 l Interview Puzzle",
+      "videoId": "XAj8E1xesqI",
+      "duration": 470,
+      "durationStr": "7:50"
+    },
+    {
+      "title": "Weight of heavy ball out of 2187 balls \u26bdl Geeks for Geeks sol | PUZZLE 11 l Interview Puzzle",
+      "videoId": "uwZJgi_LhJo",
+      "duration": 511,
+      "durationStr": "8:31"
+    },
+    {
+      "title": "PAY AN EMPLOYEE USING A GOLD ROD OF 7 UNITS \ud83e\udd477\ufe0f\u20e3l Geeks for Geeks sol | PUZZLE 12 l Interview Puzzl",
+      "videoId": "JiRud4QYsRs",
+      "duration": 331,
+      "durationStr": "5:31"
+    },
+    {
+      "title": "MINIMUM CUT PUZZLE \ud83e\udd47\ud83e\udde9l Geeks for Geeks solution l Logical puzzle l PUZZLE 13 l Interview Puzzle",
+      "videoId": "nPujjnUPM90",
+      "duration": 277,
+      "durationStr": "4:37"
+    },
+    {
+      "title": "Joint family of seven people \ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66( L,M,N,O,P,Q,R ) l Geeks for Geeks PUZZLE 14l Interview Puzzle",
+      "videoId": "2IKGnyaGoSQ",
+      "duration": 295,
+      "durationStr": "4:55"
+    },
+    {
+      "title": "CAN TWO PERSON HAVE SAME NUMBER OF HAIRS ON HEADS \ud83d\udc71\u200d\u2640\ufe0fl Geeks for Geeks PUZZLE 15 l Interview Puzzle",
+      "videoId": "aarB_AY1Gb4",
+      "duration": 366,
+      "durationStr": "6:06"
+    },
+    {
+      "title": "THE LION AND THE UNICORN \ud83e\udd81\ud83e\udd84 l Geeks for Geeks sol l Logical puzzle l PUZZLE 16 l Interview Puzzle",
+      "videoId": "eJZEY8HiNUk",
+      "duration": 379,
+      "durationStr": "6:19"
+    },
+    {
+      "title": "FARMER, GOAT, WOLF, CABBAGE \ud83d\udc10\ud83d\udc3al Geeks for Geeks  l Logical puzzle l PUZZLE 17 l Interview Puzzle",
+      "videoId": "CPmVaLoRvdQ",
+      "duration": 695,
+      "durationStr": "11:35"
+    },
+    {
+      "title": "Six houses ( P,Q,R,S,T,U) \ud83c\udfe0l Geeks for Geeks sol l Logical puzzle l PUZZLE 18 l Interview Puzzle",
+      "videoId": "LJD6FFziUiY",
+      "duration": 425,
+      "durationStr": "7:05"
+    },
+    {
+      "title": "HEAVEN AND HELL \ud83c\udf37l Geeks for Geeks solution l Logical puzzle l PUZZLE 19 l Interview Puzzle",
+      "videoId": "_LP6wCVeRJE",
+      "duration": 430,
+      "durationStr": "7:10"
+    },
+    {
+      "title": "LIGHT ALL THE BULBS \ud83d\udca1l Geeks for Geeks solution l Logical puzzle l PUZZLE 20 l Interview Puzzle",
+      "videoId": "H0YrN6B6-VY",
+      "duration": 372,
+      "durationStr": "6:12"
+    },
+    {
+      "title": "3 Bulbs and 3 swtiches \ud83d\udca1 l Geeks for Geeks solution l Logical puzzle l PUZZLE 22 l Interview Puzzle",
+      "videoId": "bn-gNN7-wuM",
+      "duration": 256,
+      "durationStr": "4:16"
+    },
+    {
+      "title": "Prisoner and Policeman Puzzle \ud83d\udc6e\u200d\u2642\ufe0f l Geeks for Geeks l Logical puzzle l PUZZLE 27 l Interview Puzzle",
+      "videoId": "d7hYMeMYuuI",
+      "duration": 326,
+      "durationStr": "5:26"
+    },
+    {
+      "title": "Maximise white ball probability \ud83c\udfc0l Geeks for Geeksl Analytical puzzle l PUZZLE 1 l Interview Puzzle",
+      "videoId": "fkXZKd1sBYI",
+      "duration": 629,
+      "durationStr": "10:29"
+    },
+    {
+      "title": "Torch and Bridge \ud83c\udf09\ud83d\udd26 l Geeks for Geeks solution l Analytical puzzle l PUZZLE 2 l Interview Puzzle",
+      "videoId": "kmw50IpjU1Q",
+      "duration": 428,
+      "durationStr": "7:08"
+    },
+    {
+      "title": "Four people on a rickety bridge \ud83c\udf09 l Geeks for Geeksl Analytical puzzle l PUZZLE 3 l Interview",
+      "videoId": "x_1i_b6DgVo",
+      "duration": 262,
+      "durationStr": "4:22"
+    },
+    {
+      "title": "10 identical bottles of pills \ud83d\udc8a l Geeks for Geeksl Analytical puzzle l PUZZLE 4 l Interview puzzle",
+      "videoId": "6t9Tpr_TdjA",
+      "duration": 440,
+      "durationStr": "7:20"
+    },
+    {
+      "title": "Hourglass Puzzle \u23f3l Geeks for Geeksl Analytical puzzle l PUZZLE 5 l Interview puzzle",
+      "videoId": "_PJrnei33Vk",
+      "duration": 410,
+      "durationStr": "6:50"
+    },
+    {
+      "title": "Find ages of daughters \ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc67l Geeks for Geeksl Analytical puzzle l PUZZLE 6 l Interview puzzle",
+      "videoId": "rfvPGEDs1vQ",
+      "duration": 336,
+      "durationStr": "5:36"
+    },
+    {
+      "title": "Maximum chocolates\ud83c\udf6bl Geeks for Geeksl Analytical puzzle l PUZZLE 7 l Interview puzzle",
+      "videoId": "7KGOi2Yfs8s",
+      "duration": 202,
+      "durationStr": "3:22"
+    }
+  ],
+  "Career": [
+    {
+      "title": "Simple Communication Tips, BIG Impact! Master the Art of Communication Skills with Simerjeet Singh",
+      "videoId": "mloCf86O_ow",
+      "duration": 584,
+      "durationStr": "9:44"
+    },
+    {
+      "title": "Think Fast, Talk Smart: Communication Techniques",
+      "videoId": "HAnw168huqA",
+      "duration": 3500,
+      "durationStr": "58:20"
+    },
+    {
+      "title": "How to Speak So That People Want to Listen | Julian Treasure | TED",
+      "videoId": "eIho2S0ZahI",
+      "duration": 599,
+      "durationStr": "9:59"
+    },
+    {
+      "title": "Speak with Impact: Simerjeet Singh's Exclusive Masterclass on Effective Communication",
+      "videoId": "F8cWLH8OeCk",
+      "duration": 1846,
+      "durationStr": "30:46"
+    },
+    {
+      "title": "Understand Native English Speakers with this Advanced Listening Lesson",
+      "videoId": "D6_qpaSxAQc",
+      "duration": 1485,
+      "durationStr": "24:45"
+    },
+    {
+      "title": "Speak English Confidently || Sumita Roy || IMPACT || Trending with 24M Views on Youtube",
+      "videoId": "G_ZeBr6bhyw",
+      "duration": 2921,
+      "durationStr": "48:41"
+    },
+    {
+      "title": "How to Speak Fluent English in 7 Days | Speaking Fluently | Awal",
+      "videoId": "uECTdl27b4Y",
+      "duration": 546,
+      "durationStr": "9:06"
+    },
+    {
+      "title": "Speak English with Confidence - By Sandeep Maheshwari | Hindi",
+      "videoId": "Y07dnUKwqyw",
+      "duration": 1570,
+      "durationStr": "26:10"
+    },
+    {
+      "title": "The Blueprint to Developing your Communication Skills: Discover Why 16M\ud83d\udd25 Can't Stop Raving About It!",
+      "videoId": "srn5jgr9TZo",
+      "duration": 653,
+      "durationStr": "10:53"
+    },
+    {
+      "title": "3 Communication Truths That Will Change Every Conversation",
+      "videoId": "ZqxOAhC8HJk",
+      "duration": 1017,
+      "durationStr": "16:57"
+    },
+    {
+      "title": "How to Improve Your English Speaking Skills (by Yourself)",
+      "videoId": "CAU2zx2Ri_M",
+      "duration": 275,
+      "durationStr": "4:35"
+    },
+    {
+      "title": "Communication Traps: How Assumptions Lead to Misunderstandings | Tip by Simerjeet Singh in Hindi",
+      "videoId": "uDUm-FQMj7A",
+      "duration": 390,
+      "durationStr": "6:30"
+    },
+    {
+      "title": "Give me 8 minutes, and I'll improve your communication skills by 88%...",
+      "videoId": "7hr60EumwQ4",
+      "duration": 494,
+      "durationStr": "8:14"
+    },
+    {
+      "title": "Listen to this if you want to level up your communication skills in 2026...",
+      "videoId": "LI57EB_T38c",
+      "duration": 1122,
+      "durationStr": "18:42"
+    },
+    {
+      "title": "Communication Skills SIMPLIFIED: A Step by Step Roadmap for Success",
+      "videoId": "X3Fz_Gu5WUE",
+      "duration": 1123,
+      "durationStr": "18:43"
+    },
+    {
+      "title": "Effective Communication Skills",
+      "videoId": "6pYSbdGiDYw",
+      "duration": 2611,
+      "durationStr": "43:31"
+    },
+    {
+      "title": "How to Improve Your Communication Skills - 4 Steps",
+      "videoId": "DSaj9qMwvLI",
+      "duration": 452,
+      "durationStr": "7:32"
+    },
+    {
+      "title": "Watch This to TRANSFORM Your Personality in Just 10 Steps!",
+      "videoId": "2YAbc_zsJLM",
+      "duration": 1060,
+      "durationStr": "17:40"
+    },
+    {
+      "title": "Q&A with Vanessa Van Edwards: How to Communicate with Charisma",
+      "videoId": "Eor7yNjboQI",
+      "duration": 2870,
+      "durationStr": "47:50"
+    },
+    {
+      "title": "Speak English Like a PRO in 45 Days\ud83d\udd25| Master Communication Skills | Ishan Sharma",
+      "videoId": "riv8aZrlvmM",
+      "duration": 1357,
+      "durationStr": "22:37"
+    },
+    {
+      "title": "7 Practical Steps to Improve your English Speaking Skills | 12 \u092e\u093f\u0928\u091f \u092e\u0947\u0902 \u092a\u093e\u090f\u0902 \u0906\u0924\u094d\u092e\u0935\u093f\u0936\u094d\u0935\u093e\u0938, \u0906\u0938\u093e\u0928 \u091f\u093f\u092a\u094d\u0938",
+      "videoId": "H7QQugwPaPI",
+      "duration": 742,
+      "durationStr": "12:22"
+    },
+    {
+      "title": "How to Start a Speech",
+      "videoId": "w82a1FT5o88",
+      "duration": 527,
+      "durationStr": "8:47"
+    },
+    {
+      "title": "Celeste Headlee: 10 ways to have a better conversation | TED",
+      "videoId": "R1vskiVDwl4",
+      "duration": 705,
+      "durationStr": "11:45"
+    },
+    {
+      "title": "English Sikhne Ke Practical Tips in Hindi | Speak Confidently with Simerjeet Singh | #AskSJS",
+      "videoId": "CaSRYxlVV1M",
+      "duration": 592,
+      "durationStr": "9:52"
+    },
+    {
+      "title": "Opera Singer TRICKS to Have a MORE Attractive Voice",
+      "videoId": "sJsgL5vmtqw",
+      "duration": 588,
+      "durationStr": "9:48"
+    },
+    {
+      "title": "Four Tips To Do Voice Modulation While Speaking | Public Speaking Tips",
+      "videoId": "RyuuA6aiQfQ",
+      "duration": 431,
+      "durationStr": "7:11"
+    },
+    {
+      "title": "The Truth About English: Simerjeet Singh Exposes Language Myths! | English Kaise Sikhe?",
+      "videoId": "JJiRq28inCA",
+      "duration": 830,
+      "durationStr": "13:50"
+    },
+    {
+      "title": "Speak Better, Connect Faster: Top Communication Tips in Just 12 Minutes",
+      "videoId": "Ac3HPfbX8v4",
+      "duration": 742,
+      "durationStr": "12:22"
+    },
+    {
+      "title": "Simerjeet Singh on How to be confident and How to overcome hesitation? #CoachOnCampus",
+      "videoId": "Pw24Nx-qXkc",
+      "duration": 587,
+      "durationStr": "9:47"
+    },
+    {
+      "title": "English sikhne ka tarika | English sikhne ke liye kya karna chahiye by Simerjeet Singh",
+      "videoId": "9o8331vG34o",
+      "duration": 1529,
+      "durationStr": "25:29"
+    },
+    {
+      "title": "India's Wonder Girl: 10 Accents at Age 10 \u2013 How She Did It Will Amaze You!",
+      "videoId": "40_yiaalOQw",
+      "duration": 3730,
+      "durationStr": "1:02:10"
+    },
+    {
+      "title": "Struggling to Speak Fluently? This Video Will Change Everything!",
+      "videoId": "05pT30d_JGw",
+      "duration": 892,
+      "durationStr": "14:52"
+    },
+    {
+      "title": "Confidence in Interviews: Master the Interview Game with Pro Tips by Simerjeet Singh (in English)",
+      "videoId": "qX23ImLTaR4",
+      "duration": 1397,
+      "durationStr": "23:17"
+    },
+    {
+      "title": "Simerjeet Singh on How to overcome inferiority complex? | Hindi Personality Development Video",
+      "videoId": "GSNcu9rEKPM",
+      "duration": 631,
+      "durationStr": "10:31"
+    },
+    {
+      "title": "He Was Perceived as Arrogant, Now He's Liked by ALL! Learn How \ud83d\udcac Tips from an International Speaker",
+      "videoId": "1CYrz_GzKh4",
+      "duration": 1001,
+      "durationStr": "16:41"
+    },
+    {
+      "title": "How a Small-Town Girl Became a Global English Teacher \u2013 The Adrija Biswas Story | Simerjeet Singh",
+      "videoId": "MY6Wt_x_LNM",
+      "duration": 2826,
+      "durationStr": "47:06"
+    },
+    {
+      "title": "English Kaise Sikhe Part- 2 | How to improve English speaking by Simerjeet Singh & Sandeep Dubey",
+      "videoId": "Q_JUbU8QeNk",
+      "duration": 3175,
+      "durationStr": "52:55"
+    },
+    {
+      "title": "Speak English Confidently: Simerjeet Singh aur Dr. Anand Bajaj Ke Saath Practical Learning Tips",
+      "videoId": "JKxfCQU8KaY",
+      "duration": 2375,
+      "durationStr": "39:35"
+    },
+    {
+      "title": "How to deal with Introverts? | Teaching for the 21st Century | Teaching for the Future | #AskSJS",
+      "videoId": "r5YHL4JXS_A",
+      "duration": 968,
+      "durationStr": "16:08"
+    },
+    {
+      "title": "Speak English Like a PRO! Expert tips with Keith Michael O'Hare and Simerjeet Singh",
+      "videoId": "hxQcdDOLNhU",
+      "duration": 4090,
+      "durationStr": "1:08:10"
+    }
+  ]
+}
