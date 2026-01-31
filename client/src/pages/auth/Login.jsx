@@ -98,8 +98,7 @@ const Login = () => {
 
             {/* Right Side - Image Panel */}
             <div className="login-right-panel">
-                <img src="/auth-illustration.jpg" alt="Login Visual" className="static-auth-image" />
-                <div className="image-gradient"></div>
+                <img src="/login-visual.png" alt="Login Visual" className="static-auth-image" />
             </div>
         </div>
     );

@@ -16,7 +16,6 @@ const Forum = () => {
     const [expandedPost, setExpandedPost] = useState(null);
     const [newAnswer, setNewAnswer] = useState('');
     const [posting, setPosting] = useState(false);
-    const [showAskBox, setShowAskBox] = useState(false);
 
     useEffect(() => {
         fetchPosts();
@@ -43,7 +42,6 @@ const Forum = () => {
                 content: newQuestion
             });
             setNewQuestion('');
-            setShowAskBox(false);
             fetchPosts();
         } catch (error) {
             console.error('Failed to post question:', error);
@@ -92,141 +90,138 @@ const Forum = () => {
 
     return (
         <div className="forum-page">
-            <header className="page-header">
-                <div className="header-left">
-                    <button className="back-btn" onClick={() => navigate('/student')}>
-                        <FiArrowLeft />
-                    </button>
-                    <h1>Community Forum</h1>
+            {loading ? (
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
                 </div>
-                <button
-                    className="ask-trigger-btn"
-                    onClick={() => setShowAskBox(!showAskBox)}
-                >
-                    {showAskBox ? 'Cancel' : 'Ask a Question'}
-                </button>
-            </header>
+            ) : (
+                <div className="forum-grid">
+                    {/* Left Column: Questions */}
+                    <div className="questions-column">
+                        {posts.length === 0 ? (
+                            <div className="empty-forum">
+                                <FiMessageSquare size={40} />
+                                <h2>No discussions yet</h2>
+                                <p>Be the first to start a conversation!</p>
+                            </div>
+                        ) : (
+                            <div className="posts-list">
+                                {posts.map((post) => (
+                                    <motion.article
+                                        key={post.id}
+                                        className={`post-card ${expandedPost === post.id ? 'expanded' : ''}`}
+                                        layout
+                                    >
+                                        <div className="post-main" onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
+                                            <div className="post-header">
+                                                <div className="author-info">
+                                                    <img src={post.author?.avatar} alt={post.author?.name} />
+                                                    <div className="meta">
+                                                        <span className="name">{post.author?.name}</span>
+                                                        <span className="time">{formatTimeAgo(post.createdAt)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="answer-count">
+                                                    {post.answersCount} {post.answersCount === 1 ? 'answer' : 'answers'}
+                                                </div>
+                                            </div>
+                                            <h2 className="post-title">{post.title}</h2>
+                                        </div>
 
-            <AnimatePresence>
-                {showAskBox && (
-                    <motion.div
-                        className="ask-question-box"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                    >
-                        <textarea
-                            placeholder="What's on your mind? Type your question here..."
-                            value={newQuestion}
-                            onChange={(e) => setNewQuestion(e.target.value)}
-                        />
-                        <div className="box-actions">
+                                        <AnimatePresence>
+                                            {expandedPost === post.id && (
+                                                <motion.div
+                                                    className="post-details"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                >
+                                                    <div className="answers-section">
+                                                        <h3>Discussion</h3>
+                                                        {post.answers?.length === 0 ? (
+                                                            <p className="no-answers">No answers yet. Be the first to reply!</p>
+                                                        ) : (
+                                                            <div className="answers-list">
+                                                                {post.answers.map((answer) => (
+                                                                    <div key={answer.id} className="answer-item">
+                                                                        <div className="answer-header">
+                                                                            <img src={answer.author?.avatar} alt={answer.author?.name} />
+                                                                            <div className="meta">
+                                                                                <span className="name">{answer.author?.name}</span>
+                                                                                <span className="time">{formatTimeAgo(answer.createdAt)}</span>
+                                                                            </div>
+                                                                            <button
+                                                                                className="upvote-btn"
+                                                                                onClick={() => handleUpvote(answer.id)}
+                                                                            >
+                                                                                <FiThumbsUp /> {answer.upvotes}
+                                                                            </button>
+                                                                        </div>
+                                                                        <p className="answer-text">{answer.content}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="reply-box">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Write a helpful reply..."
+                                                                value={newAnswer}
+                                                                onChange={(e) => setNewAnswer(e.target.value)}
+                                                                onKeyPress={(e) => e.key === 'Enter' && handlePostAnswer(post.id)}
+                                                            />
+                                                            <button
+                                                                onClick={() => handlePostAnswer(post.id)}
+                                                                disabled={posting || !newAnswer.trim()}
+                                                            >
+                                                                <FiSend />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.article>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right Column: Ask Question Card */}
+                    <div className="side-column">
+                        <motion.div
+                            className="ask-card"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                        >
+                            <h3>Ask Question</h3>
+                            <p className="card-subtitle">Having trouble? Ask the community</p>
+                            <textarea
+                                placeholder="What's your question about?"
+                                value={newQuestion}
+                                onChange={(e) => setNewQuestion(e.target.value)}
+                            />
                             <button
-                                className="post-btn"
+                                className="post-btn-full"
                                 onClick={handlePostQuestion}
                                 disabled={posting || !newQuestion.trim()}
                             >
-                                {posting ? 'Posting...' : 'Post Question'}
+                                {posting ? 'Posting...' : 'Post Community'}
                             </button>
+                        </motion.div>
+
+                        <div className="guidelines-card">
+                            <h4>Guidelines</h4>
+                            <ul>
+                                <li>Be specific with your question</li>
+                                <li>Check for duplicates first</li>
+                                <li>Be respectful to others</li>
+                            </ul>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <main className="forum-content">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner"></div>
                     </div>
-                ) : posts.length === 0 ? (
-                    <div className="empty-forum">
-                        <FiMessageSquare size={48} />
-                        <h2>No discussions yet</h2>
-                        <p>Start the conversation by asking a question!</p>
-                    </div>
-                ) : (
-                    <div className="posts-list">
-                        {posts.map((post) => (
-                            <motion.article
-                                key={post.id}
-                                className={`post-card ${expandedPost === post.id ? 'expanded' : ''}`}
-                                layout
-                            >
-                                <div className="post-main" onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
-                                    <div className="post-header">
-                                        <div className="author-info">
-                                            <img src={post.author?.avatar} alt={post.author?.name} />
-                                            <div className="meta">
-                                                <span className="name">{post.author?.name}</span>
-                                                <span className="time">{formatTimeAgo(post.createdAt)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="answer-count">
-                                            {post.answersCount} {post.answersCount === 1 ? 'answer' : 'answers'}
-                                        </div>
-                                    </div>
-                                    <h2 className="post-title">{post.title}</h2>
-                                </div>
-
-                                <AnimatePresence>
-                                    {expandedPost === post.id && (
-                                        <motion.div
-                                            className="post-details"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                        >
-                                            <div className="answers-section">
-                                                <h3>Discussion</h3>
-                                                {post.answers?.length === 0 ? (
-                                                    <p className="no-answers">No answers yet. Be the first to reply!</p>
-                                                ) : (
-                                                    <div className="answers-list">
-                                                        {post.answers.map((answer) => (
-                                                            <div key={answer.id} className="answer-item">
-                                                                <div className="answer-header">
-                                                                    <img src={answer.author?.avatar} alt={answer.author?.name} />
-                                                                    <div className="meta">
-                                                                        <span className="name">{answer.author?.name}</span>
-                                                                        <span className="time">{formatTimeAgo(answer.createdAt)}</span>
-                                                                    </div>
-                                                                    <button
-                                                                        className="upvote-btn"
-                                                                        onClick={() => handleUpvote(answer.id)}
-                                                                    >
-                                                                        <FiThumbsUp /> {answer.upvotes}
-                                                                    </button>
-                                                                </div>
-                                                                <p className="answer-text">{answer.content}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                <div className="reply-box">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Write a helpful reply..."
-                                                        value={newAnswer}
-                                                        onChange={(e) => setNewAnswer(e.target.value)}
-                                                        onKeyPress={(e) => e.key === 'Enter' && handlePostAnswer(post.id)}
-                                                    />
-                                                    <button
-                                                        onClick={() => handlePostAnswer(post.id)}
-                                                        disabled={posting || !newAnswer.trim()}
-                                                    >
-                                                        <FiSend />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.article>
-                        ))}
-                    </div>
-                )}
-            </main>
+                </div>
+            )}
         </div>
     );
 };
