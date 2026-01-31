@@ -15,7 +15,7 @@ const Login = () => {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
 
-    const { setSession } = useAuth();
+    const { login, setSession } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,29 +50,40 @@ const Login = () => {
         setError('');
         setLoading(true);
 
-        // Start a 3-second timer
-        const timer = new Promise(resolve => setTimeout(resolve, 3000));
+        // Start a 1.5-second timer for UX
+        const timer = new Promise(resolve => setTimeout(resolve, 1500));
 
         try {
-            // First perform API call WITHOUT updating global auth state
-            const response = await authAPI.login(loginEmail, loginPassword);
+            // Use context login which handles both API and LOCAL FALLBACK
+            const result = await login(loginEmail, loginPassword);
 
-            // Then wait for the remainder of the 3 seconds
+            // Wait for smooth transition
             await timer;
 
-            // Update auth state ONLY after timer finishes
-            setSession(response.data.token, response.data.user);
-
-            navigate('/dashboard');
+            if (result.success) {
+                navigate('/dashboard');
+            } else {
+                setError(result.error || 'Failed to login. Please try again.');
+            }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to login. Please try again.');
+            console.error(err);
+            setError('An unexpected error occurred.');
+        } finally {
             setLoading(false);
         }
     };
 
     const handleGoogleLogin = () => {
         // Redirect to your backend's Google OAuth initiation endpoint
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        window.location.href = 'http://localhost:5001/api/auth/google';
+    };
+
+    // Helper to auto-fill credentials for demo
+    const fillDemo = (role) => {
+        setLoginPassword('password123');
+        if (role === 'student') setLoginEmail('student@demo.com');
+        if (role === 'mentor') setLoginEmail('mentor@demo.com');
+        if (role === 'admin') setLoginEmail('admin@demo.com');
     };
 
     return (
@@ -89,6 +100,16 @@ const Login = () => {
                 <div className="login-left-panel">
                     <form onSubmit={handleLogin} className="static-login-form">
                         <h1>Welcome Back</h1>
+
+                        {/* DEMO CREDENTIALS HELPERS */}
+                        <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f8fafc', borderRadius: '8px', fontSize: '0.8rem' }}>
+                            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>Quick Login (Demo):</p>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button type="button" onClick={() => fillDemo('student')} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #e0e0e0', cursor: 'pointer' }}>Student</button>
+                                <button type="button" onClick={() => fillDemo('mentor')} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #e0e0e0', cursor: 'pointer' }}>Mentor</button>
+                                <button type="button" onClick={() => fillDemo('admin')} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #e0e0e0', cursor: 'pointer' }}>Admin</button>
+                            </div>
+                        </div>
 
                         <button className="google-login-btn" type="button" onClick={handleGoogleLogin}>
                             <svg width="18" height="18" viewBox="0 0 24 24">

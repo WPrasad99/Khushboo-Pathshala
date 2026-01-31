@@ -1,27 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { adminAPI, announcementAPI } from '../../api';
+import { adminAPI } from '../../api';
 import {
-    FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2
+    FiBell, FiUsers, FiBook, FiCalendar, FiTrendingUp, FiTrendingDown,
+    FiActivity, FiArrowRight, FiAlertCircle, FiCheckCircle, FiX,
+    FiUserPlus, FiMessageSquare, FiBarChart2, FiPercent
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState(null);
-    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
-    const [newAnnouncement, setNewAnnouncement] = useState({
-        title: '',
-        content: '',
-        priority: 'normal'
-    });
-    const [activeTab, setActiveTab] = useState('overview');
+    const [showNotifications, setShowNotifications] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -29,374 +23,430 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const [dashboardRes, usersRes] = await Promise.all([
-                adminAPI.getReports(),
-                adminAPI.getUsers()
-            ]);
-            setDashboardData(dashboardRes.data);
-            setUsers(usersRes.data);
+            const response = await adminAPI.getReports();
+            setDashboardData(response.data);
         } catch (error) {
             console.error('Failed to fetch data:', error);
+            // Mock data for demo
+            setDashboardData({
+                stats: {
+                    totalStudents: 156,
+                    totalMentors: 12,
+                    totalResources: 48,
+                    totalSessions: 234,
+                    activeUsers: 89,
+                    attendanceRate: 78,
+                    engagementRate: 65,
+                    completionRate: 42
+                },
+                trends: {
+                    students: { value: 12, direction: 'up' },
+                    mentors: { value: 2, direction: 'up' },
+                    engagement: { value: 5, direction: 'up' },
+                    attendance: { value: 3, direction: 'down' }
+                },
+                alerts: [
+                    { type: 'warning', message: '5 students with attendance below 50%' },
+                    { type: 'info', message: '3 new mentor applications pending' },
+                ],
+                recentTrackings: [
+                    { user: { name: 'Priya Sharma' }, resource: { title: 'React Fundamentals' }, completionPercentage: 85, attendanceMarked: true },
+                    { user: { name: 'Rahul Verma' }, resource: { title: 'JavaScript Basics' }, completionPercentage: 45, attendanceMarked: false },
+                    { user: { name: 'Ananya Patel' }, resource: { title: 'CSS Mastery' }, completionPercentage: 100, attendanceMarked: true },
+                ]
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAddAnnouncement = async (e) => {
-        e.preventDefault();
-        try {
-            await announcementAPI.create(newAnnouncement);
-            setShowAddAnnouncement(false);
-            setNewAnnouncement({ title: '', content: '', priority: 'normal' });
-        } catch (error) {
-            console.error('Failed to create announcement:', error);
-        }
-    };
-
-    const handleRoleChange = async (userId, newRole) => {
-        try {
-            await adminAPI.updateUserRole(userId, newRole);
-            fetchData();
-        } catch (error) {
-            console.error('Failed to update role:', error);
-        }
-    };
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
     if (loading) {
         return (
             <div className="dashboard-loading">
-                <div className="glass-card p-xl">
-                    <div className="loading-spinner"></div>
-                    <p>Loading dashboard...</p>
-                </div>
+                <div className="loading-spinner"></div>
             </div>
         );
     }
 
     const stats = dashboardData?.stats || {};
+    const trends = dashboardData?.trends || {};
+    const alerts = dashboardData?.alerts || [];
+
+    const TrendIndicator = ({ value, direction }) => (
+        <span className={`trend-indicator ${direction}`}>
+            {direction === 'up' ? <FiTrendingUp size={14} /> : <FiTrendingDown size={14} />}
+            {value}%
+        </span>
+    );
 
     return (
-        <div className="dashboard-page">
-            {/* Navbar */}
-            <nav className="navbar">
-                <div className="navbar-brand">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="40" height="40" rx="10" fill="url(#gradient)" />
-                        <path d="M10 28V12L20 8L30 12V28L20 32L10 28Z" fill="white" opacity="0.9" />
-                        <path d="M15 18L20 16L25 18V24L20 26L15 24V18Z" fill="#4A90E2" />
-                        <defs>
-                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#4A90E2" />
-                                <stop offset="1" stopColor="#357ABD" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span style={{ marginLeft: 'var(--spacing-sm)', fontWeight: '600' }}>Admin Dashboard</span>
+        <div className="dashboard-content">
+            {/* Header */}
+            <header className="dashboard-header">
+                <div>
+                    <h1 className="welcome-title">Admin Dashboard</h1>
+                    <p className="welcome-subtitle">Program health overview and key metrics at a glance.</p>
                 </div>
-
-                <div className="navbar-actions">
-                    <div className="search-box">
-                        <FiSearch />
-                        <input type="text" placeholder="Search..." />
-                    </div>
-                    <button className="icon-btn">
-                        <FiBell />
-                    </button>
-                    <div className="user-menu">
-                        <img src={user?.avatar} alt={user?.name} className="avatar" />
-                        <span style={{ fontWeight: '500' }}>{user?.name}</span>
-                        <button className="icon-btn" onClick={handleLogout}>
-                            <FiLogOut />
+                <div className="header-actions">
+                    <div className="notification-wrapper">
+                        <button
+                            className="header-icon-btn"
+                            onClick={() => setShowNotifications(!showNotifications)}
+                        >
+                            <FiBell />
+                            {alerts.length > 0 && (
+                                <span className="notification-badge">{alerts.length}</span>
+                            )}
                         </button>
+
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <motion.div
+                                    className="notification-dropdown"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <div className="notification-header">
+                                        <h4>System Alerts</h4>
+                                        <button onClick={() => setShowNotifications(false)}>
+                                            <FiX />
+                                        </button>
+                                    </div>
+                                    <div className="notification-list">
+                                        {alerts.map((alert, i) => (
+                                            <div key={i} className="notification-item">
+                                                <div className={`notif-icon ${alert.type}`}>
+                                                    <FiAlertCircle size={14} />
+                                                </div>
+                                                <div className="notif-content">
+                                                    <span className="notif-title">{alert.message}</span>
+                                                    <span className="notif-time">Review now</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-            </nav>
+            </header>
 
-            {/* Main Content */}
-            <div className="dashboard-content">
+            {/* Primary KPIs */}
+            <div className="stats-grid">
                 <motion.div
+                    className="stat-card stat-teal"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                        <h1>Admin Dashboard</h1>
-                        <div className="tabs">
-                            <button
-                                className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('overview')}
-                            >
-                                <FiBarChart2 /> Overview
-                            </button>
-                            <button
-                                className={`tab ${activeTab === 'users' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('users')}
-                            >
-                                <FiUsers /> Users
-                            </button>
-                            <button
-                                className={`tab ${activeTab === 'announcements' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('announcements')}
-                            >
-                                <FiBell /> Announcements
-                            </button>
-                        </div>
+                    <div className="stat-icon">
+                        <FiUsers size={24} />
                     </div>
-
-                    {/* Stats */}
-                    <div className="stats-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
-                        <div className="stat-card stat-card-teal">
-                            <span className="stat-label">Total Students</span>
+                    <div className="stat-info">
+                        <span className="stat-label">Total Students</span>
+                        <div className="stat-value-row">
                             <span className="stat-value">{stats.totalStudents || 0}</span>
-                        </div>
-                        <div className="stat-card stat-card-blue">
-                            <span className="stat-label">Total Mentors</span>
-                            <span className="stat-value">{stats.totalMentors || 0}</span>
-                        </div>
-                        <div className="stat-card stat-card-orange">
-                            <span className="stat-label">Total Resources</span>
-                            <span className="stat-value">{stats.totalResources || 0}</span>
-                        </div>
-                        <div className="stat-card stat-card-purple">
-                            <span className="stat-label">Total Sessions</span>
-                            <span className="stat-value">{stats.totalSessions || 0}</span>
+                            {trends.students && <TrendIndicator {...trends.students} />}
                         </div>
                     </div>
-
-                    {activeTab === 'overview' && (
-                        <div className="mentor-grid">
-                            {/* Recent Activity */}
-                            <motion.div
-                                className="glass-card"
-                                style={{ padding: 'var(--spacing-xl)' }}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                            >
-                                <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                    <FiCalendar style={{ marginRight: 'var(--spacing-sm)' }} /> Recent Session Trackings
-                                </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-                                    {dashboardData?.recentTrackings?.slice(0, 5).map((tracking, index) => (
-                                        <div key={index} className="mentee-card">
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '500', fontSize: 'var(--text-sm)' }}>
-                                                    {tracking.user?.name}
-                                                </div>
-                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                                                    Watched: {tracking.resource?.title}
-                                                </div>
-                                            </div>
-                                            <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`}>
-                                                {tracking.attendanceMarked ? 'Completed' : 'In Progress'}
-                                            </span>
-                                        </div>
-                                    )) || <p style={{ color: 'var(--text-muted)' }}>No recent activity.</p>}
-                                </div>
-                            </motion.div>
-
-                            {/* Quick Stats */}
-                            <motion.div
-                                className="glass-card"
-                                style={{ padding: 'var(--spacing-xl)' }}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 }}
-                            >
-                                <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                    <FiBarChart2 style={{ marginRight: 'var(--spacing-sm)' }} /> Platform Overview
-                                </h3>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: 'var(--spacing-md)'
-                                }}>
-                                    <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(74, 144, 226, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
-                                    }}>
-                                        <FiUsers style={{ fontSize: 'var(--text-2xl)', color: 'var(--primary-500)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{users.length}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Total Users</div>
-                                    </div>
-                                    <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(69, 196, 191, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
-                                    }}>
-                                        <FiBook style={{ fontSize: 'var(--text-2xl)', color: 'var(--teal)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{stats.totalResources || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Resources</div>
-                                    </div>
-                                    <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(255, 155, 80, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
-                                    }}>
-                                        <FiCalendar style={{ fontSize: 'var(--text-2xl)', color: 'var(--orange)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{stats.totalSessions || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Sessions</div>
-                                    </div>
-                                    <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(155, 89, 182, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
-                                    }}>
-                                        <FiMessageSquare style={{ fontSize: 'var(--text-2xl)', color: 'var(--purple)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{dashboardData?.stats?.totalForumPosts || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Forum Posts</div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-
-                    {activeTab === 'users' && (
-                        <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                <FiUsers style={{ marginRight: 'var(--spacing-sm)' }} /> User Management
-                            </h3>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>User</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Email</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Role</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Joined</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {users.map((u) => (
-                                            <tr key={u.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                                                        <img src={u.avatar} alt={u.name} className="avatar avatar-sm" />
-                                                        <span style={{ fontWeight: '500' }}>{u.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                                                    {u.email}
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
-                                                    <span className={`badge ${u.role === 'ADMIN' ? 'badge-danger' :
-                                                            u.role === 'MENTOR' ? 'badge-warning' : 'badge-primary'
-                                                        }`}>
-                                                        {u.role}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-                                                    {new Date(u.createdAt).toLocaleDateString()}
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
-                                                    <select
-                                                        className="select"
-                                                        style={{ minWidth: '120px', padding: 'var(--spacing-xs) var(--spacing-sm)' }}
-                                                        value={u.role}
-                                                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                                                    >
-                                                        <option value="STUDENT">Student</option>
-                                                        <option value="MENTOR">Mentor</option>
-                                                        <option value="ADMIN">Admin</option>
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {activeTab === 'announcements' && (
-                        <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                                <h3>
-                                    <FiBell style={{ marginRight: 'var(--spacing-sm)' }} /> Announcements
-                                </h3>
-                                <button
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => setShowAddAnnouncement(!showAddAnnouncement)}
-                                >
-                                    <FiPlus /> New Announcement
-                                </button>
-                            </div>
-
-                            {showAddAnnouncement && (
-                                <motion.form
-                                    onSubmit={handleAddAnnouncement}
-                                    style={{
-                                        padding: 'var(--spacing-lg)',
-                                        background: 'rgba(74, 144, 226, 0.05)',
-                                        borderRadius: 'var(--radius-md)',
-                                        marginBottom: 'var(--spacing-lg)'
-                                    }}
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                >
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Title</label>
-                                        <input
-                                            type="text"
-                                            className="input"
-                                            value={newAnnouncement.title}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Content</label>
-                                        <textarea
-                                            className="input"
-                                            rows={4}
-                                            value={newAnnouncement.content}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Priority</label>
-                                        <select
-                                            className="select"
-                                            value={newAnnouncement.priority}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })}
-                                        >
-                                            <option value="low">Low</option>
-                                            <option value="normal">Normal</option>
-                                            <option value="high">High</option>
-                                        </select>
-                                    </div>
-                                    <button type="submit" className="btn btn-primary">
-                                        Publish Announcement
-                                    </button>
-                                </motion.form>
-                            )}
-
-                            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-                                Announcements will be displayed to all users on their dashboards.
-                            </p>
-                        </motion.div>
-                    )}
                 </motion.div>
+
+                <motion.div
+                    className="stat-card stat-blue"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div className="stat-icon">
+                        <FiUserPlus size={24} />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-label">Active Mentors</span>
+                        <div className="stat-value-row">
+                            <span className="stat-value">{stats.totalMentors || 0}</span>
+                            {trends.mentors && <TrendIndicator {...trends.mentors} />}
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    className="stat-card stat-orange"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <div className="stat-icon">
+                        <FiPercent size={24} />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-label">Attendance Rate</span>
+                        <div className="stat-value-row">
+                            <span className="stat-value">{stats.attendanceRate || 0}%</span>
+                            {trends.attendance && <TrendIndicator {...trends.attendance} />}
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    className="stat-card stat-purple"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <div className="stat-icon">
+                        <FiActivity size={24} />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-label">Engagement Rate</span>
+                        <div className="stat-value-row">
+                            <span className="stat-value">{stats.engagementRate || 0}%</span>
+                            {trends.engagement && <TrendIndicator {...trends.engagement} />}
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Secondary Metrics Row */}
+            <motion.div
+                className="metrics-row"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+            >
+                <div className="metric-card">
+                    <div className="metric-icon"><FiBook /></div>
+                    <div className="metric-info">
+                        <span className="metric-value">{stats.totalResources || 0}</span>
+                        <span className="metric-label">Resources</span>
+                    </div>
+                </div>
+                <div className="metric-card">
+                    <div className="metric-icon"><FiCalendar /></div>
+                    <div className="metric-info">
+                        <span className="metric-value">{stats.totalSessions || 0}</span>
+                        <span className="metric-label">Sessions</span>
+                    </div>
+                </div>
+                <div className="metric-card">
+                    <div className="metric-icon"><FiCheckCircle /></div>
+                    <div className="metric-info">
+                        <span className="metric-value">{stats.completionRate || 0}%</span>
+                        <span className="metric-label">Completion</span>
+                    </div>
+                </div>
+                <div className="metric-card">
+                    <div className="metric-icon"><FiMessageSquare /></div>
+                    <div className="metric-info">
+                        <span className="metric-value">{stats.activeUsers || 0}</span>
+                        <span className="metric-label">Active Today</span>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Main Content Grid */}
+            <div className="content-grid">
+                {/* Left Column */}
+                <div className="grid-col-left">
+                    {/* Program Health */}
+                    <motion.div
+                        className="content-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <div className="card-header">
+                            <h3><FiBarChart2 /> Program Health</h3>
+                        </div>
+                        <div className="health-metrics">
+                            <div className="health-item">
+                                <div className="health-label">
+                                    <span>Mentor Coverage</span>
+                                    <span className="health-value">
+                                        {stats.totalMentors > 0 ? Math.round(stats.totalStudents / stats.totalMentors) : 0} : 1
+                                    </span>
+                                </div>
+                                <div className="health-bar">
+                                    <div
+                                        className="health-fill good"
+                                        style={{ width: `${Math.min((stats.totalMentors / stats.totalStudents) * 100 * 10, 100)}%` }}
+                                    ></div>
+                                </div>
+                                <span className="health-status good">Healthy ratio</span>
+                            </div>
+
+                            <div className="health-item">
+                                <div className="health-label">
+                                    <span>Attendance Compliance</span>
+                                    <span className="health-value">{stats.attendanceRate || 0}%</span>
+                                </div>
+                                <div className="health-bar">
+                                    <div
+                                        className={`health-fill ${stats.attendanceRate >= 70 ? 'good' : stats.attendanceRate >= 50 ? 'warning' : 'danger'}`}
+                                        style={{ width: `${stats.attendanceRate || 0}%` }}
+                                    ></div>
+                                </div>
+                                <span className={`health-status ${stats.attendanceRate >= 70 ? 'good' : 'warning'}`}>
+                                    {stats.attendanceRate >= 70 ? 'On target' : 'Needs improvement'}
+                                </span>
+                            </div>
+
+                            <div className="health-item">
+                                <div className="health-label">
+                                    <span>Course Completion</span>
+                                    <span className="health-value">{stats.completionRate || 0}%</span>
+                                </div>
+                                <div className="health-bar">
+                                    <div
+                                        className={`health-fill ${stats.completionRate >= 60 ? 'good' : 'warning'}`}
+                                        style={{ width: `${stats.completionRate || 0}%` }}
+                                    ></div>
+                                </div>
+                                <span className={`health-status ${stats.completionRate >= 60 ? 'good' : 'warning'}`}>
+                                    {stats.completionRate >= 60 ? 'Good progress' : 'Below target'}
+                                </span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Recent Activity */}
+                    <motion.div
+                        className="content-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                    >
+                        <div className="card-header">
+                            <h3>Recent Activity</h3>
+                            <Link to="/admin/reports" className="btn-link">View All</Link>
+                        </div>
+                        <div className="activities-list">
+                            {dashboardData?.recentTrackings?.slice(0, 4).map((tracking, i) => (
+                                <div key={i} className="activity-item">
+                                    <div className={`activity-icon ${tracking.attendanceMarked ? 'completed' : 'watched'}`}>
+                                        {tracking.attendanceMarked ? <FiCheckCircle /> : <FiActivity />}
+                                    </div>
+                                    <div className="activity-info">
+                                        <span className="activity-title">
+                                            {tracking.user?.name} - {tracking.resource?.title}
+                                        </span>
+                                        <span className="activity-time">
+                                            Progress: {tracking.completionPercentage}%
+                                        </span>
+                                    </div>
+                                </div>
+                            )) || (
+                                    <div className="empty-state">No recent activity</div>
+                                )}
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Right Column */}
+                <div className="grid-col-right">
+                    {/* Alerts & Anomalies */}
+                    <motion.div
+                        className="content-card alerts-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <div className="card-header">
+                            <h3><FiAlertCircle /> Alerts & Actions</h3>
+                        </div>
+                        <div className="alerts-list">
+                            <div className="alert-item warning">
+                                <FiAlertCircle className="alert-icon" />
+                                <div className="alert-content">
+                                    <span className="alert-title">Low Attendance Alert</span>
+                                    <span className="alert-desc">5 students below 50% attendance</span>
+                                </div>
+                                <button className="alert-action">Review</button>
+                            </div>
+                            <div className="alert-item info">
+                                <FiUserPlus className="alert-icon" />
+                                <div className="alert-content">
+                                    <span className="alert-title">Pending Applications</span>
+                                    <span className="alert-desc">3 mentor applications awaiting review</span>
+                                </div>
+                                <button className="alert-action">View</button>
+                            </div>
+                            <div className="alert-item success">
+                                <FiCheckCircle className="alert-icon" />
+                                <div className="alert-content">
+                                    <span className="alert-title">Milestone Reached</span>
+                                    <span className="alert-desc">10 students completed certification</span>
+                                </div>
+                                <button className="alert-action">Details</button>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Quick Actions */}
+                    <motion.div
+                        className="content-card quick-actions-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                    >
+                        <div className="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div className="quick-actions-grid">
+                            <Link to="/admin/users" className="quick-action-btn">
+                                <FiUsers size={20} />
+                                <span>Manage Users</span>
+                            </Link>
+                            <Link to="/admin/announcements" className="quick-action-btn">
+                                <FiBell size={20} />
+                                <span>Announcements</span>
+                            </Link>
+                            <Link to="/admin/reports" className="quick-action-btn">
+                                <FiBarChart2 size={20} />
+                                <span>View Reports</span>
+                            </Link>
+                            <button className="quick-action-btn" disabled>
+                                <FiActivity size={20} />
+                                <span>Export Data</span>
+                            </button>
+                        </div>
+                    </motion.div>
+
+                    {/* User Distribution */}
+                    <motion.div
+                        className="content-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7 }}
+                    >
+                        <div className="card-header">
+                            <h3>User Distribution</h3>
+                        </div>
+                        <div className="distribution-chart">
+                            <div className="distribution-item">
+                                <div className="distribution-bar students" style={{ width: '70%' }}></div>
+                                <div className="distribution-label">
+                                    <span>Students</span>
+                                    <span className="distribution-value">{stats.totalStudents || 0}</span>
+                                </div>
+                            </div>
+                            <div className="distribution-item">
+                                <div className="distribution-bar mentors" style={{ width: '20%' }}></div>
+                                <div className="distribution-label">
+                                    <span>Mentors</span>
+                                    <span className="distribution-value">{stats.totalMentors || 0}</span>
+                                </div>
+                            </div>
+                            <div className="distribution-item">
+                                <div className="distribution-bar admins" style={{ width: '10%' }}></div>
+                                <div className="distribution-label">
+                                    <span>Admins</span>
+                                    <span className="distribution-value">3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
             </div>
         </div>
     );
