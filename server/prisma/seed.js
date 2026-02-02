@@ -6,7 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Starting seed...');
 
-    // Clear existing data
+    // Clear existing data (Order matters because of Foreign Keys)
+    await prisma.loginLog.deleteMany();
+    await prisma.notification.deleteMany();
+    await prisma.batchMentor.deleteMany();
+    await prisma.batchStudent.deleteMany();
+    await prisma.batch.deleteMany();
+
     await prisma.activity.deleteMany();
     await prisma.achievement.deleteMany();
     await prisma.announcement.deleteMany();
@@ -17,16 +23,18 @@ async function main() {
     await prisma.sessionTracking.deleteMany();
     await prisma.session.deleteMany();
     await prisma.learningResource.deleteMany();
+    // Now safe to delete users
     await prisma.user.deleteMany();
 
     // Create password hash
     const passwordHash = await bcrypt.hash('password123', 10);
+    const adminPasswordHash = await bcrypt.hash('c', 10);
 
     // Create Users
     const admin = await prisma.user.create({
         data: {
             email: 'admin@cybage.com',
-            password: passwordHash,
+            password: adminPasswordHash,
             name: 'Admin User',
             role: 'ADMIN',
             phone: '+91 9876543210',

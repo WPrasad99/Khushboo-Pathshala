@@ -10,6 +10,7 @@ import MentorProgram from './pages/student/MentorProgram';
 import Forum from './pages/student/Forum';
 import MentorDashboard from './pages/mentor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
+import Loading from './components/Loading';
 import './index.css';
 
 // Protected Route Component
@@ -17,13 +18,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="glass-card p-xl">
-          <div className="animate-pulse text-primary">Loading...</div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!isAuthenticated) {
@@ -59,13 +54,7 @@ function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="glass-card p-xl">
-          <div className="animate-pulse text-primary">Loading...</div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

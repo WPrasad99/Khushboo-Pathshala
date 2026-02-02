@@ -1324,6 +1324,278 @@ app.get('/api/chat/users', authenticateToken, requireRole('MENTOR', 'ADMIN'), as
     }
 });
 
+// ============ ADMIN BATCH ROUTES ============
+
+// Create Batch
+app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { name, description, studentIds, mentorIds } = req.body;
+
+        const batch = await prisma.batch.create({
+            data: {
+                name,
+                description,
+                students: {
+                    create: studentIds?.map(id => ({ studentId: id })) || []
+                },
+                mentors: {
+                    create: mentorIds?.map(id => ({ mentorId: id })) || []
+                }
+            },
+            include: {
+                students: true,
+                mentors: true
+            }
+        });
+
+        res.status(201).json(batch);
+    } catch (error) {
+        console.error('Create batch error:', error);
+        res.status(500).json({ error: 'Failed to create batch' });
+    }
+});
+
+// Get All Batches
+app.get('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const batches = await prisma.batch.findMany({
+            include: {
+                students: {
+                    include: {
+                        student: { select: { id: true, name: true, email: true, avatar: true } }
+                    }
+                },
+                mentors: {
+                    include: {
+                        mentor: { select: { id: true, name: true, email: true, avatar: true } }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(batches);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch batches' });
+    }
+});
+
+// Get Single Batch
+app.get('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const batch = await prisma.batch.findUnique({
+            where: { id: req.params.id },
+            include: {
+                students: {
+                    include: {
+                        student: { select: { id: true, name: true, email: true, avatar: true } }
+                    }
+                },
+                mentors: {
+                    include: {
+                        mentor: { select: { id: true, name: true, email: true, avatar: true } }
+                    }
+                }
+            }
+        });
+        if (!batch) return res.status(404).json({ error: 'Batch not found' });
+        res.json(batch);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch batch' });
+    }
+});
+
+// Update Batch (Name/Desc/Status)
+app.put('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { name, description, status } = req.body;
+        const batch = await prisma.batch.update({
+            where: { id: req.params.id },
+            data: { name, description, status }
+        });
+        res.json(batch);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update batch' });
+    }
+});
+
+// Delete Batch
+app.delete('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        await prisma.batch.delete({ where: { id: req.params.id } });
+        res.json({ message: 'Batch deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete batch' });
+    }
+});
+
+// Add Students to Batch
+app.post('/api/admin/batches/:id/students', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { studentIds } = req.body;
+        // Logic to add multiple students, ignoring duplicates
+        const operations = studentIds.map(studentId =>
+            prisma.batchStudent.upsert({
+                where: {
+                    batchId_studentId: {
+                        batchId: req.params.id,
+                        studentId: studentId
+                    }
+                },
+                update: {},
+                create: {
+                    batchId: req.params.id,
+                    studentId: studentId
+                }
+            })
+        );
+
+        await prisma.$transaction(operations);
+        res.json({ message: 'Students added successfully' });
+    } catch (error) {
+        console.error('Add students error:', error);
+        res.status(500).json({ error: 'Failed to add students' });
+    }
+});
+
+// Remove Student from Batch
+app.delete('/api/admin/batches/:id/students/:studentId', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        await prisma.batchStudent.delete({
+            where: {
+                batchId_studentId: {
+                    batchId: req.params.id,
+                    studentId: req.params.studentId
+                }
+            }
+        });
+        res.json({ message: 'Student removed successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to remove student' });
+    }
+});
+
+// Add Mentors to Batch
+app.post('/api/admin/batches/:id/mentors', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { mentorIds } = req.body;
+        const operations = mentorIds.map(mentorId =>
+            prisma.batchMentor.upsert({
+                where: {
+                    batchId_mentorId: {
+                        batchId: req.params.id,
+                        mentorId: mentorId
+                    }
+                },
+                update: {},
+                create: {
+                    batchId: req.params.id,
+                    mentorId: mentorId
+                }
+            })
+        );
+
+        await prisma.$transaction(operations);
+        res.json({ message: 'Mentors added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to add mentors' });
+    }
+});
+
+// Remove Mentor from Batch
+app.delete('/api/admin/batches/:id/mentors/:mentorId', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        await prisma.batchMentor.delete({
+            where: {
+                batchId_mentorId: {
+                    batchId: req.params.id,
+                    mentorId: req.params.mentorId
+                }
+            }
+        });
+        res.json({ message: 'Mentor removed successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to remove mentor' });
+    }
+});
+
+// Create User (Admin Only)
+app.post('/api/admin/users', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { email, password, name, role, phone } = req.body;
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+                role: role || 'STUDENT',
+                phone: phone || null,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g, '')}`,
+                profileCompleted: true
+            }
+        });
+
+        res.status(201).json(user);
+    } catch (error) {
+        console.error('Create user error:', error);
+        res.status(500).json({ error: 'Failed to create user' });
+    }
+});
+
+// Get All Users (Admin)
+app.get('/api/admin/users', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                avatar: true,
+                createdAt: true,
+                profileCompleted: true
+            }
+        });
+        res.json(users);
+    } catch (error) {
+        console.error('Fetch users error:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Get all students (for selection)
+app.get('/api/admin/students', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const students = await prisma.user.findMany({
+            where: { role: 'STUDENT' },
+            select: { id: true, name: true, email: true, avatar: true }
+        });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+});
+
+// Get all mentors (for selection)
+app.get('/api/admin/mentors', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const mentors = await prisma.user.findMany({
+            where: { role: 'MENTOR' },
+            select: { id: true, name: true, email: true, avatar: true }
+        });
+        res.json(mentors);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch mentors' });
+    }
+});
+
 // ============ SOCKET.IO EVENTS ============
 
 io.on('connection', (socket) => {

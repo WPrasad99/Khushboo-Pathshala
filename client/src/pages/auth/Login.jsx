@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { authAPI, userAPI } from '../../api';
+import LoadingAnimation from '../../components/LoadingAnimation';
 import './Auth.css';
 
 const Login = () => {
@@ -80,7 +81,7 @@ const Login = () => {
             {loading && (
                 <div className="login-loader-overlay">
                     <div className="loader-content">
-                        <div>Loading...</div>
+                        <LoadingAnimation size={150} />
                     </div>
                 </div>
             )}

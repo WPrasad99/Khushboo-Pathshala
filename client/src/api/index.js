@@ -66,8 +66,23 @@ export const announcementAPI = {
 
 export const adminAPI = {
     getUsers: () => api.get('/admin/users'),
+    createUser: (data) => api.post('/admin/users', data),
     updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
     getReports: () => api.get('/admin/reports'),
+    getStudents: () => api.get('/admin/students'),
+    getMentors: () => api.get('/admin/mentors'),
+};
+
+export const batchAPI = {
+    getAll: () => api.get('/admin/batches'),
+    getById: (id) => api.get(`/admin/batches/${id}`),
+    create: (data) => api.post('/admin/batches', data),
+    update: (id, data) => api.put(`/admin/batches/${id}`, data),
+    delete: (id) => api.delete(`/admin/batches/${id}`),
+    addStudents: (id, studentIds) => api.post(`/admin/batches/${id}/students`, { studentIds }),
+    removeStudent: (id, studentId) => api.delete(`/admin/batches/${id}/students/${studentId}`),
+    addMentors: (id, mentorIds) => api.post(`/admin/batches/${id}/mentors`, { mentorIds }),
+    removeMentor: (id, mentorId) => api.delete(`/admin/batches/${id}/mentors/${mentorId}`),
 };
 
 export const chatAPI = {

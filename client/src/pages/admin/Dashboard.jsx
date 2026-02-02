@@ -4,10 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { adminAPI, announcementAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2
+    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers
 } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import LoadingAnimation from '../../components/LoadingAnimation';
+import BatchManagement from '../../components/admin/BatchManagement';
+import CreateUserModal from '../../components/admin/CreateUserModal';
 import '../student/Dashboard.css';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -16,6 +20,7 @@ const AdminDashboard = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
+    const [showCreateUserModal, setShowCreateUserModal] = useState(false);
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
         content: '',
@@ -48,6 +53,7 @@ const AdminDashboard = () => {
             await announcementAPI.create(newAnnouncement);
             setShowAddAnnouncement(false);
             setNewAnnouncement({ title: '', content: '', priority: 'normal' });
+            // Optionally refresh dashboard data if announcements are tracked there
         } catch (error) {
             console.error('Failed to create announcement:', error);
         }
@@ -71,8 +77,8 @@ const AdminDashboard = () => {
         return (
             <div className="dashboard-loading">
                 <div className="glass-card p-xl">
-                    <div className="loading-spinner"></div>
-                    <p>Loading dashboard...</p>
+                    <LoadingAnimation size={120} />
+                    <p style={{ marginTop: '20px', textAlign: 'center' }}>Loading dashboard...</p>
                 </div>
             </div>
         );
@@ -124,13 +130,22 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                        <h1>Admin Dashboard</h1>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <h1 style={{ marginBottom: '4px' }}>Welcome Back, {user?.name?.split(' ')[0]} 👋</h1>
+                            <p style={{ color: '#64748b', margin: 0 }}>Here's what's happening in your academy today.</p>
+                        </div>
                         <div className="tabs">
                             <button
                                 className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('overview')}
                             >
                                 <FiBarChart2 /> Overview
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'batches' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('batches')}
+                            >
+                                <FiLayers /> Batches
                             </button>
                             <button
                                 className={`tab ${activeTab === 'users' ? 'active' : ''}`}
@@ -148,24 +163,46 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Stats */}
-                    <div className="stats-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
-                        <div className="stat-card stat-card-teal">
-                            <span className="stat-label">Total Students</span>
-                            <span className="stat-value">{stats.totalStudents || 0}</span>
+                    {activeTab === 'overview' && (
+                        <div className="stats-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
+                            <div className="stat-card stat-card-teal">
+                                <div className="stat-icon">
+                                    <FiUsers />
+                                </div>
+                                <div className="stat-info">
+                                    <span className="stat-label">Total Students</span>
+                                    <span className="stat-value">{stats.totalStudents || 0}</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-card-blue">
+                                <div className="stat-icon">
+                                    <FiBook />
+                                </div>
+                                <div className="stat-info">
+                                    <span className="stat-label">Total Mentors</span>
+                                    <span className="stat-value">{stats.totalMentors || 0}</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-card-orange">
+                                <div className="stat-icon">
+                                    <FiBook />
+                                </div>
+                                <div className="stat-info">
+                                    <span className="stat-label">Total Resources</span>
+                                    <span className="stat-value">{stats.totalResources || 0}</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-card-purple">
+                                <div className="stat-icon">
+                                    <FiCalendar />
+                                </div>
+                                <div className="stat-info">
+                                    <span className="stat-label">Total Sessions</span>
+                                    <span className="stat-value">{stats.totalSessions || 0}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="stat-card stat-card-blue">
-                            <span className="stat-label">Total Mentors</span>
-                            <span className="stat-value">{stats.totalMentors || 0}</span>
-                        </div>
-                        <div className="stat-card stat-card-orange">
-                            <span className="stat-label">Total Resources</span>
-                            <span className="stat-value">{stats.totalResources || 0}</span>
-                        </div>
-                        <div className="stat-card stat-card-purple">
-                            <span className="stat-label">Total Sessions</span>
-                            <span className="stat-value">{stats.totalSessions || 0}</span>
-                        </div>
-                    </div>
+                    )}
 
                     {activeTab === 'overview' && (
                         <div className="mentor-grid">
@@ -211,52 +248,64 @@ const AdminDashboard = () => {
                                 </h3>
                                 <div style={{
                                     display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: 'var(--spacing-md)'
+                                    gridTemplateColumns: 'repeat(2, 1fr)',
+                                    gap: '24px'
                                 }}>
                                     <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(74, 144, 226, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
+                                        padding: '24px',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #fef2f2 100%)', // White to Blush
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        border: '1px solid rgba(254, 226, 226, 0.6)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
                                     }}>
-                                        <FiUsers style={{ fontSize: 'var(--text-2xl)', color: 'var(--primary-500)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{users.length}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Total Users</div>
+                                        <FiUsers style={{ fontSize: '2.5rem', color: '#4f46e5', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
+                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{users.length}</div>
+                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Total Users</div>
                                     </div>
                                     <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(69, 196, 191, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
+                                        padding: '24px',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%)', // White to Mint-ish (Light)
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        border: '1px solid rgba(209, 250, 229, 0.6)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
                                     }}>
-                                        <FiBook style={{ fontSize: 'var(--text-2xl)', color: 'var(--teal)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{stats.totalResources || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Resources</div>
+                                        <FiBook style={{ fontSize: '2.5rem', color: '#059669', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
+                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{stats.totalResources || 0}</div>
+                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Resources</div>
                                     </div>
                                     <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(255, 155, 80, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
+                                        padding: '24px',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #fff7ed 100%)', // White to Orange-ish
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        border: '1px solid rgba(255, 237, 213, 0.6)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
                                     }}>
-                                        <FiCalendar style={{ fontSize: 'var(--text-2xl)', color: 'var(--orange)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{stats.totalSessions || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Sessions</div>
+                                        <FiCalendar style={{ fontSize: '2.5rem', color: '#ea580c', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
+                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{stats.totalSessions || 0}</div>
+                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Sessions</div>
                                     </div>
                                     <div style={{
-                                        padding: 'var(--spacing-md)',
-                                        background: 'rgba(155, 89, 182, 0.1)',
-                                        borderRadius: 'var(--radius-md)',
-                                        textAlign: 'center'
+                                        padding: '24px',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%)', // White to Violet tint
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        border: '1px solid rgba(221, 214, 254, 0.6)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
                                     }}>
-                                        <FiMessageSquare style={{ fontSize: 'var(--text-2xl)', color: 'var(--purple)', marginBottom: 'var(--spacing-sm)' }} />
-                                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{dashboardData?.stats?.totalForumPosts || 0}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Forum Posts</div>
+                                        <FiMessageSquare style={{ fontSize: '2.5rem', color: '#7c3aed', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
+                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{dashboardData?.stats?.totalForumPosts || 0}</div>
+                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Forum Posts</div>
                                     </div>
                                 </div>
                             </motion.div>
                         </div>
+                    )}
+
+                    {activeTab === 'batches' && (
+                        <BatchManagement />
                     )}
 
                     {activeTab === 'users' && (
@@ -266,9 +315,17 @@ const AdminDashboard = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                         >
-                            <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                <FiUsers style={{ marginRight: 'var(--spacing-sm)' }} /> User Management
-                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+                                <h3 style={{ marginBottom: 0 }}>
+                                    <FiUsers style={{ marginRight: 'var(--spacing-sm)' }} /> User Management
+                                </h3>
+                                <button
+                                    className="btn-glass-primary"
+                                    onClick={() => setShowCreateUserModal(true)}
+                                >
+                                    <FiPlus /> New User
+                                </button>
+                            </div>
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
@@ -294,7 +351,7 @@ const AdminDashboard = () => {
                                                 </td>
                                                 <td style={{ padding: 'var(--spacing-md)' }}>
                                                     <span className={`badge ${u.role === 'ADMIN' ? 'badge-danger' :
-                                                            u.role === 'MENTOR' ? 'badge-warning' : 'badge-primary'
+                                                        u.role === 'MENTOR' ? 'badge-warning' : 'badge-primary'
                                                         }`}>
                                                         {u.role}
                                                     </span>
@@ -398,6 +455,14 @@ const AdminDashboard = () => {
                     )}
                 </motion.div>
             </div>
+
+            {/* Modals */}
+            {showCreateUserModal && (
+                <CreateUserModal
+                    onClose={() => setShowCreateUserModal(false)}
+                    onSuccess={fetchData}
+                />
+            )}
         </div>
     );
 };
