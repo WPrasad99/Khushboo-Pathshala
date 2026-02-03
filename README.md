@@ -103,7 +103,7 @@ After running the seed script, you can log in with these accounts:
 |---------|---------------------------|-------------|
 | Student | prasad@example.com        | password123 |
 | Mentor  | rakesh.sinha@cybage.com   | password123 |
-| Admin   | admin@cybage.com          | password123 |
+| Admin   | admin@cybage.com          | c |
 
 ## Project Structure
 

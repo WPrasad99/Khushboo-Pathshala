@@ -10,6 +10,7 @@ import MentorProgram from './pages/student/MentorProgram';
 import Forum from './pages/student/Forum';
 import MentorDashboard from './pages/mentor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
+import Settings from './pages/Settings';
 import Loading from './components/Loading';
 import './index.css';
 
@@ -70,6 +71,12 @@ function AppRoutes() {
           <AdditionalInfo />
         </ProtectedRoute>
       } /> */}
+
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
 
       {/* Dashboard Router */}
       <Route path="/dashboard" element={

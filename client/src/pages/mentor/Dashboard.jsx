@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { userAPI, mentorshipAPI, resourceAPI } from '../../api';
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiPlus, FiUpload
+    FiCalendar, FiPlus, FiUpload, FiSettings
 } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import '../student/Dashboard.css';
@@ -117,6 +117,9 @@ const MentorDashboard = () => {
                     <div className="user-menu">
                         <img src={user?.avatar} alt={user?.name} className="avatar" />
                         <span style={{ fontWeight: '500' }}>{user?.name}</span>
+                        <button className="icon-btn" onClick={() => navigate('/settings')} title="Settings">
+                            <FiSettings />
+                        </button>
                         <button className="icon-btn" onClick={handleLogout}>
                             <FiLogOut />
                         </button>

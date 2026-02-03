@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiHome, FiBook, FiUsers, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBook, FiUsers, FiMessageSquare, FiLogOut, FiSettings } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
@@ -41,6 +41,15 @@ const Sidebar = () => {
                     <NavLink to="/student/forum" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <FiMessageSquare />
                         <span>Q&A Forum</span>
+                    </NavLink>
+                </div>
+
+                <div className="nav-section">
+                    <span className="nav-label">Account</span>
+                    <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        {/* Reusing existing icons or import FiSettings if needed, let's use FiUser for now or import Settings icon */}
+                        <FiSettings />
+                        <span>Settings</span>
                     </NavLink>
                 </div>
             </nav>

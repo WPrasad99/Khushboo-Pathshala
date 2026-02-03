@@ -29,6 +29,43 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve uploaded files statically
+const path = require('path');
+const fs = require('fs');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Ensure upload directory exists
+const uploadDir = path.join(__dirname, '../uploads/avatars');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer Config
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error("Error: File upload only supports images (jpeg, jpg, png)"));
+    }
+});
+
 // Session config
 app.use(session({
     secret: process.env.SESSION_SECRET || 'keyboard_cat',
@@ -294,6 +331,64 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Failed to update profile' });
     }
 });
+
+// Upload Avatar
+app.post('/api/users/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const avatarUrl = `http://localhost:${PORT}/uploads/avatars/${req.file.filename}`;
+
+        const user = await prisma.user.update({
+            where: { id: req.user.id },
+            data: { avatar: avatarUrl },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                avatar: true
+            }
+        });
+
+        res.json({ message: 'Avatar updated successfully', user });
+    } catch (error) {
+        console.error('Avatar upload error:', error);
+        res.status(500).json({ error: 'Failed to upload avatar' });
+    }
+});
+
+// Change Password
+app.put('/api/users/password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+
+        // Verify current password
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ error: 'Incorrect current password' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword }
+        });
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Password change error:', error);
+        res.status(500).json({ error: 'Failed to change password' });
+    }
+});
+
 
 // Get login history for heatmap (last 365 days)
 app.get('/api/users/login-history', authenticateToken, async (req, res) => {
