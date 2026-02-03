@@ -2,6 +2,7 @@ import api from './axios';
 
 export const adminAPI = {
     getUsers: () => api.get('/admin/users'),
+    getMentors: () => api.get('/admin/mentors'),
     updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
     getReports: () => api.get('/admin/reports'),
     getAnnouncements: () => api.get('/announcements'),

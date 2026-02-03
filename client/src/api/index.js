@@ -7,6 +7,8 @@ import { sessionAPI } from './sessions.api';
 import { forumAPI } from './forum.api';
 import { adminAPI } from './admin.api';
 import { mentorshipAPI } from './mentorship.api';
+import { batchAPI } from './batch.api';
+import { studentAdminAPI } from './studentAdmin.api';
 
 // Chat API (kept here for Socket.IO integration)
 export const chatAPI = {
@@ -35,4 +37,6 @@ export {
     forumAPI,
     adminAPI,
     mentorshipAPI,
+    batchAPI,
+    studentAdminAPI,
 };

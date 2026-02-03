@@ -2,6 +2,25 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = (prisma, authenticateToken, requireRole) => {
+    // Get all mentors
+    router.get('/mentors', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+        try {
+            const mentors = await prisma.user.findMany({
+                where: { role: 'MENTOR' },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    avatar: true
+                },
+                orderBy: { name: 'asc' }
+            });
+            res.json(mentors);
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to fetch mentors' });
+        }
+    });
+
     // Get all users
     router.get('/users', authenticateToken, requireRole('ADMIN'), async (req, res) => {
         try {

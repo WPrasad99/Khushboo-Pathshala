@@ -37,6 +37,8 @@ const mentorshipRoutes = require('./routes/mentorship.routes');
 const forumRoutes = require('./routes/forum.routes');
 const adminRoutes = require('./routes/admin.routes');
 const chatRoutes = require('./routes/chat.routes');
+const batchRoutes = require('./routes/batch.routes');
+const studentAdminRoutes = require('./routes/studentAdmin.routes');
 
 const PORT = process.env.PORT || 5000;
 
@@ -115,6 +117,8 @@ app.use('/api/mentorship', mentorshipRoutes(prisma, authenticateToken));
 app.use('/api/forum', forumRoutes(prisma, authenticateToken));
 app.use('/api/admin', adminRoutes(prisma, authenticateToken, requireRole));
 app.use('/api/chat', chatRoutes(prisma, authenticateToken, requireRole, io));
+app.use('/api/batches', batchRoutes(prisma, authenticateToken, requireRole));
+app.use('/api/students', studentAdminRoutes(prisma, authenticateToken, requireRole));
 
 // ============ NOTIFICATIONS ============
 

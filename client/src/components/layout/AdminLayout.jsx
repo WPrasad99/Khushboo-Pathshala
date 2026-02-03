@@ -2,7 +2,8 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-    FiHome, FiUsers, FiBell, FiBarChart2, FiLogOut, FiSettings
+    FiHome, FiUsers, FiBell, FiBarChart2, FiLogOut, FiSettings,
+    FiPackage, FiUserPlus
 } from 'react-icons/fi';
 import '../student/Sidebar.css';
 
@@ -17,7 +18,9 @@ const AdminLayout = () => {
 
     const menuItems = [
         { path: '/admin', icon: FiHome, label: 'Dashboard', end: true },
-        { path: '/admin/users', icon: FiUsers, label: 'Users' },
+        { path: '/admin/batches', icon: FiPackage, label: 'Batches' },
+        { path: '/admin/students', icon: FiUserPlus, label: 'Students' },
+        { path: '/admin/users', icon: FiUsers, label: 'All Users' },
         { path: '/admin/announcements', icon: FiBell, label: 'Announcements' },
         { path: '/admin/reports', icon: FiBarChart2, label: 'Reports' },
     ];

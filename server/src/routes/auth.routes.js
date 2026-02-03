@@ -11,6 +11,10 @@ module.exports = (prisma, JWT_SECRET) => {
         try {
             const { email, password, name, role } = req.body;
 
+            if (!email || !password || !name) {
+                return res.status(400).json({ error: 'Email, password, and name are required' });
+            }
+
             const existingUser = await prisma.user.findUnique({ where: { email } });
             if (existingUser) {
                 return res.status(400).json({ error: 'User already exists' });
@@ -68,7 +72,18 @@ module.exports = (prisma, JWT_SECRET) => {
         try {
             const { email, password } = req.body;
 
-            const user = await prisma.user.findUnique({ where: { email } });
+            if (!email || !password) {
+                return res.status(400).json({ error: 'Email and password are required' });
+            }
+
+            const user = await prisma.user.findUnique({
+                where: { email },
+                include: {
+                    batch: {
+                        select: { id: true, name: true, isActive: true }
+                    }
+                }
+            });
             if (!user) {
                 return res.status(401).json({ error: 'Invalid email or password' });
             }
@@ -76,6 +91,22 @@ module.exports = (prisma, JWT_SECRET) => {
             const validPassword = await bcrypt.compare(password, user.password);
             if (!validPassword) {
                 return res.status(401).json({ error: 'Invalid email or password' });
+            }
+
+            // BATCH CHECK: Students must belong to an active batch
+            if (user.role === 'STUDENT') {
+                if (!user.batchId) {
+                    return res.status(403).json({
+                        error: 'Access denied. You are not assigned to any batch. Please contact your administrator.',
+                        code: 'NO_BATCH_ASSIGNED'
+                    });
+                }
+                if (!user.batch.isActive) {
+                    return res.status(403).json({
+                        error: 'Access denied. Your batch is currently inactive. Please contact your administrator.',
+                        code: 'BATCH_INACTIVE'
+                    });
+                }
             }
 
             const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
@@ -109,7 +140,8 @@ module.exports = (prisma, JWT_SECRET) => {
                     name: user.name,
                     role: user.role,
                     avatar: user.avatar,
-                    profileCompleted: user.profileCompleted
+                    profileCompleted: user.profileCompleted,
+                    batch: user.batch // Include batch info in response
                 }
             });
         } catch (error) {

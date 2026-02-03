@@ -67,7 +67,19 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
     // Create group
     router.post('/groups', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res) => {
         try {
-            const { name, description, memberIds } = req.body;
+            const { name, description } = req.body;
+            const memberIds = req.body.memberIds;
+
+            if (!name) {
+                return res.status(400).json({ error: 'Group name is required' });
+            }
+            if (memberIds !== undefined && !Array.isArray(memberIds)) {
+                return res.status(400).json({ error: 'memberIds must be an array' });
+            }
+
+            const normalizedMemberIds = Array.isArray(memberIds)
+                ? [...new Set(memberIds.filter(id => id && id !== req.user.id))]
+                : [];
 
             const group = await prisma.chatGroup.create({
                 data: {
@@ -77,7 +89,7 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
                     members: {
                         create: [
                             { userId: req.user.id, role: 'admin', status: 'accepted' },
-                            ...memberIds.map(id => ({ userId: id, role: 'member', status: 'pending' }))
+                            ...normalizedMemberIds.map(id => ({ userId: id, role: 'member', status: 'pending' }))
                         ]
                     }
                 },
@@ -87,7 +99,7 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
                 }
             });
 
-            memberIds.forEach(userId => {
+            normalizedMemberIds.forEach(userId => {
                 io.to(`user_${userId}`).emit('group_invite', { group });
             });
 
@@ -102,6 +114,17 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
     router.put('/invites/:id', authenticateToken, async (req, res) => {
         try {
             const { status } = req.body;
+            const allowedStatuses = ['accepted', 'rejected'];
+            if (!allowedStatuses.includes(status)) {
+                return res.status(400).json({ error: 'Invalid status. Use accepted or rejected.' });
+            }
+
+            const existingInvite = await prisma.groupMember.findFirst({
+                where: { id: req.params.id, userId: req.user.id }
+            });
+            if (!existingInvite) {
+                return res.status(404).json({ error: 'Invite not found' });
+            }
 
             const invite = await prisma.groupMember.update({
                 where: { id: req.params.id },
@@ -125,6 +148,18 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
     // Get messages for a group
     router.get('/groups/:groupId/messages', authenticateToken, async (req, res) => {
         try {
+            const membership = await prisma.groupMember.findFirst({
+                where: {
+                    groupId: req.params.groupId,
+                    userId: req.user.id,
+                    status: 'accepted'
+                },
+                select: { id: true }
+            });
+            if (!membership) {
+                return res.status(403).json({ error: 'Access denied to this group' });
+            }
+
             const messages = await prisma.chatMessage.findMany({
                 where: { groupId: req.params.groupId },
                 include: {
@@ -142,6 +177,22 @@ module.exports = (prisma, authenticateToken, requireRole, io) => {
     router.post('/groups/:groupId/messages', authenticateToken, async (req, res) => {
         try {
             const { content } = req.body;
+
+            if (!content) {
+                return res.status(400).json({ error: 'Message content is required' });
+            }
+
+            const membership = await prisma.groupMember.findFirst({
+                where: {
+                    groupId: req.params.groupId,
+                    userId: req.user.id,
+                    status: 'accepted'
+                },
+                select: { id: true }
+            });
+            if (!membership) {
+                return res.status(403).json({ error: 'Access denied to this group' });
+            }
 
             const message = await prisma.chatMessage.create({
                 data: {

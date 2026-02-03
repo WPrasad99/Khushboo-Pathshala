@@ -74,15 +74,35 @@ module.exports = (prisma, authenticateToken, requireRole) => {
         try {
             const { title, description, category, videoUrl, duration, thumbnailUrl, lessonsCount, isHot } = req.body;
 
+            if (!title || !description || !category || !videoUrl) {
+                return res.status(400).json({ error: 'Title, description, category, and videoUrl are required' });
+            }
+
+            const durationValue = Number(duration);
+            if (!Number.isFinite(durationValue) || durationValue <= 0) {
+                return res.status(400).json({ error: 'Duration must be a positive number' });
+            }
+
+            const categoryValue = String(category).toUpperCase();
+            const validCategories = ['TECHNICAL_SKILLS', 'SOFT_SKILLS', 'CAREER_GUIDANCE'];
+            if (!validCategories.includes(categoryValue)) {
+                return res.status(400).json({ error: `Invalid category. Use one of: ${validCategories.join(', ')}` });
+            }
+
+            const lessonsCountValue = lessonsCount !== undefined ? Number(lessonsCount) : undefined;
+            if (lessonsCountValue !== undefined && (!Number.isInteger(lessonsCountValue) || lessonsCountValue <= 0)) {
+                return res.status(400).json({ error: 'lessonsCount must be a positive integer' });
+            }
+
             const resource = await prisma.learningResource.create({
                 data: {
                     title,
                     description,
-                    category,
+                    category: categoryValue,
                     videoUrl,
-                    duration,
+                    duration: durationValue,
                     thumbnailUrl,
-                    lessonsCount: lessonsCount || 1,
+                    lessonsCount: lessonsCountValue || 1,
                     isHot: isHot || false,
                     uploadedById: req.user.id
                 }
@@ -102,7 +122,31 @@ module.exports = (prisma, authenticateToken, requireRole) => {
             const resourceId = req.params.id;
             const userId = req.user.id;
 
-            const completionPercentage = (watchDuration / totalDuration) * 100;
+            const totalDurationValue = Number(totalDuration);
+            const watchDurationValue = Number(watchDuration);
+            const dropOffPointValue = dropOffPoint === undefined ? 0 : Number(dropOffPoint);
+
+            if (!Number.isFinite(totalDurationValue) || totalDurationValue <= 0) {
+                return res.status(400).json({ error: 'totalDuration must be a positive number' });
+            }
+            if (!Number.isFinite(watchDurationValue) || watchDurationValue < 0) {
+                return res.status(400).json({ error: 'watchDuration must be a non-negative number' });
+            }
+            if (!Number.isFinite(dropOffPointValue) || dropOffPointValue < 0) {
+                return res.status(400).json({ error: 'dropOffPoint must be a non-negative number' });
+            }
+
+            const resource = await prisma.learningResource.findUnique({
+                where: { id: resourceId },
+                select: { id: true }
+            });
+            if (!resource) {
+                return res.status(404).json({ error: 'Resource not found' });
+            }
+
+            const normalizedWatch = Math.min(watchDurationValue, totalDurationValue);
+            const normalizedDropOff = Math.min(dropOffPointValue, totalDurationValue);
+            const completionPercentage = Math.min(100, (normalizedWatch / totalDurationValue) * 100);
             const attendanceMarked = completionPercentage >= 80;
 
             const existing = await prisma.sessionTracking.findFirst({
@@ -114,9 +158,9 @@ module.exports = (prisma, authenticateToken, requireRole) => {
                 tracking = await prisma.sessionTracking.update({
                     where: { id: existing.id },
                     data: {
-                        watchDuration: Math.max(existing.watchDuration, watchDuration),
-                        totalDuration,
-                        dropOffPoint,
+                        watchDuration: Math.max(existing.watchDuration, normalizedWatch),
+                        totalDuration: totalDurationValue,
+                        dropOffPoint: normalizedDropOff,
                         completionPercentage: Math.max(existing.completionPercentage, completionPercentage),
                         attendanceMarked: existing.attendanceMarked || attendanceMarked
                     }
@@ -126,9 +170,9 @@ module.exports = (prisma, authenticateToken, requireRole) => {
                     data: {
                         userId,
                         resourceId,
-                        watchDuration,
-                        totalDuration,
-                        dropOffPoint,
+                        watchDuration: normalizedWatch,
+                        totalDuration: totalDurationValue,
+                        dropOffPoint: normalizedDropOff,
                         completionPercentage,
                         attendanceMarked
                     }

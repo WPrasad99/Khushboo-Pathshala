@@ -22,6 +22,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Announcements from './pages/admin/Announcements';
 import Reports from './pages/admin/Reports';
+import Batches from './pages/admin/Batches';
+import StudentsManagement from './pages/admin/StudentsManagement';
 import './index.css';
 
 // Protected Route Component
@@ -126,6 +128,8 @@ function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route index element={<AdminDashboard />} />
+        <Route path="batches" element={<Batches />} />
+        <Route path="students" element={<StudentsManagement />} />
         <Route path="users" element={<Users />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="reports" element={<Reports />} />

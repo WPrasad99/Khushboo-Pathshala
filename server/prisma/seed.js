@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Starting seed...');
 
-    // Clear existing data
+    // Clear existing data in proper order (respecting foreign keys)
     await prisma.activity.deleteMany();
     await prisma.achievement.deleteMany();
     await prisma.announcement.deleteMany();
@@ -17,12 +17,23 @@ async function main() {
     await prisma.sessionTracking.deleteMany();
     await prisma.session.deleteMany();
     await prisma.learningResource.deleteMany();
+    await prisma.notification.deleteMany();
+    await prisma.loginLog.deleteMany();
+    await prisma.chatMessage.deleteMany();
+    await prisma.groupMember.deleteMany();
+    await prisma.chatGroup.deleteMany();
+    // Clear students first (they reference batches)
+    await prisma.user.updateMany({
+        where: { role: 'STUDENT' },
+        data: { batchId: null }
+    });
+    await prisma.batch.deleteMany();
     await prisma.user.deleteMany();
 
     // Create password hash
     const passwordHash = await bcrypt.hash('password123', 10);
 
-    // Create Users
+    // Create Admin first (needed for batch creation)
     const admin = await prisma.user.create({
         data: {
             email: 'admin@cybage.com',
@@ -37,6 +48,7 @@ async function main() {
         }
     });
 
+    // Create 5 Mentors
     const mentor1 = await prisma.user.create({
         data: {
             email: 'rakesh.sinha@cybage.com',
@@ -65,6 +77,84 @@ async function main() {
         }
     });
 
+    const mentor3 = await prisma.user.create({
+        data: {
+            email: 'amit.kumar@cybage.com',
+            password: passwordHash,
+            name: 'Amit Kumar',
+            role: 'MENTOR',
+            phone: '+91 9876543220',
+            gender: 'male',
+            educationLevel: 'PhD',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=amit'
+        }
+    });
+
+    const mentor4 = await prisma.user.create({
+        data: {
+            email: 'sunita.desai@cybage.com',
+            password: passwordHash,
+            name: 'Sunita Desai',
+            role: 'MENTOR',
+            phone: '+91 9876543221',
+            gender: 'female',
+            educationLevel: 'Masters',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sunita'
+        }
+    });
+
+    const mentor5 = await prisma.user.create({
+        data: {
+            email: 'vikram.joshi@cybage.com',
+            password: passwordHash,
+            name: 'Vikram Joshi',
+            role: 'MENTOR',
+            phone: '+91 9876543222',
+            gender: 'male',
+            educationLevel: 'Masters',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vikram'
+        }
+    });
+
+    console.log('✅ Admin and 5 Mentors created');
+
+    // Create Batches (after mentors exist)
+    const batch1 = await prisma.batch.create({
+        data: {
+            name: 'Khushboo Batch 2024 – Phase 1',
+            description: 'Engineering students batch for technical skill development - Phase 1',
+            mentorId: mentor1.id,
+            createdById: admin.id,
+            isActive: true
+        }
+    });
+
+    const batch2 = await prisma.batch.create({
+        data: {
+            name: 'Khushboo Batch 2024 – Phase 2',
+            description: 'Career development focused batch with soft skills training',
+            mentorId: mentor2.id,
+            createdById: admin.id,
+            isActive: true
+        }
+    });
+
+    const batch3 = await prisma.batch.create({
+        data: {
+            name: 'Khushboo Batch 2024 – Phase 3',
+            description: 'Advanced technical training batch',
+            mentorId: mentor3.id,
+            createdById: admin.id,
+            isActive: true
+        }
+    });
+
+    console.log('✅ 3 Batches created');
+
+    // Create 5 Students (assigned to batches)
     const student1 = await prisma.user.create({
         data: {
             email: 'prasad@example.com',
@@ -76,7 +166,8 @@ async function main() {
             dateOfBirth: new Date('2000-05-15'),
             educationLevel: 'B.Tech',
             profileCompleted: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=prasad'
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=prasad',
+            batchId: batch1.id
         }
     });
 
@@ -91,7 +182,8 @@ async function main() {
             dateOfBirth: new Date('2001-08-20'),
             educationLevel: 'B.E.',
             profileCompleted: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=anita'
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=anita',
+            batchId: batch1.id
         }
     });
 
@@ -106,11 +198,79 @@ async function main() {
             dateOfBirth: new Date('2000-12-10'),
             educationLevel: 'B.Tech',
             profileCompleted: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vishal'
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vishal',
+            batchId: batch2.id
         }
     });
 
-    console.log('✅ Users created');
+    const student4 = await prisma.user.create({
+        data: {
+            email: 'neha.gupta@example.com',
+            password: passwordHash,
+            name: 'Neha Gupta',
+            role: 'STUDENT',
+            phone: '+91 9876543230',
+            gender: 'female',
+            dateOfBirth: new Date('2001-03-25'),
+            educationLevel: 'B.Tech',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=neha',
+            batchId: batch2.id
+        }
+    });
+
+    const student5 = await prisma.user.create({
+        data: {
+            email: 'rohit.singh@example.com',
+            password: passwordHash,
+            name: 'Rohit Singh',
+            role: 'STUDENT',
+            phone: '+91 9876543231',
+            gender: 'male',
+            dateOfBirth: new Date('2000-07-18'),
+            educationLevel: 'B.E.',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rohit',
+            batchId: batch3.id
+        }
+    });
+
+    // Create demo users for quick login
+    const demoStudent = await prisma.user.create({
+        data: {
+            email: 'student@demo.com',
+            password: passwordHash,
+            name: 'Demo Student',
+            role: 'STUDENT',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student',
+            batchId: batch1.id
+        }
+    });
+
+    await prisma.user.create({
+        data: {
+            email: 'mentor@demo.com',
+            password: passwordHash,
+            name: 'Demo Mentor',
+            role: 'MENTOR',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mentor'
+        }
+    });
+
+    await prisma.user.create({
+        data: {
+            email: 'admin@demo.com',
+            password: passwordHash,
+            name: 'Demo Admin',
+            role: 'ADMIN',
+            profileCompleted: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demoadmin'
+        }
+    });
+
+    console.log('✅ 5 Students and Demo Users created');
 
     // Create Learning Resources with YouTube videos
     const resources = await Promise.all([

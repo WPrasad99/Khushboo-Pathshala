@@ -36,6 +36,8 @@ module.exports = (prisma, authenticateToken) => {
                     }
                 });
                 res.json(mentorships);
+            } else {
+                return res.status(403).json({ error: 'Access denied' });
             }
         } catch (error) {
             res.status(500).json({ error: 'Failed to fetch mentorship data' });
@@ -63,7 +65,7 @@ module.exports = (prisma, authenticateToken) => {
                     },
                     orderBy: { meetingDate: 'desc' }
                 });
-            } else {
+            } else if (role === 'STUDENT') {
                 meetings = await prisma.meeting.findMany({
                     where: {
                         mentorship: { menteeId: userId }
@@ -77,6 +79,8 @@ module.exports = (prisma, authenticateToken) => {
                     },
                     orderBy: { meetingDate: 'desc' }
                 });
+            } else {
+                return res.status(403).json({ error: 'Access denied' });
             }
 
             res.json(meetings);
@@ -91,8 +95,23 @@ module.exports = (prisma, authenticateToken) => {
             const { menteeId, mentorId, meetingDate, duration, discussionSummary, feedback, remarks } = req.body;
             const role = req.user.role;
 
+            if (role !== 'MENTOR' && role !== 'STUDENT') {
+                return res.status(403).json({ error: 'Access denied' });
+            }
+
+            if (!meetingDate) {
+                return res.status(400).json({ error: 'meetingDate is required' });
+            }
+            const parsedMeetingDate = new Date(meetingDate);
+            if (Number.isNaN(parsedMeetingDate.getTime())) {
+                return res.status(400).json({ error: 'Invalid meetingDate format' });
+            }
+
             let mentorship;
             if (role === 'MENTOR') {
+                if (!menteeId) {
+                    return res.status(400).json({ error: 'menteeId is required' });
+                }
                 mentorship = await prisma.mentorship.findFirst({
                     where: { mentorId: req.user.id, menteeId }
                 });
@@ -105,15 +124,29 @@ module.exports = (prisma, authenticateToken) => {
                 mentorship = await prisma.mentorship.findFirst({
                     where: { menteeId: req.user.id }
                 });
-                if (!mentorship && !mentorId) {
-                    return res.status(400).json({ error: "No mentor assigned yet." });
+                if (!mentorship) {
+                    if (!mentorId) {
+                        return res.status(400).json({ error: 'No mentor assigned yet.' });
+                    }
+                    const mentor = await prisma.user.findUnique({
+                        where: { id: mentorId },
+                        select: { id: true, role: true }
+                    });
+                    if (!mentor || mentor.role !== 'MENTOR') {
+                        return res.status(400).json({ error: 'mentorId must belong to a mentor' });
+                    }
+                    mentorship = await prisma.mentorship.create({
+                        data: { mentorId, menteeId: req.user.id }
+                    });
+                } else if (mentorId && mentorship.mentorId !== mentorId) {
+                    return res.status(400).json({ error: 'Provided mentorId does not match assigned mentor' });
                 }
             }
 
             const meeting = await prisma.meeting.create({
                 data: {
                     mentorshipId: mentorship.id,
-                    meetingDate: new Date(meetingDate),
+                    meetingDate: parsedMeetingDate,
                     duration: duration || 30,
                     discussionSummary: discussionSummary || (role === 'STUDENT' ? 'Meeting Requested by Student' : 'Scheduled by Mentor'),
                     feedback,
