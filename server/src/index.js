@@ -1045,6 +1045,14 @@ app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (r
             }
         });
 
+        // Broadcast notification to all users
+        io.emit('notification', {
+            title: 'New Announcement',
+            content: announcement.title,
+            type: 'announcement',
+            createdAt: new Date()
+        });
+
         res.status(201).json(announcement);
     } catch (error) {
         res.status(500).json({ error: 'Failed to create announcement' });
@@ -1441,6 +1449,25 @@ app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (r
                 students: true,
                 mentors: true
             }
+        });
+
+        // Notify students and mentors in the batch
+        studentIds?.forEach(id => {
+            io.to(`user_${id}`).emit('notification', {
+                title: 'New Batch Assignment',
+                content: `You have been added to batch: ${batch.name}`,
+                type: 'batch',
+                createdAt: new Date()
+            });
+        });
+
+        mentorIds?.forEach(id => {
+            io.to(`user_${id}`).emit('notification', {
+                title: 'New Batch Assignment',
+                content: `You have been assigned to batch: ${batch.name}`,
+                type: 'batch',
+                createdAt: new Date()
+            });
         });
 
         res.status(201).json(batch);

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, adminAPI } from '../api';
-import { FiUser, FiLock, FiUpload, FiCheck, FiShield, FiSave } from 'react-icons/fi';
+import { userAPI } from '../api'; // Removed adminAPI
+import { FiUser, FiLock, FiUpload, FiCheck, FiEdit2, FiArrowLeft } from 'react-icons/fi'; // Removed FiShield, FiSave
 import { motion } from 'framer-motion';
-import '../pages/admin/AdminDashboard.css'; // Reuse existing styles
-import './admin/AdminDashboard.css'; // Ensure path is correct relative to this file? No, assume global css usage or import specifically.
+import { useNavigate } from 'react-router-dom';
+import '../pages/admin/AdminDashboard.css';
 
 const Settings = () => {
-    const { user, login } = useAuth(); // login used to update user context after avatar change
+    const { user, login } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
@@ -24,24 +25,10 @@ const Settings = () => {
         confirmPassword: ''
     });
 
-    const [adminStats, setAdminStats] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
     const [avatarFile, setAvatarFile] = useState(null);
 
-    useEffect(() => {
-        if (user?.role === 'ADMIN') {
-            fetchAdminStats();
-        }
-    }, [user]);
-
-    const fetchAdminStats = async () => {
-        try {
-            const res = await adminAPI.getReports(); // Reuse existing report/stats endpoint
-            setAdminStats(res.data?.stats);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    // Removed fetchAdminStats useEffect and state
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -49,8 +36,7 @@ const Settings = () => {
         setErrorMsg('');
         setSuccessMsg('');
         try {
-            const res = await userAPI.updateProfile(profileData);
-            // Update context if needed, but for now just show success
+            await userAPI.updateProfile(profileData);
             setSuccessMsg('Profile updated successfully!');
         } catch (err) {
             setErrorMsg('Failed to update profile.');
@@ -73,12 +59,8 @@ const Settings = () => {
         try {
             const formData = new FormData();
             formData.append('avatar', avatarFile);
-            const res = await userAPI.uploadAvatar(formData);
-
-            // Update local user context with new avatar URL
-            // This is a bit of a hack, ideally we have a specific updateUser action or re-fetch profile
-            // Assuming the login function or similar can accept partial updates or we force a reload/re-fetch
-            window.location.reload(); // Simple way to refresh context for now
+            await userAPI.uploadAvatar(formData);
+            window.location.reload();
         } catch (err) {
             setErrorMsg("Failed to upload avatar.");
             setLoading(false);
@@ -110,13 +92,24 @@ const Settings = () => {
 
     return (
         <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-            <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ fontSize: '2rem', marginBottom: '32px', color: '#1e293b' }}
-            >
-                Settings
-            </motion.h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => navigate(-1)}
+                    className="icon-btn"
+                    style={{ background: 'white', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                >
+                    <FiArrowLeft size={20} color="#64748b" />
+                </motion.button>
+                <motion.h1
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ fontSize: '2rem', color: '#1e293b', margin: 0 }}
+                >
+                    Settings
+                </motion.h1>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
 
@@ -269,36 +262,6 @@ const Settings = () => {
                 </div>
             </div>
 
-            {/* Admin Only Stats */}
-            {user?.role === 'ADMIN' && adminStats && (
-                <motion.div className="glass-card" style={{ marginTop: '24px', padding: '24px' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '12px' }}>
-                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                            <FiShield size={24} color="#f59e0b" />
-                        </div>
-                        <h2 style={{ fontSize: '1.25rem', margin: 0 }}>System Status (Admin Only)</h2>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-                        <div style={{ padding: '16px', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.totalUsers}</div>
-                            <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Total Users</div>
-                        </div>
-                        <div style={{ padding: '16px', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.totalSessions}</div>
-                            <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Total Sessions</div>
-                        </div>
-                        <div style={{ padding: '16px', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.totalResources}</div>
-                            <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Resources</div>
-                        </div>
-                        <div style={{ padding: '16px', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Active</div>
-                            <div style={{ fontSize: '0.85rem', color: '#64748b' }}>System Status</div>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-
             {/* Messages */}
             {successMsg && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ position: 'fixed', bottom: '20px', right: '20px', background: '#10b981', color: 'white', padding: '12px 24px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
@@ -313,8 +276,5 @@ const Settings = () => {
         </div>
     );
 };
-
-// Missing Imports Fix
-import { FiEdit2 } from 'react-icons/fi';
 
 export default Settings;

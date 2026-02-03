@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
+    const [socket, setSocket] = useState(null);
     const initRan = useRef(false);
 
     // Configure axios defaults
@@ -27,6 +29,19 @@ export const AuthProvider = ({ children }) => {
             delete axios.defaults.headers.common['Authorization'];
         }
     }, [token]);
+
+    // Initialize Socket.IO
+    useEffect(() => {
+        if (user && !socket) {
+            const newSocket = io('http://localhost:5000');
+            newSocket.on('connect', () => {
+                newSocket.emit('join_user', user.id);
+            });
+            setSocket(newSocket);
+
+            return () => newSocket.close();
+        }
+    }, [user, socket]);
 
     // Check if user is logged in on mount - ONLY RUN ONCE
     useEffect(() => {
@@ -91,6 +106,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
+        if (socket) {
+            socket.disconnect();
+            setSocket(null);
+        }
         delete axios.defaults.headers.common['Authorization'];
     };
 
@@ -99,6 +118,7 @@ export const AuthProvider = ({ children }) => {
             user,
             token,
             loading,
+            socket,
             login,
             setSession,
             register,

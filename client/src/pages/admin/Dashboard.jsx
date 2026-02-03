@@ -14,13 +14,17 @@ import '../student/Dashboard.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, socket } = useAuth(); // Get socket from auth context
     const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState(null);
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
     const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
+
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
         content: '',
@@ -32,6 +36,37 @@ const AdminDashboard = () => {
         fetchData();
     }, []);
 
+    // Filter Users Effect
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredUsers(users);
+        } else {
+            const lowerQuery = searchQuery.toLowerCase();
+            const filtered = users.filter(u =>
+                u.name.toLowerCase().includes(lowerQuery) ||
+                u.email.toLowerCase().includes(lowerQuery) ||
+                u.role.toLowerCase().includes(lowerQuery)
+            );
+            setFilteredUsers(filtered);
+        }
+    }, [searchQuery, users]);
+
+    // Socket.IO Listeners
+    useEffect(() => {
+        if (socket) {
+            socket.on('notification', (data) => {
+                // Increment unread count or show toast
+                setUnreadNotifications(prev => prev + 1);
+                // Optionally refetch data
+                fetchData();
+            });
+
+            return () => {
+                socket.off('notification');
+            };
+        }
+    }, [socket]);
+
     const fetchData = async () => {
         try {
             const [dashboardRes, usersRes] = await Promise.all([
@@ -40,6 +75,7 @@ const AdminDashboard = () => {
             ]);
             setDashboardData(dashboardRes.data);
             setUsers(usersRes.data);
+            setFilteredUsers(usersRes.data);
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
@@ -108,10 +144,27 @@ const AdminDashboard = () => {
                 <div className="navbar-actions">
                     <div className="search-box">
                         <FiSearch />
-                        <input type="text" placeholder="Search..." />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                    <button className="icon-btn">
+                    <button className="icon-btn" style={{ position: 'relative' }}>
                         <FiBell />
+                        {unreadNotifications > 0 && (
+                            <span style={{
+                                position: 'absolute',
+                                top: '-2px',
+                                right: '-2px',
+                                width: '10px',
+                                height: '10px',
+                                background: '#ef4444',
+                                borderRadius: '50%',
+                                border: '2px solid white'
+                            }}></span>
+                        )}
                     </button>
                     <div className="user-menu">
                         <img src={user?.avatar} alt={user?.name} className="avatar" />
@@ -341,7 +394,7 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {users.map((u) => (
+                                        {filteredUsers.map((u) => (
                                             <tr key={u.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                                 <td style={{ padding: 'var(--spacing-md)' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>

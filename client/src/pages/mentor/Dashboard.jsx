@@ -10,11 +10,14 @@ import { motion } from 'framer-motion';
 import '../student/Dashboard.css';
 
 const MentorDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, socket } = useAuth();
     const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState(null);
     const [mentorships, setMentorships] = useState([]);
+    const [filteredMentorships, setFilteredMentorships] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [showAddResource, setShowAddResource] = useState(false);
     const [newResource, setNewResource] = useState({
         title: '',
@@ -29,6 +32,32 @@ const MentorDashboard = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredMentorships(mentorships);
+        } else {
+            const lowerQuery = searchQuery.toLowerCase();
+            const filtered = mentorships.filter(m =>
+                m.mentee?.name.toLowerCase().includes(lowerQuery) ||
+                m.mentee?.email.toLowerCase().includes(lowerQuery)
+            );
+            setFilteredMentorships(filtered);
+        }
+    }, [searchQuery, mentorships]);
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('notification', () => {
+                setUnreadNotifications(prev => prev + 1);
+                fetchData(); // Refresh data on new notification
+            });
+
+            return () => {
+                socket.off('notification');
+            };
+        }
+    }, [socket]);
+
     const fetchData = async () => {
         try {
             const [dashboardRes, mentorshipRes] = await Promise.all([
@@ -36,7 +65,17 @@ const MentorDashboard = () => {
                 mentorshipAPI.get()
             ]);
             setDashboardData(dashboardRes.data);
-            setMentorships(Array.isArray(mentorshipRes.data) ? mentorshipRes.data : []);
+            const mentorshipList = Array.isArray(mentorshipRes.data) ? mentorshipRes.data : [];
+            setMentorships(mentorshipList);
+            setFilteredMentorships(mentorshipList);
+
+            // Assume dashboardRes.data includes unreadNotifications count if available
+            // If not, we might need a separate call or update API, 
+            // but for now we follow the pattern. 
+            if (dashboardRes.data.unreadCount) {
+                setUnreadNotifications(dashboardRes.data.unreadCount);
+            }
+
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
@@ -109,10 +148,27 @@ const MentorDashboard = () => {
                 <div className="navbar-actions">
                     <div className="search-box">
                         <FiSearch />
-                        <input type="text" placeholder="Search..." />
+                        <input
+                            type="text"
+                            placeholder="Search mentees..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                    <button className="icon-btn">
+                    <button className="icon-btn" style={{ position: 'relative' }}>
                         <FiBell />
+                        {unreadNotifications > 0 && (
+                            <span style={{
+                                position: 'absolute',
+                                top: '2px',
+                                right: '2px',
+                                width: '8px',
+                                height: '8px',
+                                background: '#ef4444',
+                                borderRadius: '50%',
+                                border: '1px solid white'
+                            }}></span>
+                        )}
                     </button>
                     <div className="user-menu">
                         <img src={user?.avatar} alt={user?.name} className="avatar" />
@@ -164,10 +220,10 @@ const MentorDashboard = () => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-                                {mentorships.length === 0 ? (
-                                    <p style={{ color: 'var(--text-muted)' }}>No mentees assigned yet.</p>
+                                {filteredMentorships.length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)' }}>No mentees found.</p>
                                 ) : (
-                                    mentorships.map((mentorship) => (
+                                    filteredMentorships.map((mentorship) => (
                                         <div key={mentorship.id} className="mentee-card">
                                             <img
                                                 src={mentorship.mentee?.avatar}

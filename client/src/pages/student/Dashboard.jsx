@@ -3,20 +3,26 @@ import { useAuth } from '../../context/AuthContext';
 import { userAPI } from '../../api';
 import {
     FiBell, FiPlayCircle, FiCheckCircle, FiBriefcase,
-    FiCalendar, FiArrowRight, FiActivity, FiX
+    FiCalendar, FiArrowRight, FiActivity, FiX, FiSearch
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import ActivityHeatmap from './ActivityHeatmap';
 import './Dashboard.css';
 
 const StudentDashboard = () => {
-    const { user } = useAuth();
+    const { user, socket } = useAuth();
     const [dashboardData, setDashboardData] = useState(null);
     const [loginDates, setLoginDates] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [notificationCount, setNotificationCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredData, setFilteredData] = useState({
+        recentActivities: [],
+        upcomingSessions: [],
+        announcements: []
+    });
 
     useEffect(() => {
         fetchDashboard();
@@ -24,10 +30,41 @@ const StudentDashboard = () => {
         fetchNotifications();
     }, []);
 
+    useEffect(() => {
+        if (!dashboardData) return;
+
+        if (!searchQuery) {
+            setFilteredData({
+                recentActivities: dashboardData.recentActivities || [],
+                upcomingSessions: dashboardData.upcomingSessions || [],
+                announcements: dashboardData.announcements || []
+            });
+        } else {
+            const lowerQuery = searchQuery.toLowerCase();
+            setFilteredData({
+                recentActivities: (dashboardData.recentActivities || []).filter(a =>
+                    a.title.toLowerCase().includes(lowerQuery)
+                ),
+                upcomingSessions: (dashboardData.upcomingSessions || []).filter(s =>
+                    s.title.toLowerCase().includes(lowerQuery)
+                ),
+                announcements: (dashboardData.announcements || []).filter(ann =>
+                    ann.title.toLowerCase().includes(lowerQuery) ||
+                    (ann.content && ann.content.toLowerCase().includes(lowerQuery))
+                )
+            });
+        }
+    }, [searchQuery, dashboardData]);
+
     const fetchDashboard = async () => {
         try {
             const response = await userAPI.getDashboard();
             setDashboardData(response.data);
+            setFilteredData({
+                recentActivities: response.data.recentActivities || [],
+                upcomingSessions: response.data.upcomingSessions || [],
+                announcements: response.data.announcements || []
+            });
         } catch (error) {
             console.error('Failed to fetch dashboard:', error);
         } finally {
@@ -43,6 +80,20 @@ const StudentDashboard = () => {
             console.error('Failed to fetch login history:', error);
         }
     };
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('notification', (newNotif) => {
+                // Optionally show a toast here
+                setNotifications(prev => [newNotif, ...prev]);
+                setNotificationCount(prev => prev + 1);
+            });
+
+            return () => {
+                socket.off('notification');
+            };
+        }
+    }, [socket]);
 
     const fetchNotifications = async () => {
         try {
@@ -81,7 +132,8 @@ const StudentDashboard = () => {
         );
     }
 
-    const { stats, recentActivities, upcomingSessions, announcements } = dashboardData || {};
+    const { stats } = dashboardData || {};
+    const { recentActivities, upcomingSessions, announcements } = filteredData;
     const activeDaysThisMonth = stats?.activeDaysThisMonth || 0;
     const totalDaysInMonth = stats?.totalDaysInMonth || 30;
 
@@ -94,6 +146,32 @@ const StudentDashboard = () => {
                     <p className="welcome-subtitle">Here's what's happening with your learning today.</p>
                 </div>
                 <div className="header-actions">
+                    <div className="search-box" style={{
+                        marginRight: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        background: 'rgba(255, 255, 255, 0.4)',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        border: '1px solid rgba(255, 255, 255, 0.5)',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                    }}>
+                        <FiSearch style={{ color: '#64748b', marginRight: '8px' }} />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                border: 'none',
+                                background: 'transparent',
+                                outline: 'none',
+                                fontSize: '0.9rem',
+                                color: '#1e293b',
+                                width: '150px'
+                            }}
+                        />
+                    </div>
                     <div className="notification-wrapper">
                         <button
                             className="header-icon-btn"
