@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { adminAPI, announcementAPI } from '../../api';
+import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings
+    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiClock
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
 import BatchManagement from '../../components/admin/BatchManagement';
 import CreateUserModal from '../../components/admin/CreateUserModal';
@@ -24,6 +24,9 @@ const AdminDashboard = () => {
     const [showCreateUserModal, setShowCreateUserModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [announcements, setAnnouncements] = useState([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
@@ -34,6 +37,8 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchData();
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
     }, []);
 
     // Filter Users Effect
@@ -67,15 +72,30 @@ const AdminDashboard = () => {
         }
     }, [socket]);
 
+    // Refresh data when switching to overview
+    useEffect(() => {
+        if (activeTab === 'overview') {
+            fetchData();
+        }
+    }, [activeTab]);
+
     const fetchData = async () => {
         try {
-            const [dashboardRes, usersRes] = await Promise.all([
+            const [dashboardRes, usersRes, announcementsRes, batchesRes] = await Promise.all([
                 adminAPI.getReports(),
-                adminAPI.getUsers()
+                adminAPI.getUsers(),
+                announcementAPI.getAll ? announcementAPI.getAll() : { data: [] },
+                batchAPI.getAll()
             ]);
-            setDashboardData(dashboardRes.data);
+
+            // Merge batches into dashboard data to ensure overview is always up to date
+            const data = dashboardRes.data;
+            data.recentBatches = batchesRes.data;
+
+            setDashboardData(data);
             setUsers(usersRes.data);
             setFilteredUsers(usersRes.data);
+            setAnnouncements(announcementsRes.data || []);
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
@@ -126,32 +146,28 @@ const AdminDashboard = () => {
         <div className="dashboard-page">
             {/* Navbar */}
             <nav className="navbar">
-                <div className="navbar-brand">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="40" height="40" rx="10" fill="url(#gradient)" />
-                        <path d="M10 28V12L20 8L30 12V28L20 32L10 28Z" fill="white" opacity="0.9" />
-                        <path d="M15 18L20 16L25 18V24L20 26L15 24V18Z" fill="#4A90E2" />
-                        <defs>
-                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#4A90E2" />
-                                <stop offset="1" stopColor="#357ABD" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span style={{ marginLeft: 'var(--spacing-sm)', fontWeight: '600' }}>Admin Dashboard</span>
+                <div className="navbar-brand" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
+                    <img
+                        src="/logo.png"
+                        alt="Logo"
+                        className="navbar-logo"
+                        style={{ height: '65px' }}
+                    />
+                    <span style={{ marginLeft: 'var(--spacing-sm)', fontWeight: '700', fontSize: '1.25rem', color: '#1e293b' }}>
+                        KhushbooPathshala
+                    </span>
                 </div>
 
                 <div className="navbar-actions">
-                    <div className="search-box">
-                        <FiSearch />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <div className="nav-clock">
+                        <FiClock />
+                        <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                     </div>
-                    <button className="icon-btn" style={{ position: 'relative' }}>
+                    <button
+                        className="icon-btn"
+                        style={{ position: 'relative' }}
+                        onClick={() => setShowNotifications(!showNotifications)}
+                    >
                         <FiBell />
                         {unreadNotifications > 0 && (
                             <span style={{
@@ -177,6 +193,50 @@ const AdminDashboard = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Notifications Dropdown */}
+                <AnimatePresence>
+                    {showNotifications && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            style={{
+                                position: 'absolute',
+                                top: '70px',
+                                right: '20px',
+                                width: '320px',
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                backdropFilter: 'blur(20px)',
+                                borderRadius: '16px',
+                                border: '1px solid rgba(255, 255, 255, 0.5)',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                                padding: '16px',
+                                zIndex: 1000
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                <h4 style={{ margin: 0 }}>Notifications</h4>
+                                <button className="btn-ghost btn-sm" onClick={() => setUnreadNotifications(0)}>Clear all</button>
+                            </div>
+                            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                {unreadNotifications > 0 ? (
+                                    <div className="mentee-card" style={{ marginBottom: '8px', cursor: 'pointer' }}>
+                                        <FiBell style={{ color: '#6366f1' }} />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Real-time Update</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>New activity detected on the platform.</div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem', padding: '20px 0' }}>
+                                        No new notifications
+                                    </p>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
 
             {/* Main Content */}
@@ -185,7 +245,7 @@ const AdminDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <h1 style={{ marginBottom: '4px' }}>Welcome Back, {user?.name?.split(' ')[0]} 👋</h1>
                             <p style={{ color: '#64748b', margin: 0 }}>Here's what's happening in your academy today.</p>
@@ -220,7 +280,7 @@ const AdminDashboard = () => {
 
                     {/* Stats */}
                     {activeTab === 'overview' && (
-                        <div className="stats-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
+                        <div className="stats-grid" style={{ marginBottom: '24px' }}>
                             <div className="stat-card stat-card-teal">
                                 <div className="stat-icon">
                                     <FiUsers />
@@ -260,108 +320,141 @@ const AdminDashboard = () => {
                         </div>
                     )}
 
+                    {/* Main Grid: Recent Activity & Active Batches */}
                     {activeTab === 'overview' && (
                         <div className="mentor-grid">
                             {/* Recent Activity */}
                             <motion.div
                                 className="glass-card"
-                                style={{ padding: 'var(--spacing-xl)' }}
+                                style={{ padding: '16px 20px' }}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                             >
-                                <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                    <FiCalendar style={{ marginRight: 'var(--spacing-sm)' }} /> Recent Session Trackings
+                                <h3 style={{ marginBottom: '16px' }}>
+                                    <FiCalendar style={{ marginRight: '8px' }} /> Recent Session Trackings
                                 </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {dashboardData?.recentTrackings?.slice(0, 5).map((tracking, index) => (
-                                        <div key={index} className="mentee-card">
+                                        <div key={index} className="mentee-card" style={{ padding: '12px' }}>
                                             <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '500', fontSize: 'var(--text-sm)' }}>
+                                                <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1e293b' }}>
                                                     {tracking.user?.name}
                                                 </div>
-                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
                                                     Watched: {tracking.resource?.title}
                                                 </div>
                                             </div>
-                                            <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`}>
+                                            <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
                                                 {tracking.attendanceMarked ? 'Completed' : 'In Progress'}
                                             </span>
                                         </div>
-                                    )) || <p style={{ color: 'var(--text-muted)' }}>No recent activity.</p>}
+                                    )) || <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>No recent activity.</p>}
                                 </div>
                             </motion.div>
 
-                            {/* Quick Stats */}
+                            {/* Active Batches (No Card Wrapper) */}
                             <motion.div
-                                className="glass-card"
-                                style={{ padding: 'var(--spacing-xl)' }}
+                                style={{ padding: '0px 4px' }}
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.1 }}
                             >
-                                <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                    <FiBarChart2 style={{ marginRight: 'var(--spacing-sm)' }} /> Platform Overview
+                                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
+                                    <FiBook style={{ marginRight: '8px' }} /> Active Batches
                                 </h3>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(2, 1fr)',
-                                    gap: '24px'
-                                }}>
-                                    <div style={{
-                                        padding: '24px',
-                                        background: 'linear-gradient(135deg, #ffffff 0%, #fef2f2 100%)', // White to Blush
-                                        borderRadius: '16px',
-                                        textAlign: 'center',
-                                        border: '1px solid rgba(254, 226, 226, 0.6)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-                                    }}>
-                                        <FiUsers style={{ fontSize: '2.5rem', color: '#4f46e5', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
-                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{users.length}</div>
-                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Total Users</div>
-                                    </div>
-                                    <div style={{
-                                        padding: '24px',
-                                        background: 'linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%)', // White to Mint-ish (Light)
-                                        borderRadius: '16px',
-                                        textAlign: 'center',
-                                        border: '1px solid rgba(209, 250, 229, 0.6)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-                                    }}>
-                                        <FiBook style={{ fontSize: '2.5rem', color: '#059669', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
-                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{stats.totalResources || 0}</div>
-                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Resources</div>
-                                    </div>
-                                    <div style={{
-                                        padding: '24px',
-                                        background: 'linear-gradient(135deg, #ffffff 0%, #fff7ed 100%)', // White to Orange-ish
-                                        borderRadius: '16px',
-                                        textAlign: 'center',
-                                        border: '1px solid rgba(255, 237, 213, 0.6)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-                                    }}>
-                                        <FiCalendar style={{ fontSize: '2.5rem', color: '#ea580c', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
-                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{stats.totalSessions || 0}</div>
-                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Sessions</div>
-                                    </div>
-                                    <div style={{
-                                        padding: '24px',
-                                        background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%)', // White to Violet tint
-                                        borderRadius: '16px',
-                                        textAlign: 'center',
-                                        border: '1px solid rgba(221, 214, 254, 0.6)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-                                    }}>
-                                        <FiMessageSquare style={{ fontSize: '2.5rem', color: '#7c3aed', marginBottom: '12px', display: 'block', margin: '0 auto 12px auto' }} />
-                                        <div style={{ fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>{dashboardData?.stats?.totalForumPosts || 0}</div>
-                                        <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '500' }}>Forum Posts</div>
-                                    </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {dashboardData?.recentBatches && dashboardData.recentBatches.length > 0 ? (
+                                        dashboardData.recentBatches.slice(0, 6).map((batch) => (
+                                            <div key={batch.id} className="mentee-card" style={{ padding: '14px 16px' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{batch.name}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
+                                                        {(batch._count?.students ?? batch.students?.length ?? 0)} Students
+                                                    </div>
+                                                </div>
+                                                <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '4px 8px' }}>Active</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div style={{ padding: '40px 0', textAlign: 'center', background: 'rgba(255,255,255,0.3)', borderRadius: '16px', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                                            <p style={{ color: '#64748b' }}>No active batches found.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         </div>
                     )}
 
+                    {/* Full Width Section: Latest Announcements */}
+                    {activeTab === 'overview' && (
+                        <motion.div
+                            className="glass-card"
+                            style={{
+                                padding: '16px 20px',
+                                marginTop: '24px',
+                                background: 'rgba(255, 255, 255, 0.15)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)'
+                            }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
+                                <FiBell style={{ marginRight: '8px' }} /> Latest Announcements
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                gap: '16px'
+                            }}>
+                                {announcements && announcements.slice(0, 4).map((ann) => (
+                                    <div key={ann.id} className="mentee-card" style={{
+                                        padding: '16px',
+                                        background: 'white',
+                                        height: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                fontWeight: '600',
+                                                fontSize: '0.95rem',
+                                                color: '#1e293b',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }} title={ann.title}>
+                                                {ann.title}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '0.85rem',
+                                                color: '#64748b',
+                                                marginTop: '6px',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 3,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                                wordBreak: 'break-word'
+                                            }}>
+                                                {ann.content}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px' }}>
+                                                {new Date(ann.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!announcements || announcements.length === 0) && (
+                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
+                                        <p style={{ color: '#64748b' }}>No announcements yet.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
                     {activeTab === 'batches' && (
-                        <BatchManagement />
+                        <BatchManagement onRefresh={fetchData} />
                     )}
 
                     {activeTab === 'users' && (

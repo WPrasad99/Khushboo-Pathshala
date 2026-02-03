@@ -1105,7 +1105,8 @@ app.get('/api/admin/reports', authenticateToken, requireRole('ADMIN'), async (re
             totalMentors,
             totalResources,
             totalSessions,
-            recentTrackings
+            recentTrackings,
+            recentBatches
         ] = await Promise.all([
             prisma.user.count({ where: { role: 'STUDENT' } }),
             prisma.user.count({ where: { role: 'MENTOR' } }),
@@ -1118,6 +1119,13 @@ app.get('/api/admin/reports', authenticateToken, requireRole('ADMIN'), async (re
                     user: { select: { name: true } },
                     resource: { select: { title: true } }
                 }
+            }),
+            prisma.batch.findMany({
+                take: 6,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    _count: { select: { students: true } }
+                }
             })
         ]);
 
@@ -1128,7 +1136,8 @@ app.get('/api/admin/reports', authenticateToken, requireRole('ADMIN'), async (re
                 totalResources,
                 totalSessions
             },
-            recentTrackings
+            recentTrackings,
+            recentBatches
         });
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch reports' });

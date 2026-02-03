@@ -5,7 +5,7 @@ import CreateBatchModal from './CreateBatchModal';
 import EditBatchModal from './EditBatchModal';
 import { motion } from 'framer-motion';
 
-const BatchManagement = () => {
+const BatchManagement = ({ onRefresh }) => {
     const [batches, setBatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -30,7 +30,8 @@ const BatchManagement = () => {
         if (window.confirm("Are you sure you want to delete this batch?")) {
             try {
                 await batchAPI.delete(id);
-                fetchBatches(); // Refresh list
+                fetchBatches(); // Refresh local list
+                if (onRefresh) onRefresh(); // Refresh global dashboard data
             } catch (error) {
                 console.error("Failed to delete batch:", error);
             }
@@ -113,7 +114,10 @@ const BatchManagement = () => {
             {showCreateModal && (
                 <CreateBatchModal
                     onClose={() => setShowCreateModal(false)}
-                    onSuccess={fetchBatches}
+                    onSuccess={() => {
+                        fetchBatches();
+                        if (onRefresh) onRefresh();
+                    }}
                 />
             )}
 
@@ -121,7 +125,10 @@ const BatchManagement = () => {
                 <EditBatchModal
                     batchId={editingBatch}
                     onClose={() => setEditingBatch(null)}
-                    onSuccess={fetchBatches}
+                    onSuccess={() => {
+                        fetchBatches();
+                        if (onRefresh) onRefresh();
+                    }}
                 />
             )}
         </div>
