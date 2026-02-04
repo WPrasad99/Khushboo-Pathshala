@@ -4,12 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiClock
+    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
 import BatchManagement from '../../components/admin/BatchManagement';
 import CreateUserModal from '../../components/admin/CreateUserModal';
+import BulkUserModal from '../../components/admin/BulkUserModal';
 import '../student/Dashboard.css';
 import './AdminDashboard.css';
 
@@ -20,13 +21,13 @@ const AdminDashboard = () => {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
     const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+    const [showBulkUserModal, setShowBulkUserModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [announcements, setAnnouncements] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
@@ -37,8 +38,6 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
     }, []);
 
     // Filter Users Effect
@@ -107,20 +106,22 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             await announcementAPI.create(newAnnouncement);
-            setShowAddAnnouncement(false);
             setNewAnnouncement({ title: '', content: '', priority: 'normal' });
-            // Optionally refresh dashboard data if announcements are tracked there
+            fetchData();
         } catch (error) {
             console.error('Failed to create announcement:', error);
         }
     };
 
-    const handleRoleChange = async (userId, newRole) => {
-        try {
-            await adminAPI.updateUserRole(userId, newRole);
-            fetchData();
-        } catch (error) {
-            console.error('Failed to update role:', error);
+    const handleDeleteUser = async (userId) => {
+        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            try {
+                await adminAPI.deleteUser(userId);
+                fetchData();
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                alert('Failed to delete user. Please try again.');
+            }
         }
     };
 
@@ -144,55 +145,97 @@ const AdminDashboard = () => {
 
     return (
         <div className="dashboard-page">
-            {/* Navbar */}
-            <nav className="navbar">
-                <div className="navbar-brand" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
-                    <img
-                        src="/logo.png"
-                        alt="Logo"
-                        className="navbar-logo"
-                        style={{ height: '65px' }}
-                    />
-                    <span style={{ marginLeft: 'var(--spacing-sm)', fontWeight: '700', fontSize: '1.25rem', color: '#1e293b' }}>
-                        KhushbooPathshala
-                    </span>
+            {/* Navbar Refined to match Mentor/Student */}
+            <nav className="navbar admin-navbar">
+                <div className="navbar-brand-mentor" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
+                    <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
+                    <span className="mentor-logo-text">Khushboo Pathshala</span>
                 </div>
 
-                <div className="navbar-actions">
-                    <div className="nav-clock">
-                        <FiClock />
-                        <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                <div className="navbar-actions-mentor">
+                    <div className="mentor-tabs-container nav-links-desktop">
+                        <div className="mentor-tabs">
+                            <button
+                                className={`mentor-tab ${activeTab === 'overview' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('overview')}
+                            >
+                                <FiBarChart2 /> Overview
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'batches' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('batches')}
+                            >
+                                <FiLayers /> Batches
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'users' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('users')}
+                            >
+                                <FiUsers /> Users
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'announcements' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('announcements')}
+                            >
+                                <FiBell /> Announcements
+                            </button>
+                        </div>
                     </div>
-                    <button
-                        className="icon-btn"
-                        style={{ position: 'relative' }}
-                        onClick={() => setShowNotifications(!showNotifications)}
-                    >
-                        <FiBell />
-                        {unreadNotifications > 0 && (
-                            <span style={{
-                                position: 'absolute',
-                                top: '-2px',
-                                right: '-2px',
-                                width: '10px',
-                                height: '10px',
-                                background: '#ef4444',
-                                borderRadius: '50%',
-                                border: '2px solid white'
-                            }}></span>
-                        )}
-                    </button>
-                    <div className="user-menu">
-                        <img src={user?.avatar} alt={user?.name} className="avatar" />
-                        <span style={{ fontWeight: '500' }}>{user?.name}</span>
-                        <button className="icon-btn" onClick={() => navigate('/settings')} title="Settings">
-                            <FiSettings />
+
+                    <div className="navbar-right-actions">
+                        <button className="icon-btn" style={{ position: 'relative' }} onClick={() => setShowNotifications(!showNotifications)}>
+                            <FiBell />
+                            {unreadNotifications > 0 && <span className="notification-dot"></span>}
                         </button>
-                        <button className="icon-btn" onClick={handleLogout}>
+                        <div className="user-info-pill" onClick={() => navigate('/settings')}>
+                            <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky'} alt={user?.name} className="avatar-sm" />
+                            <span>{user?.name?.split(' ')[0]} (Admin)</span>
+                        </div>
+                        <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
+                        </button>
+                        <button className="icon-btn menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                            <FiMoreVertical />
                         </button>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            className="mobile-nav-menu"
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                        >
+                            <button
+                                className={`mobile-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+                                onClick={() => { setActiveTab('overview'); setIsMenuOpen(false); }}
+                            >
+                                <FiBarChart2 /> Overview
+                            </button>
+                            <button
+                                className={`mobile-nav-item ${activeTab === 'batches' ? 'active' : ''}`}
+                                onClick={() => { setActiveTab('batches'); setIsMenuOpen(false); }}
+                            >
+                                <FiLayers /> Batches
+                            </button>
+                            <button
+                                className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+                                onClick={() => { setActiveTab('users'); setIsMenuOpen(false); }}
+                            >
+                                <FiUsers /> Users
+                            </button>
+                            <button
+                                className={`mobile-nav-item ${activeTab === 'announcements' ? 'active' : ''}`}
+                                onClick={() => { setActiveTab('announcements'); setIsMenuOpen(false); }}
+                            >
+                                <FiBell /> Announcements
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Notifications Dropdown */}
                 <AnimatePresence>
@@ -201,19 +244,7 @@ const AdminDashboard = () => {
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            style={{
-                                position: 'absolute',
-                                top: '70px',
-                                right: '20px',
-                                width: '320px',
-                                background: 'rgba(255, 255, 255, 0.95)',
-                                backdropFilter: 'blur(20px)',
-                                borderRadius: '16px',
-                                border: '1px solid rgba(255, 255, 255, 0.5)',
-                                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                                padding: '16px',
-                                zIndex: 1000
-                            }}
+                            className="notification-dropdown-refined"
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                 <h4 style={{ margin: 0 }}>Notifications</h4>
@@ -222,7 +253,7 @@ const AdminDashboard = () => {
                             <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                 {unreadNotifications > 0 ? (
                                     <div className="mentee-card" style={{ marginBottom: '8px', cursor: 'pointer' }}>
-                                        <FiBell style={{ color: '#6366f1' }} />
+                                        <FiBell style={{ color: '#3B82F6' }} />
                                         <div style={{ flex: 1 }}>
                                             <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Real-time Update</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>New activity detected on the platform.</div>
@@ -245,212 +276,184 @@ const AdminDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <h1 style={{ marginBottom: '4px' }}>Welcome Back, {user?.name?.split(' ')[0]} 👋</h1>
-                            <p style={{ color: '#64748b', margin: 0 }}>Here's what's happening in your academy today.</p>
-                        </div>
-                        <div className="tabs">
-                            <button
-                                className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('overview')}
-                            >
-                                <FiBarChart2 /> Overview
-                            </button>
-                            <button
-                                className={`tab ${activeTab === 'batches' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('batches')}
-                            >
-                                <FiLayers /> Batches
-                            </button>
-                            <button
-                                className={`tab ${activeTab === 'users' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('users')}
-                            >
-                                <FiUsers /> Users
-                            </button>
-                            <button
-                                className={`tab ${activeTab === 'announcements' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('announcements')}
-                            >
-                                <FiBell /> Announcements
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Stats */}
+                    {/* Stats & Welcome moved inside Overview */}
                     {activeTab === 'overview' && (
-                        <div className="stats-grid" style={{ marginBottom: '24px' }}>
-                            <div className="stat-card stat-card-teal">
-                                <div className="stat-icon">
-                                    <FiUsers />
-                                </div>
-                                <div className="stat-info">
-                                    <span className="stat-label">Total Students</span>
-                                    <span className="stat-value">{stats.totalStudents || 0}</span>
+                        <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <h1 style={{ marginBottom: '4px', fontSize: '2rem', fontWeight: 800 }}>Welcome Back, {user?.name?.split(' ')[0]} 👋</h1>
+                                    <p style={{ color: '#64748b', margin: 0 }}>Here's what's happening in your academy today.</p>
                                 </div>
                             </div>
-                            <div className="stat-card stat-card-blue">
-                                <div className="stat-icon">
-                                    <FiBook />
-                                </div>
-                                <div className="stat-info">
-                                    <span className="stat-label">Total Mentors</span>
-                                    <span className="stat-value">{stats.totalMentors || 0}</span>
-                                </div>
-                            </div>
-                            <div className="stat-card stat-card-orange">
-                                <div className="stat-icon">
-                                    <FiBook />
-                                </div>
-                                <div className="stat-info">
-                                    <span className="stat-label">Total Resources</span>
-                                    <span className="stat-value">{stats.totalResources || 0}</span>
-                                </div>
-                            </div>
-                            <div className="stat-card stat-card-purple">
-                                <div className="stat-icon">
-                                    <FiCalendar />
-                                </div>
-                                <div className="stat-info">
-                                    <span className="stat-label">Total Sessions</span>
-                                    <span className="stat-value">{stats.totalSessions || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Main Grid: Recent Activity & Active Batches */}
-                    {activeTab === 'overview' && (
-                        <div className="mentor-grid">
-                            {/* Recent Activity */}
-                            <motion.div
-                                className="glass-card"
-                                style={{ padding: '16px 20px' }}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                            >
-                                <h3 style={{ marginBottom: '16px' }}>
-                                    <FiCalendar style={{ marginRight: '8px' }} /> Recent Session Trackings
-                                </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {dashboardData?.recentTrackings?.slice(0, 5).map((tracking, index) => (
-                                        <div key={index} className="mentee-card" style={{ padding: '12px' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1e293b' }}>
-                                                    {tracking.user?.name}
-                                                </div>
-                                                <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
-                                                    Watched: {tracking.resource?.title}
-                                                </div>
-                                            </div>
-                                            <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
-                                                {tracking.attendanceMarked ? 'Completed' : 'In Progress'}
-                                            </span>
-                                        </div>
-                                    )) || <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>No recent activity.</p>}
+                            <div className="stats-grid" style={{ marginBottom: '24px' }}>
+                                <div className="stat-card stat-card-teal">
+                                    <div className="stat-icon">
+                                        <FiUsers />
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Students</span>
+                                        <span className="stat-value">{stats.totalStudents || 0}</span>
+                                    </div>
                                 </div>
-                            </motion.div>
+                                <div className="stat-card stat-card-blue">
+                                    <div className="stat-icon">
+                                        <FiBook />
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Mentors</span>
+                                        <span className="stat-value">{stats.totalMentors || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-card stat-card-orange">
+                                    <div className="stat-icon">
+                                        <FiBook />
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Resources</span>
+                                        <span className="stat-value">{stats.totalResources || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-card stat-card-purple">
+                                    <div className="stat-icon">
+                                        <FiCalendar />
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Sessions</span>
+                                        <span className="stat-value">{stats.totalSessions || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                            {/* Active Batches (No Card Wrapper) */}
-                            <motion.div
-                                style={{ padding: '0px 4px' }}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 }}
-                            >
-                                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
-                                    <FiBook style={{ marginRight: '8px' }} /> Active Batches
-                                </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {dashboardData?.recentBatches && dashboardData.recentBatches.length > 0 ? (
-                                        dashboardData.recentBatches.slice(0, 6).map((batch) => (
-                                            <div key={batch.id} className="mentee-card" style={{ padding: '14px 16px' }}>
+                            {/* Main Grid: Recent Activity & Active Batches */}
+                            <div className="mentor-grid">
+                                {/* Recent Activity */}
+                                <motion.div
+                                    className="glass-card"
+                                    style={{ padding: '16px 20px' }}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                >
+                                    <h3 style={{ marginBottom: '16px' }}>
+                                        <FiCalendar style={{ marginRight: '8px' }} /> Recent Session Trackings
+                                    </h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {dashboardData?.recentTrackings?.slice(0, 5).map((tracking, index) => (
+                                            <div key={index} className="mentee-card" style={{ padding: '12px' }}>
                                                 <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{batch.name}</div>
-                                                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
-                                                        {(batch._count?.students ?? batch.students?.length ?? 0)} Students
+                                                    <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1e293b' }}>
+                                                        {tracking.user?.name}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+                                                        Watched: {tracking.resource?.title}
                                                     </div>
                                                 </div>
-                                                <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '4px 8px' }}>Active</span>
+                                                <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
+                                                    {tracking.attendanceMarked ? 'Completed' : 'In Progress'}
+                                                </span>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div style={{ padding: '40px 0', textAlign: 'center', background: 'rgba(255,255,255,0.3)', borderRadius: '16px', border: '1px dashed rgba(0,0,0,0.1)' }}>
-                                            <p style={{ color: '#64748b' }}>No active batches found.</p>
+                                        )) || <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>No recent activity.</p>}
+                                    </div>
+                                </motion.div>
+
+                                {/* Active Batches (No Card Wrapper) */}
+                                <motion.div
+                                    style={{ padding: '0px 4px' }}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                >
+                                    <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
+                                        <FiBook style={{ marginRight: '8px' }} /> Active Batches
+                                    </h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {dashboardData?.recentBatches && dashboardData.recentBatches.length > 0 ? (
+                                            dashboardData.recentBatches.slice(0, 6).map((batch) => (
+                                                <div key={batch.id} className="mentee-card" style={{ padding: '14px 16px' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{batch.name}</div>
+                                                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
+                                                            {(batch._count?.students ?? batch.students?.length ?? 0)} Students
+                                                        </div>
+                                                    </div>
+                                                    <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '4px 8px' }}>Active</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div style={{ padding: '40px 0', textAlign: 'center', background: 'rgba(255,255,255,0.3)', borderRadius: '16px', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                                                <p style={{ color: '#64748b' }}>No active batches found.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </div>
+
+                            {/* Full Width Section: Latest Announcements */}
+                            <motion.div
+                                className="glass-card"
+                                style={{
+                                    padding: '16px 20px',
+                                    marginTop: '24px',
+                                    background: 'rgba(255, 255, 255, 0.15)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                                }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
+                                    <FiBell style={{ marginRight: '8px' }} /> Latest Announcements
+                                </h3>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                    gap: '16px'
+                                }}>
+                                    {announcements && announcements.slice(0, 4).map((ann) => (
+                                        <div key={ann.id} className="mentee-card" style={{
+                                            padding: '16px',
+                                            background: 'white',
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column'
+                                        }}>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{
+                                                    fontWeight: '600',
+                                                    fontSize: '0.95rem',
+                                                    color: '#1e293b',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap'
+                                                }} title={ann.title}>
+                                                    {ann.title}
+                                                </div>
+                                                <div style={{
+                                                    fontSize: '0.85rem',
+                                                    color: '#64748b',
+                                                    marginTop: '6px',
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 3,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    wordBreak: 'break-word'
+                                                }}>
+                                                    {ann.content}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px' }}>
+                                                    {new Date(ann.createdAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {(!announcements || announcements.length === 0) && (
+                                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
+                                            <p style={{ color: '#64748b' }}>No announcements yet.</p>
                                         </div>
                                     )}
                                 </div>
                             </motion.div>
-                        </div>
-                    )}
-
-                    {/* Full Width Section: Latest Announcements */}
-                    {activeTab === 'overview' && (
-                        <motion.div
-                            className="glass-card"
-                            style={{
-                                padding: '16px 20px',
-                                marginTop: '24px',
-                                background: 'rgba(255, 255, 255, 0.15)',
-                                border: '1px solid rgba(255, 255, 255, 0.2)'
-                            }}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
-                                <FiBell style={{ marginRight: '8px' }} /> Latest Announcements
-                            </h3>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                                gap: '16px'
-                            }}>
-                                {announcements && announcements.slice(0, 4).map((ann) => (
-                                    <div key={ann.id} className="mentee-card" style={{
-                                        padding: '16px',
-                                        background: 'white',
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column'
-                                    }}>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{
-                                                fontWeight: '600',
-                                                fontSize: '0.95rem',
-                                                color: '#1e293b',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }} title={ann.title}>
-                                                {ann.title}
-                                            </div>
-                                            <div style={{
-                                                fontSize: '0.85rem',
-                                                color: '#64748b',
-                                                marginTop: '6px',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden',
-                                                wordBreak: 'break-word'
-                                            }}>
-                                                {ann.content}
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px' }}>
-                                                {new Date(ann.createdAt).toLocaleDateString()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                                {(!announcements || announcements.length === 0) && (
-                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
-                                        <p style={{ color: '#64748b' }}>No announcements yet.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
+                        </>
                     )}
 
                     {activeTab === 'batches' && (
@@ -468,12 +471,20 @@ const AdminDashboard = () => {
                                 <h3 style={{ marginBottom: 0 }}>
                                     <FiUsers style={{ marginRight: 'var(--spacing-sm)' }} /> User Management
                                 </h3>
-                                <button
-                                    className="btn-glass-primary"
-                                    onClick={() => setShowCreateUserModal(true)}
-                                >
-                                    <FiPlus /> New User
-                                </button>
+                                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                                    <button
+                                        className="btn-glass-secondary"
+                                        onClick={() => setShowBulkUserModal(true)}
+                                    >
+                                        <FiPlus /> Create Bulk Users
+                                    </button>
+                                    <button
+                                        className="btn-glass-primary"
+                                        onClick={() => setShowCreateUserModal(true)}
+                                    >
+                                        <FiPlus /> New User
+                                    </button>
+                                </div>
                             </div>
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -508,7 +519,7 @@ const AdminDashboard = () => {
                                                 <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
                                                     {new Date(u.createdAt).toLocaleDateString()}
                                                 </td>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
+                                                <td style={{ padding: 'var(--spacing-md)', display: 'flex', gap: '8px' }}>
                                                     <select
                                                         className="select"
                                                         style={{ minWidth: '120px', padding: 'var(--spacing-xs) var(--spacing-sm)' }}
@@ -519,6 +530,14 @@ const AdminDashboard = () => {
                                                         <option value="MENTOR">Mentor</option>
                                                         <option value="ADMIN">Admin</option>
                                                     </select>
+                                                    <button
+                                                        className="btn-icon-sm"
+                                                        onClick={() => handleDeleteUser(u.id)}
+                                                        title="Delete User"
+                                                        style={{ color: '#ef4444', background: '#fee2e2' }}
+                                                    >
+                                                        <FiTrash2 />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -529,35 +548,22 @@ const AdminDashboard = () => {
                     )}
 
                     {activeTab === 'announcements' && (
-                        <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                                <h3>
-                                    <FiBell style={{ marginRight: 'var(--spacing-sm)' }} /> Announcements
-                                </h3>
-                                <button
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => setShowAddAnnouncement(!showAddAnnouncement)}
-                                >
-                                    <FiPlus /> New Announcement
-                                </button>
-                            </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            {/* New Announcement Section - Always Open */}
+                            <motion.div
+                                className="glass-card"
+                                style={{ padding: 'var(--spacing-xl)' }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+                                    <h3 style={{ margin: 0 }}>
+                                        <FiPlus style={{ marginRight: 'var(--spacing-sm)' }} /> Create New Announcement
+                                    </h3>
+                                </div>
 
-                            {showAddAnnouncement && (
                                 <motion.form
                                     onSubmit={handleAddAnnouncement}
-                                    style={{
-                                        padding: 'var(--spacing-lg)',
-                                        background: 'rgba(74, 144, 226, 0.05)',
-                                        borderRadius: 'var(--radius-md)',
-                                        marginBottom: 'var(--spacing-lg)'
-                                    }}
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
                                 >
                                     <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
                                         <label>Title</label>
@@ -567,6 +573,7 @@ const AdminDashboard = () => {
                                             value={newAnnouncement.title}
                                             onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
                                             required
+                                            placeholder="Enter announcement title..."
                                         />
                                     </div>
                                     <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
@@ -577,9 +584,10 @@ const AdminDashboard = () => {
                                             value={newAnnouncement.content}
                                             onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
                                             required
+                                            placeholder="Enter announcement details..."
                                         />
                                     </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
+                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-lg)' }}>
                                         <label>Priority</label>
                                         <select
                                             className="select"
@@ -591,16 +599,21 @@ const AdminDashboard = () => {
                                             <option value="high">High</option>
                                         </select>
                                     </div>
-                                    <button type="submit" className="btn btn-primary">
-                                        Publish Announcement
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <button type="submit" className="btn btn-primary">
+                                            Publish Announcement
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost"
+                                            onClick={() => setNewAnnouncement({ title: '', content: '', priority: 'normal' })}
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
                                 </motion.form>
-                            )}
-
-                            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-                                Announcements will be displayed to all users on their dashboards.
-                            </p>
-                        </motion.div>
+                            </motion.div>
+                        </div>
                     )}
                 </motion.div>
             </div>
@@ -609,6 +622,12 @@ const AdminDashboard = () => {
             {showCreateUserModal && (
                 <CreateUserModal
                     onClose={() => setShowCreateUserModal(false)}
+                    onSuccess={fetchData}
+                />
+            )}
+            {showBulkUserModal && (
+                <BulkUserModal
+                    onClose={() => setShowBulkUserModal(false)}
                     onSuccess={fetchData}
                 />
             )}

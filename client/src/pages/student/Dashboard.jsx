@@ -140,84 +140,10 @@ const StudentDashboard = () => {
     return (
         <div className="dashboard-content">
             {/* Header */}
-            <header className="dashboard-header">
+            <header className="dashboard-header" style={{ marginBottom: '30px' }}>
                 <div>
-                    <h1 className="welcome-title">Hello, {user?.name?.split(' ')[0]} 👋</h1>
-                    <p className="welcome-subtitle">Here's what's happening with your learning today.</p>
-                </div>
-                <div className="header-actions">
-                    <div className="search-box" style={{
-                        marginRight: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        background: 'rgba(255, 255, 255, 0.4)',
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        border: '1px solid rgba(255, 255, 255, 0.5)',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                    }}>
-                        <FiSearch style={{ color: '#64748b', marginRight: '8px' }} />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                border: 'none',
-                                background: 'transparent',
-                                outline: 'none',
-                                fontSize: '0.9rem',
-                                color: '#1e293b',
-                                width: '150px'
-                            }}
-                        />
-                    </div>
-                    <div className="notification-wrapper">
-                        <button
-                            className="header-icon-btn"
-                            onClick={() => setShowNotifications(!showNotifications)}
-                        >
-                            <FiBell />
-                            {notificationCount > 0 && (
-                                <span className="notification-badge">{notificationCount}</span>
-                            )}
-                        </button>
-
-                        <AnimatePresence>
-                            {showNotifications && (
-                                <motion.div
-                                    className="notification-dropdown"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                >
-                                    <div className="notification-header">
-                                        <h4>Notifications</h4>
-                                        <button onClick={() => setShowNotifications(false)}>
-                                            <FiX />
-                                        </button>
-                                    </div>
-                                    <div className="notification-list">
-                                        {notifications.length > 0 ? (
-                                            notifications.map((notif, i) => (
-                                                <div key={i} className="notification-item">
-                                                    <div className={`notif-icon ${notif.type}`}>
-                                                        <FiBell size={14} />
-                                                    </div>
-                                                    <div className="notif-content">
-                                                        <span className="notif-title">{notif.title}</span>
-                                                        <span className="notif-time">{formatTimeAgo(notif.createdAt)}</span>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="no-notifications">No notifications</div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                    <h1 className="welcome-title" style={{ fontSize: '2rem', fontWeight: 800 }}>Hello, {user?.name?.split(' ')[0]} 👋</h1>
+                    <p className="welcome-subtitle" style={{ color: '#64748b', marginTop: '4px' }}>Here's what's happening with your learning today.</p>
                 </div>
             </header>
 

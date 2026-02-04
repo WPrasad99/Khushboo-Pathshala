@@ -472,7 +472,7 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
 
         if (userRole === 'STUDENT') {
             // Get student dashboard data
-            const [trackings, achievements, activities, announcements, sessions] = await Promise.all([
+            const [trackings, achievements, activities, announcements, studentBatches] = await Promise.all([
                 prisma.sessionTracking.findMany({
                     where: { userId },
                     include: { resource: true }
@@ -488,12 +488,33 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
                     take: 5,
                     include: { createdBy: { select: { name: true } } }
                 }),
-                prisma.session.findMany({
-                    where: { scheduledAt: { gte: new Date() } },
-                    orderBy: { scheduledAt: 'asc' },
-                    take: 3
+                prisma.batchStudent.findMany({
+                    where: { studentId: userId },
+                    select: { batchId: true }
                 })
             ]);
+
+            const studentBatchIds = studentBatches.map(b => b.batchId);
+
+            // Fetch all upcoming sessions and filter by batch in memory
+            // (In a production app, we'd use a more direct relational query)
+            const allSessions = await prisma.session.findMany({
+                where: { scheduledAt: { gte: new Date() } },
+                orderBy: { scheduledAt: 'asc' }
+            });
+
+            const sessions = allSessions.filter(s => {
+                try {
+                    const meta = JSON.parse(s.description);
+                    // If session has a batchId, check if student is in that batch
+                    if (meta.batchId) {
+                        return studentBatchIds.includes(meta.batchId);
+                    }
+                    return true; // Global session
+                } catch {
+                    return true; // Legacy session with no JSON meta
+                }
+            }).slice(0, 3);
 
             // Calculate stats
             const totalSessions = trackings.length;
@@ -768,6 +789,174 @@ app.get('/api/sessions/tracking', authenticateToken, async (req, res) => {
         res.json(trackings);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch session tracking' });
+    }
+});
+
+// ============ MENTOR DASHBOARD ROUTES ============
+
+// Get Mentor's Assigned Batches
+app.get('/api/mentor/batches', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.id;
+        const assignedBatches = await prisma.batchMentor.findMany({
+            where: { mentorId },
+            include: {
+                batch: {
+                    include: {
+                        students: {
+                            include: {
+                                student: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        email: true,
+                                        avatar: true,
+                                        createdAt: true
+                                    }
+                                }
+                            }
+                        },
+                        mentors: {
+                            include: {
+                                mentor: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        avatar: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const batches = assignedBatches.map(ab => ({
+            ...ab.batch,
+            studentsCount: ab.batch.students.length,
+            students: ab.batch.students.map(s => s.student),
+            assignedMentors: ab.batch.mentors.map(m => m.mentor)
+        }));
+
+        res.json(batches);
+    } catch (error) {
+        console.error('Fetch mentor batches error:', error);
+        res.status(500).json({ error: 'Failed to fetch batches' });
+    }
+});
+
+// Get Mentor's Assigned Students (from all batches)
+app.get('/api/mentor/students', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.id;
+        const assignedBatches = await prisma.batchMentor.findMany({
+            where: { mentorId },
+            select: {
+                batch: {
+                    select: {
+                        name: true,
+                        students: {
+                            select: {
+                                student: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        email: true,
+                                        avatar: true,
+                                        role: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Flatten students and add batch name
+        const students = [];
+        assignedBatches.forEach(ab => {
+            ab.batch.students.forEach(s => {
+                students.push({
+                    ...s.student,
+                    batchName: ab.batch.name,
+                    status: 'Active' // Simplification for now
+                });
+            });
+        });
+
+        res.json(students);
+    } catch (error) {
+        console.error('Fetch mentor students error:', error);
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+});
+
+// Create Batch Meeting (Scheduled Meeting)
+// Note: We'll repurpose the 'Meeting' model or just use a generic storage.
+// Given the requirements, we'll implement a simplified version.
+app.post('/api/mentor/meetings', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    const { title, date, duration, mode, link, description, batchId } = req.body;
+    try {
+        // Since the current schema ties Meeting to Mentorship (1-on-1),
+        // and requirements ask for Batch visibility, we'll create a session-like meeting log.
+        // For hackathon purposes, we'll store this metadata.
+        // In a real app, we'd add BatchId to Meeting or Session.
+
+        // We'll use the 'Meeting' model if we can, but it requires mentorshipId.
+        // Instead, let's use the 'Session' model which is closer to a batch meeting.
+        const session = await prisma.session.create({
+            data: {
+                title,
+                description: JSON.stringify({ description, mode, link, batchId, mentorId: req.user.id }),
+                scheduledAt: new Date(date),
+                duration: parseInt(duration),
+                type: mode
+            }
+        });
+
+        res.json(session);
+    } catch (error) {
+        console.error('Create meeting error:', error);
+        res.status(500).json({ error: 'Failed to schedule meeting' });
+    }
+});
+
+// Get Meeting Logs
+app.get('/api/mentor/meetings', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.id;
+        // Fetch sessions and filter those created by this mentor in metadata
+        const sessions = await prisma.session.findMany({
+            orderBy: { scheduledAt: 'desc' }
+        });
+
+        const logs = sessions.filter(s => {
+            try {
+                const meta = JSON.parse(s.description);
+                return meta.mentorId === mentorId;
+            } catch {
+                return false;
+            }
+        }).map(s => {
+            const meta = JSON.parse(s.description);
+            return {
+                id: s.id,
+                title: s.title,
+                date: s.scheduledAt,
+                mode: s.type,
+                link: meta.link,
+                description: meta.description,
+                batchId: meta.batchId,
+                status: new Date(s.scheduledAt) > new Date() ? 'Scheduled' : 'Completed'
+            };
+        });
+
+        res.json(logs);
+    } catch (error) {
+        console.error('Fetch meeting logs error:', error);
+        res.status(500).json({ error: 'Failed to fetch logs' });
     }
 });
 
@@ -1679,6 +1868,109 @@ app.post('/api/admin/users', authenticateToken, requireRole('ADMIN'), async (req
     }
 });
 
+// Bulk Create Users (Admin Only)
+app.post('/api/admin/users/bulk', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { users, batchName } = req.body;
+
+        if (!users || !Array.isArray(users) || users.length === 0) {
+            return res.status(400).json({ error: 'No users provided' });
+        }
+
+        if (!batchName) {
+            return res.status(400).json({ error: 'Batch name is required' });
+        }
+
+        // 1. Find or Create Batch
+        let batch = await prisma.batch.findFirst({
+            where: { name: { equals: batchName, mode: 'insensitive' } }
+        });
+
+        if (!batch) {
+            batch = await prisma.batch.create({
+                data: {
+                    name: batchName,
+                    status: 'ACTIVE'
+                }
+            });
+        }
+
+        const results = [];
+        const errors = [];
+
+        // 2. Process Users
+        const creationOperations = await Promise.all(users.map(async (userData) => {
+            const { name, email } = userData;
+
+            if (!name || !email) {
+                errors.push({ email: email || 'unknown', error: 'Missing name or email' });
+                return null;
+            }
+
+            const existingUser = await prisma.user.findUnique({ where: { email } });
+            if (existingUser) {
+                errors.push({ email, error: 'User already exists' });
+                return null;
+            }
+
+            // Generate secure random password
+            const generatedPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-2).toUpperCase();
+            const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+            return {
+                userData: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                    role: 'STUDENT',
+                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g, '')}`,
+                    profileCompleted: true
+                },
+                plainPassword: generatedPassword
+            };
+        }));
+
+        const validOperations = creationOperations.filter(op => op !== null);
+
+        if (validOperations.length === 0) {
+            return res.status(400).json({ error: 'No valid users to create', details: errors });
+        }
+
+        // 3. Bulk Create Users and Assign to Batch (Transaction)
+        const createdUsers = await prisma.$transaction(async (tx) => {
+            const finalResults = [];
+            for (const op of validOperations) {
+                const user = await tx.user.create({
+                    data: op.userData
+                });
+
+                await tx.batchStudent.create({
+                    data: {
+                        batchId: batch.id,
+                        studentId: user.id
+                    }
+                });
+
+                finalResults.push({
+                    ...user,
+                    password: op.plainPassword // Send back the plain password for admin to download
+                });
+            }
+            return finalResults;
+        });
+
+        res.status(201).json({
+            message: `Successfully created ${createdUsers.length} users and assigned to batch "${batch.name}"`,
+            createdUsers,
+            errors,
+            batch
+        });
+    } catch (error) {
+        console.error('Bulk create user error:', error);
+        res.status(500).json({ error: 'Failed to bulk create users' });
+    }
+});
+
 // Get All Users (Admin)
 app.get('/api/admin/users', authenticateToken, requireRole('ADMIN'), async (req, res) => {
     try {
@@ -1698,6 +1990,82 @@ app.get('/api/admin/users', authenticateToken, requireRole('ADMIN'), async (req,
     } catch (error) {
         console.error('Fetch users error:', error);
         res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Update User Role (Admin)
+app.put('/api/admin/users/:id/role', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+    try {
+        await prisma.user.update({
+            where: { id },
+            data: { role }
+        });
+        res.json({ message: 'User role updated successfully' });
+    } catch (error) {
+        console.error('Update role error:', error);
+        res.status(500).json({ error: 'Failed to update user role' });
+    }
+});
+
+// Delete User (Admin)
+app.delete('/api/admin/users/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    const { id } = req.params;
+    try {
+        await prisma.$transaction(async (tx) => {
+            // Delete dependent mentorship records and their meetings
+            const mentorships = await tx.mentorship.findMany({
+                where: { OR: [{ mentorId: id }, { menteeId: id }] },
+                select: { id: true }
+            });
+            const mentorshipIds = mentorships.map(m => m.id);
+            if (mentorshipIds.length > 0) {
+                await tx.meeting.deleteMany({
+                    where: { mentorshipId: { in: mentorshipIds } }
+                });
+                await tx.mentorship.deleteMany({
+                    where: { id: { in: mentorshipIds } }
+                });
+            }
+
+            // Delete other dependent records
+            await tx.sessionTracking.deleteMany({ where: { userId: id } });
+            await tx.forumAnswer.deleteMany({ where: { authorId: id } });
+
+            // ForumPosts might have answers from others, let's delete them too
+            const forumPosts = await tx.forumPost.findMany({
+                where: { authorId: id },
+                select: { id: true }
+            });
+            const postIds = forumPosts.map(p => p.id);
+            if (postIds.length > 0) {
+                await tx.forumAnswer.deleteMany({
+                    where: { postId: { in: postIds } }
+                });
+                await tx.forumPost.deleteMany({
+                    where: { id: { in: postIds } }
+                });
+            }
+
+            await tx.achievement.deleteMany({ where: { userId: id } });
+            await tx.activity.deleteMany({ where: { userId: id } });
+            await tx.loginLog.deleteMany({ where: { userId: id } });
+            await tx.chatMessage.deleteMany({ where: { senderId: id } });
+            await tx.notification.deleteMany({ where: { userId: id } });
+            await tx.groupMember.deleteMany({ where: { userId: id } });
+            await tx.announcement.deleteMany({ where: { createdById: id } });
+
+            // BatchStudent and BatchMentor have Cascade on User, so they'll be deleted automatically
+
+            // Finally delete the user
+            await tx.user.delete({ where: { id } });
+        });
+
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
     }
 });
 

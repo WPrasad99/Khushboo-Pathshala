@@ -1,133 +1,244 @@
-/* ========== ADMIN DASHBOARD SPECIFIC STYLES ========== */
+/* Navbar Structure Refinement */
+.admin-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 0 40px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-/* Clock Styles */
-.nav-clock {
+.navbar-brand-mentor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.mentor-logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+.navbar-actions-mentor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 3;
+    gap: 20px;
+}
+
+.mentor-tabs-container {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+}
+
+.mentor-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.mentor-tab {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(10px);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    font-family: 'Space Mono', monospace;
-    font-weight: 500;
-    color: #1e293b;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-    min-width: 120px;
-    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
 }
 
-.nav-clock svg {
-    color: #6366f1;
-    font-size: 1.1rem;
+.mentor-tab:hover {
+    background: rgba(255, 255, 255, 0.6);
+    color: #3B82F6;
 }
 
-/* Navbar Logo */
-.navbar-logo {
-    height: 65px;
-    width: auto;
-    object-fit: contain;
-    transition: transform 0.3s ease;
+.mentor-tab.active {
+    background: white;
+    color: #3B82F6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
 }
 
-.navbar-logo:hover {
-    transform: scale(1.05);
+.navbar-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
 }
 
-/* Icon Buttons */
+/* User Pill & Icons */
+.user-info-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.user-info-pill:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .icon-btn {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     border: none;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #475569;
-    font-size: 1.2rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    color: #64748b;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
 }
 
 .icon-btn:hover {
-    background: rgba(59, 130, 246, 0.1);
+    background: #f1f5f9;
     color: #3B82F6;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.3);
 }
 
-.icon-btn:active {
-    transform: translateY(0) scale(0.98);
+.notification-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border: 2px solid white;
+    border-radius: 50%;
 }
 
-/* User Menu */
-.user-menu {
+.notification-dropdown-refined {
+    position: absolute;
+    top: 90px;
+    right: 40px;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    z-index: 1000;
+}
+
+.menu-toggle {
+    display: none;
+}
+
+/* Mobile Nav Menu */
+.mobile-nav-menu {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 999;
+}
+
+.mobile-nav-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: 14px 20px;
     border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    transition: all 0.3s;
-}
-
-.user-menu:hover {
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
-}
-
-.user-menu span {
-    color: #0F172A;
+    text-decoration: none;
+    color: #475569;
+    font-weight: 600;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
     font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
 }
 
-/* Mentor Grid */
+.mobile-nav-item.active {
+    background: #eff6ff;
+    color: #3B82F6;
+}
+
+/* Mentor/Admin Grid Layout ratio 70/30 */
 .mentor-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.platform-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-}
-
-.overview-stat-small {
-    padding: 12px !important;
-    border-radius: 14px !important;
-}
-
-.overview-stat-small svg {
-    font-size: 1.8rem !important;
-    margin-bottom: 8px !important;
-}
-
-.overview-stat-small .value {
-    font-size: 1.5rem !important;
-}
-
-.overview-stat-small .label {
-    font-size: 0.8rem !important;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: 7fr 3fr;
+    gap: 24px;
     margin-bottom: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .mentor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-links-desktop {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .admin-navbar {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Mentee Card */

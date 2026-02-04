@@ -56,6 +56,13 @@ export const mentorshipAPI = {
     sendMessage: (data) => api.post('/mentorship/message', data),
 };
 
+export const mentorAPI = {
+    getBatches: () => api.get('/mentor/batches'),
+    getStudents: () => api.get('/mentor/students'),
+    getMeetings: () => api.get('/mentor/meetings'),
+    scheduleMeeting: (data) => api.post('/mentor/meetings', data),
+};
+
 export const forumAPI = {
     getPosts: () => api.get('/forum/posts'),
     createPost: (data) => api.post('/forum/posts', data),
@@ -71,7 +78,9 @@ export const announcementAPI = {
 export const adminAPI = {
     getUsers: () => api.get('/admin/users'),
     createUser: (data) => api.post('/admin/users', data),
+    bulkCreateUsers: (data) => api.post('/admin/users/bulk', data),
     updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
+    deleteUser: (id) => api.delete(`/admin/users/${id}`),
     getReports: () => api.get('/admin/reports'),
     getStudents: () => api.get('/admin/students'),
     getMentors: () => api.get('/admin/mentors'),

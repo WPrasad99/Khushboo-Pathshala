@@ -1,0 +1,297 @@
+/* ========== MENTOR DASHBOARD SPECIFIC STYLES ========== */
+
+.mentor-dashboard-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+    padding-bottom: 40px;
+}
+
+/* Navbar Structure Refinement */
+.navbar-brand-mentor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.mentor-logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+.navbar-actions-mentor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 3;
+    gap: 20px;
+}
+
+.navbar-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+/* Tab Bar Consistency & Centering */
+.mentor-tabs-container {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+}
+
+.mentor-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.mentor-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.mentor-tab:hover {
+    background: rgba(255, 255, 255, 0.6);
+    color: #3B82F6;
+}
+
+.mentor-tab.active {
+    background: white;
+    color: #3B82F6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+}
+
+.mentor-tab svg {
+    font-size: 1rem;
+}
+
+/* Overview Section - 5 Columns */
+.mentor-stats-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card-refined {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.stat-card-refined:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.stat-icon-refined {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+}
+
+.stat-value-bold {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.stat-label-muted {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Accordion for Batches */
+.batch-accordion-item {
+    margin-bottom: 16px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.batch-accordion-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.batch-accordion-header:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.batch-accordion-content {
+    padding: 0 20px 20px;
+}
+
+/* Table Enhancements */
+.student-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.student-table th {
+    padding: 12px;
+    text-align: left;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.student-row {
+    background: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+}
+
+.student-row:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.student-row td {
+    padding: 12px;
+}
+
+.student-row td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.student-row td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* Action Icons */
+.action-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.action-icon-btn:hover {
+    background: #eff6ff;
+    color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.action-icon-btn.danger:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+/* Upload zones */
+.compact-upload-zone {
+    border: 2px dashed rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    background: rgba(59, 130, 246, 0.03);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.compact-upload-zone:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: #3b82f6;
+}
+
+/* Forum Threads */
+.forum-thread-card {
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.2s;
+}
+
+.forum-thread-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-open {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.status-progress {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-resolved {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* Grid specific to Mentor Dashboard layout */
+.assignments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}

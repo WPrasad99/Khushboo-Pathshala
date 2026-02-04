@@ -1,26 +1,26 @@
 /* Student Layout */
 .student-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
-    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 25%, #FFFFFF 75%, #F8FAFC 100%);
+    background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
 }
 
 .student-main-content {
     flex: 1;
-    margin-left: 220px;
     min-height: 100vh;
 }
 
 @media (max-width: 900px) {
     .student-main-content {
-        margin-left: 80px;
+        margin-left: 0;
     }
 }
 
 /* Dashboard Page */
 .dashboard-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 25%, #FFFFFF 75%, #F8FAFC 100%);
+    background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
 }
 
 /* Dashboard Content */
