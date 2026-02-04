@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userAPI } from '../api'; // Removed adminAPI
-import { FiUser, FiLock, FiUpload, FiCheck, FiEdit2, FiArrowLeft } from 'react-icons/fi'; // Removed FiShield, FiSave
+import { FiUser, FiLock, FiUpload, FiCheck, FiEdit2, FiArrowLeft, FiBell } from 'react-icons/fi'; // Removed FiShield, FiSave
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import '../pages/admin/AdminDashboard.css';
@@ -23,6 +23,13 @@ const Settings = () => {
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
+    });
+
+    const [notifications, setNotifications] = useState({
+        email: true,
+        inApp: true,
+        assignments: true,
+        meetings: true
     });
 
     const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
@@ -105,7 +112,7 @@ const Settings = () => {
                 <motion.h1
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    style={{ fontSize: '2rem', color: '#1e293b', margin: 0 }}
+                    style={{ fontSize: '2rem', color: '#1e293b', margin: 0, fontWeight: 800 }}
                 >
                     Settings
                 </motion.h1>
@@ -215,7 +222,7 @@ const Settings = () => {
                     </motion.div>
 
                     {/* Change Password */}
-                    <motion.div className="glass-card" style={{ padding: '24px', flex: 1 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <motion.div className="glass-card" style={{ padding: '24px' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '12px' }}>
                             <div style={{ background: 'rgba(244, 63, 94, 0.1)', padding: '10px', borderRadius: '12px' }}>
                                 <FiLock size={24} color="#f43f5e" />

@@ -142,9 +142,9 @@ const MentorDashboard = () => {
                             <FiBell />
                             {unreadNotifications > 0 && <span className="notification-dot"></span>}
                         </button>
-                        <div className="user-info-pill" onClick={() => setActiveTab('settings')}>
+                        <div className="user-info-pill" onClick={() => navigate('/settings')}>
                             <img src={user?.avatar} alt={user?.name} className="avatar-sm" />
-                            <span>{user?.name?.split(' ')[0]}</span>
+                            <span>{user?.name?.split(' ')[0]} (Mentor)</span>
                         </div>
                         <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
@@ -175,7 +175,6 @@ const MentorDashboard = () => {
                         {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} />}
                         {activeTab === 'forum' && <ForumSection batches={batches} />}
                         {activeTab === 'assignments' && <AssignmentsSection />}
-                        {activeTab === 'settings' && <SettingsSection user={user} />}
                     </motion.div>
                 </AnimatePresence>
             </div>
@@ -618,21 +617,17 @@ const ForumSection = ({ batches }) => (
 const AssignmentsSection = () => (
     <div className="assignments-container">
         <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3>Assignments & Tasks</h3>
-                <button className="btn-glass-primary"><FiPlus /> Create Assignment</button>
-            </div>
-
-            <div className="assignments-grid">
-                {[1, 2].map(i => (
-                    <div key={i} className="glass-card" style={{ background: 'rgba(255,255,255,0.4)', padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <h3>Active Assignments</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="mentee-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                             <div className="stat-icon-wrapper" style={{ background: '#dbeafe', color: '#2563eb' }}><FiFileText /></div>
                             <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>Due: Feb 10</span>
                         </div>
                         <h4 style={{ margin: '16px 0 8px' }}>Project Submission: Module {i}</h4>
                         <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Complete the project using the tools learned in this module.</p>
-                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                             <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>12/15 Reviewed</div>
                             <button className="btn-glass-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Review Now</button>
                         </div>
@@ -643,44 +638,5 @@ const AssignmentsSection = () => (
     </div>
 );
 
-const SettingsSection = ({ user }) => (
-    <div className="settings-container">
-        <div className="glass-card" style={{ padding: 'var(--spacing-xl)', maxWidth: '800px', margin: '0 auto' }}>
-            <h3>Mentor Settings</h3>
-            <div style={{ display: 'flex', gap: '30px', marginTop: '30px' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <img
-                        src={user?.avatar}
-                        alt=""
-                        style={{ width: '120px', height: '120px', borderRadius: '50%', border: '4px solid white', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-                    />
-                    <button className="btn-glass-secondary" style={{ marginTop: '16px', width: '100%' }}>Change Avatar</button>
-                </div>
-                <div style={{ flex: 1 }}>
-                    <div className="glass-form-group">
-                        <label className="glass-label">Full Name</label>
-                        <input type="text" className="glass-input" defaultValue={user?.name} />
-                    </div>
-                    <div className="glass-form-group">
-                        <label className="glass-label">Email Address</label>
-                        <input type="email" className="glass-input" defaultValue={user?.email} disabled />
-                    </div>
-                    <div className="glass-form-group">
-                        <label className="glass-label">Notification Preferences</label>
-                        <div style={{ display: 'flex', gap: '20px', marginTop: '8px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
-                                <input type="checkbox" defaultChecked /> Email
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
-                                <input type="checkbox" defaultChecked /> In-app
-                            </label>
-                        </div>
-                    </div>
-                    <button className="btn-glass-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }}>Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 export default MentorDashboard;
