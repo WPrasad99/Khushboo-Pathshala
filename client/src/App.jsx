@@ -97,7 +97,7 @@ function AppRoutes() {
         <Route path="resources" element={<Courses />} />
         <Route path="mentor" element={<MentorProgram />} />
         <Route path="forum" element={<Forum />} />
-        <Route path="sessions" element={<StudentDashboard />} />
+
         <Route path="assignments" element={<StudentDashboard />} />
       </Route>
 

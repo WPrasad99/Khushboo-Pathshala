@@ -64,10 +64,25 @@ export const mentorAPI = {
 };
 
 export const forumAPI = {
-    getPosts: () => api.get('/forum/posts'),
+    getPosts: (batchId) => api.get('/forum/posts', { params: { batchId } }),
+    getPostById: (id) => api.get(`/forum/posts/${id}`),
     createPost: (data) => api.post('/forum/posts', data),
     createAnswer: (postId, content) => api.post(`/forum/posts/${postId}/answers`, { content }),
     upvoteAnswer: (answerId) => api.post(`/forum/answers/${answerId}/upvote`),
+};
+
+export const assignmentAPI = {
+    createAssignment: (data) => api.post('/assignments', data),
+    getAssignments: (batchId) => api.get('/assignments', { params: { batchId } }),
+    getAssignmentDetails: (id) => api.get(`/assignments/${id}`),
+    submitAssignment: (id, data) => {
+        // Check if data is FormData (for file uploads)
+        const isFormData = data instanceof FormData;
+        return api.post(`/assignments/${id}/submit`, data, {
+            headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+        });
+    },
+    reviewSubmission: (submissionId, data) => api.put(`/assignments/submissions/${submissionId}/review`, data),
 };
 
 export const announcementAPI = {

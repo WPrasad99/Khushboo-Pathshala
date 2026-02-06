@@ -59,6 +59,9 @@ model User {
   notifications       Notification[]
   batchesAsStudent    BatchStudent[]
   batchesAsMentor     BatchMentor[]
+  createdAssignments  Assignment[]       @relation("AssignmentCreator")
+  submissions         AssignmentSubmission[]
+  reviewedSubmissions AssignmentSubmission[] @relation("SubmissionReviewer")
 }
 
 model LearningResource {
@@ -272,8 +275,9 @@ model Batch {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  students BatchStudent[]
-  mentors  BatchMentor[]
+  students    BatchStudent[]
+  mentors     BatchMentor[]
+  assignments Assignment[]
 }
 
 model BatchStudent {
@@ -302,3 +306,40 @@ model BatchMentor {
   @@unique([batchId, mentorId])
 }
 
+model Assignment {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  dueDate     DateTime
+  maxMarks    Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  createdById String
+  createdBy   User     @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  batchId     String
+  batch       Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String   @id @default(uuid())
+  content      String
+  submittedAt  DateTime @default(now())
+  status       String   @default("PENDING")
+  marks        Int?
+  feedback     String?
+  reviewedAt   DateTime?
+  
+  // Relations
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reviewedById String?
+  reviewedBy   User?      @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
+  
+  @@unique([assignmentId, studentId])
+}

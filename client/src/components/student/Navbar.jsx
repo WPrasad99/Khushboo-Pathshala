@@ -31,7 +31,7 @@ const StudentNavbar = () => {
     const navLinks = [
         { path: '/student', icon: <FiHome />, label: 'Dashboard' },
         { path: '/student/courses', icon: <FiBook />, label: 'Learning' },
-        { path: '/student/sessions', icon: <FiCalendar />, label: 'Sessions' },
+
         { path: '/student/assignments', icon: <FiFileText />, label: 'Assignments' },
         { path: '/student/forum', icon: <FiMessageSquare />, label: 'Forum' },
         { path: '/student/mentor', icon: <FiUsers />, label: 'Mentorship' },
