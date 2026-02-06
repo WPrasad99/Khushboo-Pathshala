@@ -75,12 +75,15 @@ model LearningResource {
   lessonsCount  Int              @default(1)
   lessons       Json?            // Array of { title, videoId, duration }
   isHot         Boolean          @default(false)
+  type          String?          // 'SESSION', 'RESOURCE', or 'COURSE' (null = course for backward compatibility)
+  batchId       String?          // Association with batch for visibility control
   uploadedById  String
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
   // Relations
   uploadedBy        User              @relation(fields: [uploadedById], references: [id])
+  batch             Batch?            @relation(fields: [batchId], references: [id])
   sessionTrackings  SessionTracking[]
 }
 
@@ -278,6 +281,7 @@ model Batch {
   students    BatchStudent[]
   mentors     BatchMentor[]
   assignments Assignment[]
+  resources   LearningResource[]
 }
 
 model BatchStudent {

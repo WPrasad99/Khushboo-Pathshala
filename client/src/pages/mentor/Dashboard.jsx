@@ -5,7 +5,7 @@ import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, ann
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBook,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
-    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight
+    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
@@ -195,7 +195,7 @@ const MentorDashboard = () => {
                             />
                         )}
                         {activeTab === 'batches' && <BatchesSection batches={batches} />}
-                        {activeTab === 'sessions' && <SessionsSection />}
+                        {activeTab === 'sessions' && <SessionsSection batches={batches} />}
                         {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} />}
                         {activeTab === 'forum' && <ForumSection batches={batches} />}
                         {activeTab === 'assignments' && <AssignmentsSection batches={batches} />}
@@ -423,52 +423,319 @@ const BatchesSection = ({ batches }) => {
     );
 };
 
-const SessionsSection = () => (
-    <div className="sessions-container">
-        <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h3>Learning Sessions Management</h3>
-                <button className="btn-glass-primary"><FiPlus /> Upload New Session</button>
-            </div>
+const SessionsSection = ({ batches }) => {
+    const [showModal, setShowModal] = useState(false);
+    const [uploadType, setUploadType] = useState(null); // 'SESSION' or 'RESOURCE'
+    const [uploads, setUploads] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        videoUrl: '',
+        batchId: '',
+        duration: '45'
+    });
 
-            <div className="mentor-grid">
-                <div className="compact-upload-zone">
-                    <FiUpload size={32} color="#3b82f6" />
-                    <h4 style={{ marginTop: '12px' }}>Upload Session Video</h4>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>MP4, WebM or YouTube link</p>
-                </div>
-                <div className="compact-upload-zone">
-                    <FiFileText size={32} color="#10b981" />
-                    <h4 style={{ marginTop: '12px' }}>Upload Notes / Resources</h4>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>PDF, PPTX or External Links</p>
-                </div>
-            </div>
+    useEffect(() => {
+        fetchUploads();
+    }, []);
 
-            <div style={{ marginTop: '40px' }}>
-                <h4>Recent Sessions</h4>
-                <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
-                    {[1, 2].map(i => (
-                        <div key={i} className="glass-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <div style={{ width: '80px', height: '45px', background: '#cbd5e1', borderRadius: '4px' }}></div>
-                                <div>
-                                    <div style={{ fontWeight: 600 }}>Introduction to React Hooks - Session {i}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Assigned to: Python Beginner 2024 • 45 mins</div>
+    const fetchUploads = async () => {
+        try {
+            setLoading(true);
+            const response = await mentorAPI.getUploads();
+            setUploads(response.data || []);
+        } catch (error) {
+            console.error('Failed to fetch uploads:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenModal = (type) => {
+        setUploadType(type);
+        setFormData({
+            title: '',
+            description: '',
+            videoUrl: '',
+            batchId: '',
+            duration: '45'
+        });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            if (uploadType === 'SESSION') {
+                await mentorAPI.uploadSession(formData);
+            } else {
+                await mentorAPI.uploadResource({
+                    ...formData,
+                    fileUrl: formData.videoUrl // Use same field
+                });
+            }
+
+            setShowModal(false);
+            fetchUploads(); // Refresh list
+            alert(`${uploadType === 'SESSION' ? 'Session' : 'Resource'} uploaded successfully!`);
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert(error.response?.data?.error || `Failed to upload ${uploadType.toLowerCase()}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm('Are you sure you want to delete this upload?')) return;
+
+        try {
+            await mentorAPI.deleteUpload(id);
+            fetchUploads();
+            alert('Deleted successfully!');
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete');
+        }
+    };
+
+    return (
+        <div className="sessions-container">
+            <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <h3>Learning Sessions & Resources Management</h3>
+                </div>
+
+                <div className="mentor-grid" style={{ marginBottom: '30px' }}>
+                    <div
+                        className="compact-upload-zone"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleOpenModal('SESSION')}
+                    >
+                        <FiUpload size={32} color="#3b82f6" />
+                        <h4 style={{ marginTop: '12px' }}>Upload Session Video</h4>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>MP4, WebM or YouTube link</p>
+                    </div>
+                    <div
+                        className="compact-upload-zone"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleOpenModal('RESOURCE')}
+                    >
+                        <FiFileText size={32} color="#10b981" />
+                        <h4 style={{ marginTop: '12px' }}>Upload Notes / Resources</h4>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>PDF, PPTX or External Links</p>
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '40px' }}>
+                    <h4>Your Uploaded Content</h4>
+                    {loading ? (
+                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Loading...</p>
+                    ) : uploads.length > 0 ? (
+                        <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
+                            {uploads.map(upload => (
+                                <div key={upload.id} className="glass-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                                        <div style={{
+                                            width: '80px',
+                                            height: '45px',
+                                            background: upload.type === 'SESSION' ? '#dbeafe' : '#d1fae5',
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: upload.type === 'SESSION' ? '#1e40af' : '#065f46',
+                                            fontWeight: '700',
+                                            fontSize: '0.75rem'
+                                        }}>
+                                            {upload.type}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{upload.title}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                                Batch: {upload.batch?.name || 'N/A'} • {upload.duration} mins • {upload.studentCount || 0} students
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        {upload.avgCompletion > 0 && (
+                                            <div style={{ textAlign: 'right', marginRight: '12px' }}>
+                                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                                    {Math.round(upload.avgCompletion)}% Avg
+                                                </div>
+                                                <div style={{ width: '100px', height: '6px', background: '#e2e8f0', borderRadius: '3px', marginTop: '4px' }}>
+                                                    <div style={{ width: `${upload.avgCompletion}%`, height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <button
+                                            className="action-icon-btn"
+                                            onClick={() => handleDelete(upload.id)}
+                                            style={{ color: '#ef4444' }}
+                                        >
+                                            <FiTrash2 />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>8/15 Completed</div>
-                                <div style={{ width: '100px', height: '6px', background: '#e2e8f0', borderRadius: '3px', marginTop: '4px' }}>
-                                    <div style={{ width: '53%', height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-                    ))}
+                    ) : (
+                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>
+                            No uploads yet. Click above to upload your first session or resource!
+                        </p>
+                    )}
                 </div>
             </div>
+
+            {/* Upload Modal */}
+            <AnimatePresence>
+                {showModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 1000
+                        }}
+                        onClick={() => setShowModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                background: 'white',
+                                borderRadius: '16px',
+                                padding: '32px',
+                                maxWidth: '500px',
+                                width: '90%'
+                            }}
+                        >
+                            <h2 style={{ margin: 0, marginBottom: '24px' }}>
+                                Upload {uploadType === 'SESSION' ? 'Session' : 'Resource'}
+                            </h2>
+
+                            <form onSubmit={handleSubmit}>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Title *</label>
+                                    <input
+                                        type="text"
+                                        className="glass-input"
+                                        placeholder="Enter title"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Description</label>
+                                    <textarea
+                                        className="glass-input"
+                                        placeholder="Enter description"
+                                        rows={3}
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="glass-form-group">
+                                    <label className="glass-label">
+                                        {uploadType === 'SESSION' ? 'Video URL (YouTube or Direct Link)' : 'File/Resource URL'} *
+                                    </label>
+                                    <input
+                                        type="url"
+                                        className="glass-input"
+                                        placeholder={uploadType === 'SESSION' ? 'https://youtube.com/watch?v=...' : 'https://...'}
+                                        value={formData.videoUrl}
+                                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Batch *</label>
+                                    <select
+                                        className="glass-input"
+                                        value={formData.batchId}
+                                        onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
+                                        required
+                                    >
+                                        <option value="">Select Batch</option>
+                                        {batches?.map(b => (
+                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {uploadType === 'SESSION' && (
+                                    <div className="glass-form-group">
+                                        <label className="glass-label">Duration (minutes)</label>
+                                        <input
+                                            type="number"
+                                            className="glass-input"
+                                            placeholder="45"
+                                            value={formData.duration}
+                                            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            border: '1px solid #e2e8f0',
+                                            background: 'white',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: 600,
+                                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                            opacity: isSubmitting ? 0.6 : 1
+                                        }}
+                                    >
+                                        {isSubmitting ? 'Uploading...' : 'Upload'}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-    </div>
-);
+    );
+};
 
 const MentorshipSection = ({ students, batches, onRefresh }) => {
     const [meetingForm, setMeetingForm] = useState({

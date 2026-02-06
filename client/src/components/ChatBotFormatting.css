@@ -1,0 +1,98 @@
+/* Enhanced markdown formatting styles for chatbot */
+
+/* Code blocks */
+.code-block-wrapper {
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1e293b;
+}
+
+.code-block-header {
+    background: #0f172a;
+    padding: 6px 12px;
+    border-bottom: 1px solid #334155;
+}
+
+.code-language {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.code-block {
+    margin: 0;
+    padding: 12px;
+    background: #1e293b;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.code-block code {
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.code-block::-webkit-scrollbar {
+    height: 6px;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+}
+
+/* Inline code */
+.inline-code {
+    background: #f1f5f9;
+    color: #dc2626;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.user-message .inline-code {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* Paragraphs and text formatting */
+.chat-paragraph {
+    margin: 4px 0;
+    line-height: 1.6;
+}
+
+/* Bullet points */
+.chat-bullet {
+    margin: 4px 0;
+    padding-left: 8px;
+    line-height: 1.6;
+}
+
+/* Numbered lists */
+.chat-numbered {
+    margin: 4px 0;
+    padding-left: 8px;
+    line-height: 1.6;
+}
+
+/* Bold text */
+.message-content strong {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.user-message strong {
+    color: #fff;
+}

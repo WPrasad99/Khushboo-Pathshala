@@ -625,22 +625,53 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
 // Get all resources (with optional category filter)
 app.get('/api/resources', authenticateToken, async (req, res) => {
     try {
-        const { category } = req.query;
+        const { category, type } = req.query;
+        const userId = req.user.id;
 
-        const where = category && category !== 'all'
-            ? { category: category.toUpperCase() }
-            : {};
+        // Build where clause
+        let where = {};
+
+        // For students: Only show resources from their batches OR global resources (no batchId)
+        if (req.user.role === 'STUDENT') {
+            const userBatches = await prisma.batchStudent.findMany({
+                where: { studentId: userId },
+                select: { batchId: true }
+            });
+            const batchIds = userBatches.map(b => b.batchId);
+
+            where.OR = [
+                { batchId: { in: batchIds } },  // Resources from student's batches
+                { batchId: null }                // Global resources (old courses)
+            ];
+        }
+
+        // Add category filter
+        if (category && category !== 'all') {
+            where.category = category.toUpperCase();
+        }
+
+        // Add type filter (SESSION, RESOURCE, COURSE, or null for backward compatibility)
+        if (type) {
+            if (type === 'COURSE') {
+                // COURSE type or null (legacy courses)
+                where.OR = where.OR ?
+                    where.OR.map(condition => ({ ...condition, OR: [{ type: 'COURSE' }, { type: null }] })) :
+                    [{ type: 'COURSE' }, { type: null }];
+            } else {
+                where.type = type; // SESSION or RESOURCE
+            }
+        }
 
         const resources = await prisma.learningResource.findMany({
             where,
             include: {
-                uploadedBy: { select: { name: true } }
+                uploadedBy: { select: { name: true, avatar: true } },
+                batch: { select: { name: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
 
         // Get user's tracking for each resource
-        const userId = req.user.id;
         const trackings = await prisma.sessionTracking.findMany({
             where: { userId }
         });
@@ -789,6 +820,176 @@ app.get('/api/sessions/tracking', authenticateToken, async (req, res) => {
         res.json(trackings);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch session tracking' });
+    }
+});
+
+// ============ MENTOR UPLOAD ROUTES ============
+
+// Upload Session (Video/YouTube Link)
+app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const { title, description, videoUrl, batchId, duration, category } = req.body;
+
+        // Validate required fields
+        if (!title || !videoUrl || !batchId) {
+            return res.status(400).json({ error: 'Title, video URL, and batch are required' });
+        }
+
+        // Verify mentor is assigned to this batch
+        const batchMentor = await prisma.batchMentor.findFirst({
+            where: {
+                batchId,
+                mentorId: req.user.id
+            }
+        });
+
+        if (!batchMentor) {
+            return res.status(403).json({ error: 'You are not assigned to this batch' });
+        }
+
+        // Create session as LearningResource with type='SESSION'
+        const session = await prisma.learningResource.create({
+            data: {
+                title,
+                description: description || '',
+                videoUrl,
+                type: 'SESSION',
+                batchId,
+                duration: parseInt(duration) || 45,
+                category: category || 'TECHNICAL_SKILLS',
+                uploadedById: req.user.id
+            },
+            include: {
+                batch: { select: { name: true } },
+                uploadedBy: { select: { name: true, avatar: true } }
+            }
+        });
+
+        res.json({ success: true, session });
+    } catch (error) {
+        console.error('Upload session error:', error);
+        res.status(500).json({ error: 'Failed to upload session' });
+    }
+});
+
+// Upload Resource (Files - PDF, PPTX)
+app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const { title, description, fileUrl, batchId, category } = req.body;
+
+        // Validate required fields
+        if (!title || !fileUrl || !batchId) {
+            return res.status(400).json({ error: 'Title, file URL, and batch are required' });
+        }
+
+        // Verify mentor is assigned to this batch
+        const batchMentor = await prisma.batchMentor.findFirst({
+            where: {
+                batchId,
+                mentorId: req.user.id
+            }
+        });
+
+        if (!batchMentor) {
+            return res.status(403).json({ error: 'You are not assigned to this batch' });
+        }
+
+        // Create resource as LearningResource with type='RESOURCE'
+        const resource = await prisma.learningResource.create({
+            data: {
+                title,
+                description: description || '',
+                videoUrl: fileUrl,  // Reusing videoUrl field for file path
+                type: 'RESOURCE',
+                batchId,
+                duration: 0,  // Resources don't have duration
+                category: category || 'TECHNICAL_SKILLS',
+                uploadedById: req.user.id
+            },
+            include: {
+                batch: { select: { name: true } },
+                uploadedBy: { select: { name: true, avatar: true } }
+            }
+        });
+
+        res.json({ success: true, resource });
+    } catch (error) {
+        console.error('Upload resource error:', error);
+        res.status(500).json({ error: 'Failed to upload resource' });
+    }
+});
+
+// Get Mentor's Uploaded Sessions and Resources
+app.get('/api/mentor/uploads', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const { type } = req.query;  // Filter by type: SESSION or RESOURCE
+
+        const where = {
+            uploadedById: req.user.id,
+            type: { not: null }  // Exclude old courses
+        };
+
+        if (type) {
+            where.type = type;
+        }
+
+        const uploads = await prisma.learningResource.findMany({
+            where,
+            include: {
+                batch: { select: { name: true } },
+                uploadedBy: { select: { name: true, avatar: true } },
+                sessionTrackings: {
+                    select: {
+                        id: true,
+                        completionPercentage: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Add stats for each upload
+        const uploadsWithStats = uploads.map(upload => ({
+            ...upload,
+            studentCount: upload.sessionTrackings.length,
+            avgCompletion: upload.sessionTrackings.length > 0
+                ? upload.sessionTrackings.reduce((sum, t) => sum + t.completionPercentage, 0) / upload.sessionTrackings.length
+                : 0
+        }));
+
+        res.json(uploadsWithStats);
+    } catch (error) {
+        console.error('Fetch uploads error:', error);
+        res.status(500).json({ error: 'Failed to fetch uploads' });
+    }
+});
+
+// Delete Upload (Session or Resource)
+app.delete('/api/mentor/uploads/:id', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verify ownership
+        const upload = await prisma.learningResource.findUnique({
+            where: { id }
+        });
+
+        if (!upload) {
+            return res.status(404).json({ error: 'Upload not found' });
+        }
+
+        if (upload.uploadedById !== req.user.id) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        await prisma.learningResource.delete({
+            where: { id }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete upload error:', error);
+        res.status(500).json({ error: 'Failed to delete upload' });
     }
 });
 
@@ -2618,6 +2819,67 @@ app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file')
     }
 });
 
+// Get Student Dashboard
+app.get('/api/student/dashboard', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'STUDENT') return res.status(403).json({ error: 'Student access only' });
+
+        const studentId = req.user.userId || req.user.id;
+
+        // Get student's batches
+        const student = await prisma.user.findUnique({
+            where: { id: studentId },
+            include: {
+                batchesAsStudent: {
+                    include: {
+                        batch: true
+                    }
+                }
+            }
+        });
+
+        const batchIds = student.batchesAsStudent.map(b => b.batch.id);
+
+        // Get assignments for student's batches
+        const assignments = await prisma.assignment.findMany({
+            where: {
+                batchId: { in: batchIds }
+            },
+            include: {
+                batch: true,
+                submissions: {
+                    where: { studentId },
+                    select: {
+                        id: true,
+                        status: true,
+                        marks: true,
+                        feedback: true,
+                        submittedAt: true
+                    }
+                }
+            },
+            orderBy: { dueDate: 'desc' },
+            take: 5
+        });
+
+        // Get announcements
+        const announcements = await prisma.announcement.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 3
+        });
+
+        res.json({
+            assignments,
+            announcements,
+            batches: student.batchesAsStudent.map(b => b.batch)
+        });
+
+    } catch (error) {
+        console.error('Student dashboard error:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard data' });
+    }
+});
+
 // Get Student Meetings (Upcoming sessions)
 app.get('/api/student/meetings', authenticateToken, async (req, res) => {
     try {
@@ -2713,6 +2975,136 @@ app.put('/api/assignments/submissions/:submissionId/review', authenticateToken, 
         res.status(500).json({ error: 'Failed to review submission' });
     }
 });
+
+// ============ AI CHATBOT ============
+
+// Initialize Gemini AI
+const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Chatbot endpoint - Educational assistant for students
+app.post('/api/chatbot/ask', authenticateToken, async (req, res) => {
+    try {
+        // Only students can use the chatbot
+        if (req.user.role !== 'STUDENT') {
+            return res.status(403).json({ error: 'Chatbot is available for students only' });
+        }
+
+        const { question, conversationHistory } = req.body;
+
+        if (!question || !question.trim()) {
+            return res.status(400).json({ error: 'Question is required' });
+        }
+
+        // Configure the model with educational and technical focus
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            systemInstruction: `You are an AI Study Assistant for students at Khushboo Pathshala. 
+Your role is to help with educational questions, programming, coding, and technical topics.
+
+IMPORTANT GUIDELINES:
+- Answer ALL educational, academic, programming, coding, and technical questions
+- Provide accurate, well-researched information with examples
+- Include relevant links to educational resources (Khan Academy, MDN, GeeksforGeeks, W3Schools, Stack Overflow, GitHub, etc.)
+- Explain concepts clearly with code examples when relevant
+- Keep responses concise but informative (2-4 paragraphs maximum)
+- Format code blocks properly and links as: [Resource Name](URL)
+- Be encouraging and supportive
+- If unsure, acknowledge limitations rather than guessing
+
+TOPICS YOU CAN HELP WITH:
+✅ Programming & Development: JavaScript, Python, Java, C++, HTML, CSS, React, Node.js, databases, algorithms
+✅ Computer Science: Data structures, algorithms, systems, networking, databases
+✅ Mathematics & Sciences: Math, Physics, Chemistry, Biology
+✅ Academic Subjects: History, Literature, Languages, Geography
+✅ Study Skills: Study techniques, time management, exam prep
+✅ Technology: Web development, mobile apps, AI/ML basics, cloud computing
+✅ Career Guidance: Tech careers, education paths
+
+TOPICS TO POLITELY DECLINE:
+❌ Medical, legal, or financial advice
+❌ Writing full assignment solutions (guide instead)
+❌ Inappropriate or harmful content
+
+Remember: You're here to TEACH and GUIDE, not just give answers!`
+        });
+
+        // Safety settings to prevent inappropriate content
+        const safetySettings = [
+            {
+                category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+                category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+                category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+        ];
+
+        // Build conversation context
+        let chatHistory = [];
+        if (conversationHistory && Array.isArray(conversationHistory)) {
+            // Limit to last 10 messages for context
+            chatHistory = conversationHistory.slice(-10).map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.content }]
+            }));
+        }
+
+        // Start chat with history
+        const chat = model.startChat({
+            history: chatHistory,
+            safetySettings,
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 1024,
+            },
+        });
+
+        // Send message and get response
+        const result = await chat.sendMessage(question);
+        const response = result.response;
+        const answer = response.text();
+
+        // Check if response was blocked
+        if (!answer || answer.trim() === '') {
+            return res.status(400).json({
+                error: 'I cannot provide a response to that question. Please ask an educational question instead.',
+                blocked: true
+            });
+        }
+
+        res.json({
+            answer: answer,
+            success: true
+        });
+
+    } catch (error) {
+        console.error('Chatbot error:', error);
+
+        // Handle specific error types
+        if (error.message?.includes('API key')) {
+            return res.status(500).json({ error: 'Chatbot configuration error. Please contact support.' });
+        }
+
+        res.status(500).json({
+            error: 'Failed to process your question. Please try again.',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+
 
 // ============ ANNOUNCEMENTS ============
 

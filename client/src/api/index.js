@@ -27,6 +27,7 @@ export const authAPI = {
 
 export const userAPI = {
     getDashboard: () => api.get('/users/dashboard'),
+    getStudentDashboard: () => api.get('/student/dashboard'),
     getProfile: () => api.get('/users/me'),
     updateProfile: (data) => api.put('/users/profile', data),
     uploadAvatar: (formData) => api.post('/users/avatar', formData, {
@@ -38,7 +39,7 @@ export const userAPI = {
 };
 
 export const resourceAPI = {
-    getAll: (category) => api.get('/resources', { params: { category } }),
+    getAll: (params) => api.get('/resources', { params }),  // Support category and type filters
     getOne: (id) => api.get(`/resources/${id}`),
     create: (data) => api.post('/resources', data),
     trackProgress: (id, data) => api.post(`/resources/${id}/track`, data),
@@ -61,6 +62,10 @@ export const mentorAPI = {
     getStudents: () => api.get('/mentor/students'),
     getMeetings: () => api.get('/mentor/meetings'),
     scheduleMeeting: (data) => api.post('/mentor/meetings', data),
+    uploadSession: (data) => api.post('/mentor/sessions/upload', data),
+    uploadResource: (data) => api.post('/mentor/resources/upload', data),
+    getUploads: (type) => api.get('/mentor/uploads', { params: { type } }),
+    deleteUpload: (id) => api.delete(`/mentor/uploads/${id}`),
 };
 
 export const forumAPI = {
@@ -121,6 +126,11 @@ export const chatAPI = {
     getMessages: (groupId) => api.get(`/chat/groups/${groupId}/messages`),
     sendMessage: (groupId, content) => api.post(`/chat/groups/${groupId}/messages`, { content }),
     getUsers: () => api.get('/chat/users'),
+};
+
+export const chatbotAPI = {
+    askQuestion: (question, conversationHistory) =>
+        api.post('/chatbot/ask', { question, conversationHistory })
 };
 
 export default api;

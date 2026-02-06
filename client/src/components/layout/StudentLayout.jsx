@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../student/Navbar';
+import ChatBot from '../ChatBot';
 
 const StudentLayout = () => {
     return (
@@ -9,6 +10,7 @@ const StudentLayout = () => {
             <main className="student-main-content" style={{ flex: 1, padding: '20px' }}>
                 <Outlet />
             </main>
+            <ChatBot />
         </div>
     );
 };
