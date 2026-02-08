@@ -496,25 +496,82 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
 
             const studentBatchIds = studentBatches.map(b => b.batchId);
 
-            // Fetch all upcoming sessions and filter by batch in memory
-            // (In a production app, we'd use a more direct relational query)
-            const allSessions = await prisma.session.findMany({
-                where: { scheduledAt: { gte: new Date() } },
-                orderBy: { scheduledAt: 'asc' }
-            });
+            // Fetch Meetings (1-on-1 or Batch) and Sessions
+            const [studentMeetings, allSessions] = await Promise.all([
+                prisma.meeting.findMany({
+                    where: {
+                        mentorship: { menteeId: userId }
+                    },
+                    include: {
+                        mentorship: {
+                            include: { mentor: { select: { name: true, avatar: true } } }
+                        }
+                    },
+                    orderBy: { meetingDate: 'desc' }, // Show latest first (upcoming and recent past)
+                    take: 10
+                }),
+                prisma.session.findMany({
+                    orderBy: { scheduledAt: 'desc' }, // Show latest first
+                    take: 10
+                })
+            ]);
 
-            const sessions = allSessions.filter(s => {
+            // Filter sessions by batch
+            const filteredSessions = allSessions.filter(s => {
                 try {
                     const meta = JSON.parse(s.description);
-                    // If session has a batchId, check if student is in that batch
                     if (meta.batchId) {
                         return studentBatchIds.includes(meta.batchId);
                     }
-                    return true; // Global session
+                    return true;
                 } catch {
-                    return true; // Legacy session with no JSON meta
+                    return true;
                 }
-            }).slice(0, 3);
+            });
+
+            // Merge and categorize
+            const unifiedSessions = [
+                ...studentMeetings.map(m => ({
+                    id: m.id,
+                    title: "Mentorship Meeting", // or use discussion summary if available as title?
+                    description: m.discussionSummary || "Scheduled meeting with mentor",
+                    scheduledAt: m.meetingDate,
+                    duration: m.duration,
+                    type: 'MEETING',
+                    mentor: m.mentorship.mentor
+                })),
+                ...filteredSessions.map(s => ({
+                    id: s.id,
+                    title: s.title,
+                    description: s.description,
+                    scheduledAt: s.scheduledAt,
+                    duration: s.duration,
+                    type: 'SESSION'
+                }))
+            ].sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt)); // Sort ascending for "Upcoming"?
+
+            // The user wants "createed previouly meetings... also extracted". 
+            // If we sort ascending, past meetings are first. 
+            // Let's separate future and past or just show them.
+            // But usually "Upcoming" card shows immediate next.
+            // I will return them all, but frontend cuts to "slice(0, 3)".
+            // If I sort ascending: Past (oldest) -> Past (newest) -> Future (soonest) -> Future (later).
+            // This hides the *recent* past and *soonest* future if there are many old ones.
+            // I should probably filter:
+            // 1. Future sessions (asc)
+            // 2. Past sessions (desc)
+            // And combine?
+
+            const nowTime = new Date();
+            const futureSessions = unifiedSessions.filter(s => new Date(s.scheduledAt) >= nowTime)
+                .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt));
+
+            const pastSessions = unifiedSessions.filter(s => new Date(s.scheduledAt) < nowTime)
+                .sort((a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt)); // Recent past first
+
+            // Combine specific requirement: "upcoming sessions... also display previously meetings"
+            // I'll prioritize Upcoming, then Recent Past.
+            const sessions = [...futureSessions, ...pastSessions].slice(0, 5);
 
             // Calculate stats
             const totalSessions = trackings.length;
