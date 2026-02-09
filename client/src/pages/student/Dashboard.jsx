@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import ActivityHeatmap from './ActivityHeatmap';
 import StudentAssignmentSection from '../../components/StudentAssignmentSection';
+import StudentResourcesSection from '../../components/StudentResourcesSection';
 import './Dashboard.css';
 
 const StudentDashboard = () => {
@@ -17,7 +18,8 @@ const StudentDashboard = () => {
 
     // Determine active view based on URL path
     const isAssignmentsView = location.pathname.includes('/assignments');
-    const isOverview = !isAssignmentsView;
+    const isResourcesView = location.pathname.includes('/resources');
+    const isOverview = !isAssignmentsView && !isResourcesView;
 
     const [filteredData, setFilteredData] = useState({
         recentActivities: [],
@@ -170,8 +172,85 @@ const StudentDashboard = () => {
                         </motion.div>
                     </div>
 
+                    {/* Content Grid - Upcoming Sessions (70%) & Announcements (30%) */}
+                    <div className="content-grid">
+                        <div className="grid-col-left">
+                            <motion.div
+                                className="content-card"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <div className="card-header">
+                                    <h3>Upcoming Sessions & Meetings</h3>
+                                    <button className="btn-icon"><FiArrowRight /></button>
+                                </div>
+                                <div className="sessions-list">
+                                    {upcomingSessions && upcomingSessions.length > 0 ? (
+                                        upcomingSessions.map((session, i) => {
+                                            const isPast = new Date(session.scheduledAt) < new Date();
+                                            return (
+                                                <div key={i} className={`session-item ${isPast ? 'past-session' : ''}`}>
+                                                    <div className="session-date">
+                                                        <span className="date-day">{new Date(session.scheduledAt).getDate()}</span>
+                                                        <span className="date-month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
+                                                    </div>
+                                                    <div className="session-info">
+                                                        <span className="session-title">{session.title}</span>
+                                                        <span className="session-time">
+                                                            <FiCalendar size={12} />
+                                                            {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            {session.mentor && <span className="session-mentor">• with {session.mentor.name.split(' ')[0]}</span>}
+                                                        </span>
+                                                    </div>
+                                                    {!isPast && i === 0 && <span className="badge-soon">Next</span>}
+                                                    {isPast && <span className="badge-past">Done</span>}
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="empty-state">No scheduled sessions</div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </div>
 
-
+                        <div className="grid-col-right">
+                            <motion.div
+                                className="content-card announcements-card"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6 }}
+                            >
+                                <div className="card-header">
+                                    <h3>Announcements</h3>
+                                </div>
+                                <div className="announcements-timeline">
+                                    {announcements && announcements.length > 0 ? (
+                                        announcements.slice(0, 4).map((ann, i) => (
+                                            <div key={i} className="timeline-item">
+                                                <div className="timeline-dot"></div>
+                                                <div className="timeline-content">
+                                                    <h4>{ann.title}</h4>
+                                                    <p>{ann.content || 'Important update for your learning journey.'}</p>
+                                                    <span className="time-ago">{formatTimeAgo(ann.createdAt)}</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="timeline-item">
+                                            <div className="timeline-dot"></div>
+                                            <div className="timeline-content">
+                                                <h4>Welcome to Pathshala!</h4>
+                                                <p>Start your learning journey today.</p>
+                                                <span className="time-ago">Just now</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
 
 
                     {/* Activity Heatmap */}
@@ -196,6 +275,15 @@ const StudentDashboard = () => {
                 </motion.div>
             )}
 
+            {isResourcesView && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <StudentResourcesSection />
+                </motion.div>
+            )}
 
         </div>
     );

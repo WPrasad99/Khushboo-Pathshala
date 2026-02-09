@@ -94,7 +94,7 @@ function AppRoutes() {
         <Route index element={<StudentDashboard />} />
         <Route path="courses" element={<Courses />} />
         <Route path="courses/:courseId" element={<CoursePlayer />} />
-        <Route path="resources" element={<Courses />} />
+        <Route path="resources" element={<StudentDashboard />} />
         <Route path="mentor" element={<MentorProgram />} />
         <Route path="forum" element={<Forum />} />
 

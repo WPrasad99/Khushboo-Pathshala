@@ -32,16 +32,22 @@ export const AuthProvider = ({ children }) => {
 
     // Initialize Socket.IO
     useEffect(() => {
-        if (user && !socket) {
-            const newSocket = io('http://localhost:5000');
+        if (user?.id && !socket) {
+            const newSocket = io('http://localhost:5000', {
+                transports: ['websocket'],
+                reconnection: true,
+            });
             newSocket.on('connect', () => {
                 newSocket.emit('join_user', user.id);
             });
             setSocket(newSocket);
 
-            return () => newSocket.close();
+            return () => {
+                newSocket.close();
+                setSocket(null);
+            };
         }
-    }, [user, socket]);
+    }, [user?.id]);
 
     // Check if user is logged in on mount - ONLY RUN ONCE
     useEffect(() => {

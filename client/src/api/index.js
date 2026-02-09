@@ -36,6 +36,7 @@ export const userAPI = {
     changePassword: (data) => api.put('/users/password', data),
     getLoginHistory: () => api.get('/users/login-history'),
     getNotifications: () => api.get('/notifications'),
+    getStudentResources: () => api.get('/student/resources'),
 };
 
 export const resourceAPI = {
@@ -52,7 +53,8 @@ export const sessionAPI = {
 
 export const mentorshipAPI = {
     get: () => api.get('/mentorship'),
-    getMeetings: () => api.get('/mentorship/meetings'),
+    getMeetings: (filter) => api.get('/mentorship/meetings', { params: { filter } }),
+    getBatches: () => api.get('/student/batches'),
     createMeeting: (data) => api.post('/mentorship/meetings', data),
     sendMessage: (data) => api.post('/mentorship/message', data),
 };
@@ -63,7 +65,9 @@ export const mentorAPI = {
     getMeetings: () => api.get('/mentor/meetings'),
     scheduleMeeting: (data) => api.post('/mentor/meetings', data),
     uploadSession: (data) => api.post('/mentor/sessions/upload', data),
-    uploadResource: (data) => api.post('/mentor/resources/upload', data),
+    uploadResource: (data) => api.post('/mentor/resources/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     getUploads: (type) => api.get('/mentor/uploads', { params: { type } }),
     deleteUpload: (id) => api.delete(`/mentor/uploads/${id}`),
 };

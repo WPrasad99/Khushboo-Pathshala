@@ -227,6 +227,9 @@ const LearningResources = () => {
                                             src={resource.thumbnailUrl || `https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg`}
                                             alt={resource.title}
                                             className="course-thumbnail"
+                                            onError={(e) => {
+                                                e.target.src = `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`;
+                                            }}
                                         />
                                         <div className="course-info">
                                             <div className="course-title">

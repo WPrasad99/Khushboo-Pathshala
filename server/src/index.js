@@ -677,6 +677,55 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
     }
 });
 
+// Get Student's Batches
+app.get('/api/student/batches', authenticateToken, requireRole('STUDENT'), async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        const studentBatches = await prisma.batchStudent.findMany({
+            where: { studentId },
+            include: {
+                batch: {
+                    include: {
+                        mentors: {
+                            include: {
+                                mentor: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        email: true,
+                                        avatar: true
+                                    }
+                                }
+                            }
+                        },
+                        students: {
+                            select: {
+                                studentId: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const batches = studentBatches.map(sb => ({
+            id: sb.batch.id,
+            name: sb.batch.name,
+            description: sb.batch.description,
+            status: sb.batch.status,
+            mentors: sb.batch.mentors.map(m => m.mentor),
+            studentCount: sb.batch.students.length,
+            enrolledAt: sb.enrolledAt
+        }));
+
+        res.json(batches);
+    } catch (error) {
+        console.error('Fetch student batches error:', error);
+        res.status(500).json({ error: 'Failed to fetch batches' });
+    }
+});
+
 // ============ LEARNING RESOURCES ROUTES ============
 
 // Get all resources (with optional category filter)
@@ -930,13 +979,13 @@ app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR')
 });
 
 // Upload Resource (Files - PDF, PPTX)
-app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'), upload.single('file'), async (req, res) => {
     try {
-        const { title, description, fileUrl, batchId, category } = req.body;
+        const { title, description, batchId, category } = req.body;
 
         // Validate required fields
-        if (!title || !fileUrl || !batchId) {
-            return res.status(400).json({ error: 'Title, file URL, and batch are required' });
+        if (!title || !req.file || !batchId) {
+            return res.status(400).json({ error: 'Title, file, and batch are required' });
         }
 
         // Verify mentor is assigned to this batch
@@ -951,12 +1000,14 @@ app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'
             return res.status(403).json({ error: 'You are not assigned to this batch' });
         }
 
+        const resourceUrl = `/uploads/avatars/${req.file.filename}`;
+
         // Create resource as LearningResource with type='RESOURCE'
         const resource = await prisma.learningResource.create({
             data: {
                 title,
                 description: description || '',
-                videoUrl: fileUrl,  // Reusing videoUrl field for file path
+                videoUrl: resourceUrl,  // Reusing videoUrl field for file path
                 type: 'RESOURCE',
                 batchId,
                 duration: 0,  // Resources don't have duration
@@ -1265,12 +1316,23 @@ app.get('/api/mentorship/meetings', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const role = req.user.role;
+        const { filter } = req.query; // 'upcoming', 'past', or 'all' (default)
+
+        const now = new Date();
+        let dateFilter = {};
+
+        if (filter === 'upcoming') {
+            dateFilter = { gte: now };
+        } else if (filter === 'past') {
+            dateFilter = { lt: now };
+        }
 
         let meetings;
         if (role === 'MENTOR') {
             meetings = await prisma.meeting.findMany({
                 where: {
-                    mentorship: { mentorId: userId }
+                    mentorship: { mentorId: userId },
+                    ...(filter && filter !== 'all' ? { meetingDate: dateFilter } : {})
                 },
                 include: {
                     mentorship: {
@@ -1279,22 +1341,64 @@ app.get('/api/mentorship/meetings', authenticateToken, async (req, res) => {
                         }
                     }
                 },
-                orderBy: { meetingDate: 'desc' }
+                orderBy: { meetingDate: filter === 'past' ? 'desc' : 'asc' }
             });
         } else {
-            meetings = await prisma.meeting.findMany({
-                where: {
-                    mentorship: { menteeId: userId }
-                },
-                include: {
-                    mentorship: {
-                        include: {
-                            mentor: { select: { name: true, avatar: true } }
+            // For students: Fetch sessions from batches they're enrolled in
+            const studentBatches = await prisma.batchStudent.findMany({
+                where: { studentId: userId },
+                select: {
+                    batchId: true,
+                    batch: {
+                        select: {
+                            mentors: {
+                                include: {
+                                    mentor: {
+                                        select: { id: true, name: true, avatar: true }
+                                    }
+                                }
+                            }
                         }
                     }
-                },
-                orderBy: { meetingDate: 'desc' }
+                }
             });
+
+            const batchIds = studentBatches.map(sb => sb.batchId);
+
+            // Fetch all sessions
+            const sessions = await prisma.session.findMany({
+                where: {
+                    ...(filter && filter !== 'all' ? { scheduledAt: dateFilter } : {})
+                },
+                orderBy: { scheduledAt: filter === 'past' ? 'desc' : 'asc' }
+            });
+
+            // Filter sessions by batch and transform to meeting format
+            meetings = sessions
+                .filter(s => {
+                    try {
+                        const meta = JSON.parse(s.description);
+                        return meta.batchId && batchIds.includes(meta.batchId);
+                    } catch {
+                        return false;
+                    }
+                })
+                .map(s => {
+                    const meta = JSON.parse(s.description);
+                    // Find mentor info from batch
+                    const batch = studentBatches.find(sb => sb.batchId === meta.batchId);
+                    const mentor = batch?.batch.mentors.find(m => m.mentor.id === meta.mentorId)?.mentor;
+
+                    return {
+                        id: s.id,
+                        meetingDate: s.scheduledAt,
+                        duration: s.duration,
+                        discussionSummary: s.title,
+                        mentorship: {
+                            mentor: mentor || { name: 'Unknown', avatar: null }
+                        }
+                    };
+                });
         }
 
         res.json(meetings);

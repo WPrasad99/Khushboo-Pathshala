@@ -11,7 +11,8 @@ const MentorProgram = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [mentorship, setMentorship] = useState(null);
-    const [meetings, setMeetings] = useState([]);
+    const [batches, setBatches] = useState([]);
+    const [upcomingMeetings, setUpcomingMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showMsgModal, setShowMsgModal] = useState(false);
@@ -24,12 +25,14 @@ const MentorProgram = () => {
 
     const fetchMentorshipData = async () => {
         try {
-            const [mentorshipRes, meetingsRes] = await Promise.all([
+            const [mentorshipRes, batchesRes, upcomingRes] = await Promise.all([
                 mentorshipAPI.get(),
-                mentorshipAPI.getMeetings()
+                mentorshipAPI.getBatches(),
+                mentorshipAPI.getMeetings('upcoming')
             ]);
             setMentorship(mentorshipRes.data);
-            setMeetings(meetingsRes.data);
+            setBatches(batchesRes.data);
+            setUpcomingMeetings(upcomingRes.data);
         } catch (error) {
             console.error('Failed to fetch mentorship data:', error);
         } finally {
@@ -151,20 +154,77 @@ const MentorProgram = () => {
                         </div>
                     </div>
 
-                    {/* Bottom Row: Meetings & Updates */}
-                    <div className="updates-section">
+                    {/* Batches Section */}
+                    <div className="batches-section" style={{ marginTop: '24px' }}>
+                        <div className="section-header">
+                            <h2>Your Batches</h2>
+                            <span className="count">{batches.length}</span>
+                        </div>
+                        <div className="batches-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                            {batches.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>No batches enrolled</p>
+                                </div>
+                            ) : (
+                                batches.map((batch) => (
+                                    <motion.div
+                                        key={batch.id}
+                                        className="batch-card"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            background: 'white',
+                                            borderRadius: '12px',
+                                            padding: '20px',
+                                            border: '1px solid #E5E7EB',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1F2937', marginBottom: '8px' }}>{batch.name}</h3>
+                                        <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '12px' }}>{batch.description || 'No description available'}</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem', color: '#6B7280' }}>
+                                            {batch.mentors && batch.mentors.length > 0 && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontWeight: '600', color: '#4F46E5' }}>Mentors:</span>
+                                                    <span>{batch.mentors.map(m => m.name).join(', ')}</span>
+                                                </div>
+                                            )}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontWeight: '600', color: '#4F46E5' }}>Students:</span>
+                                                <span>{batch.studentCount}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontWeight: '600', color: '#4F46E5' }}>Status:</span>
+                                                <span style={{
+                                                    padding: '2px 8px',
+                                                    background: batch.status === 'ACTIVE' ? '#DCFCE7' : '#F3F4F6',
+                                                    color: batch.status === 'ACTIVE' ? '#16A34A' : '#6B7280',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.75rem'
+                                                }}>{batch.status}</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Bottom Row: Meetings */}
+                    <div className="updates-section" style={{ marginTop: '24px' }}>
+                        {/* Upcoming Meetings */}
                         <section className="meetings-hub">
                             <div className="section-header">
-                                <h2>Upcoming Sessions</h2>
-                                <span className="count">{meetings.length}</span>
+                                <h2>Upcoming Meetings</h2>
+                                <span className="count">{upcomingMeetings.length}</span>
                             </div>
                             <div className="meetings-container">
-                                {meetings.length === 0 ? (
+                                {upcomingMeetings.length === 0 ? (
                                     <div className="empty-state">
-                                        <p>No upcoming sessions found</p>
+                                        <p>No upcoming meetings scheduled</p>
                                     </div>
                                 ) : (
-                                    meetings.map((meeting) => {
+                                    upcomingMeetings.map((meeting) => {
                                         const date = formatDate(meeting.meetingDate);
                                         return (
                                             <div key={meeting.id} className="meeting-row">
@@ -173,10 +233,10 @@ const MentorProgram = () => {
                                                     <span className="month">{date.month}</span>
                                                 </div>
                                                 <div className="meeting-info">
-                                                    <h4>{meeting.discussionSummary || 'Mentorship Session'}</h4>
-                                                    <p>{date.time} • {meeting.duration} mins</p>
+                                                    <h4>{meeting.discussionSummary || 'Mentorship Meeting'}</h4>
+                                                    <p>{date.time} • {meeting.duration || 30} mins</p>
                                                 </div>
-                                                <div className="meeting-status">Scheduled</div>
+                                                <div className="meeting-status" style={{ background: '#DBEAFE', color: '#1E40AF', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>Scheduled</div>
                                             </div>
                                         );
                                     })

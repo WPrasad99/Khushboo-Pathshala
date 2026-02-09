@@ -75,7 +75,10 @@ const Courses = () => {
     };
 
     const handleDownloadResource = (resourceUrl) => {
-        window.open(resourceUrl, '_blank');
+        const url = resourceUrl?.startsWith('http')
+            ? resourceUrl
+            : `http://localhost:5000${resourceUrl}`;
+        window.open(url, '_blank');
     };
 
     const renderCard = (item, i) => {
@@ -95,6 +98,9 @@ const Courses = () => {
                     <img
                         src={item.thumbnailUrl || `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`}
                         alt={item.title}
+                        onError={(e) => {
+                            e.target.src = `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`;
+                        }}
                     />
                     <div className="content-type-badge">
                         {isSession && <><FiVideo /> Session</>}
@@ -129,8 +135,7 @@ const Courses = () => {
 
                     <h3 className="content-title">{item.title}</h3>
                     <p className="content-description">
-                        {item.description?.substring(0, 80) || 'Expand your knowledge with this content.'}
-                        {item.description?.length > 80 ? '...' : ''}
+                        {item.description || 'Expand your knowledge with this content.'}
                     </p>
 
                     {item.uploadedBy?.name && (

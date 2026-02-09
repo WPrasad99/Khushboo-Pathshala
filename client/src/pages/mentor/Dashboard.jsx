@@ -429,6 +429,7 @@ const SessionsSection = ({ batches }) => {
     const [uploads, setUploads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [file, setFile] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -436,6 +437,12 @@ const SessionsSection = ({ batches }) => {
         batchId: '',
         duration: '45'
     });
+
+    const handleFileChange = (e) => {
+        if (e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
 
     useEffect(() => {
         fetchUploads();
@@ -455,6 +462,7 @@ const SessionsSection = ({ batches }) => {
 
     const handleOpenModal = (type) => {
         setUploadType(type);
+        setFile(null);
         setFormData({
             title: '',
             description: '',
@@ -473,10 +481,20 @@ const SessionsSection = ({ batches }) => {
             if (uploadType === 'SESSION') {
                 await mentorAPI.uploadSession(formData);
             } else {
-                await mentorAPI.uploadResource({
-                    ...formData,
-                    fileUrl: formData.videoUrl // Use same field
-                });
+                // Resource Upload Logic
+                if (!file) {
+                    alert('Please select a file to upload');
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                const data = new FormData();
+                data.append('title', formData.title);
+                data.append('description', formData.description || '');
+                data.append('batchId', formData.batchId);
+                data.append('file', file);
+
+                await mentorAPI.uploadResource(data);
             }
 
             setShowModal(false);
@@ -655,16 +673,33 @@ const SessionsSection = ({ batches }) => {
 
                                 <div className="glass-form-group">
                                     <label className="glass-label">
-                                        {uploadType === 'SESSION' ? 'Video URL (YouTube or Direct Link)' : 'File/Resource URL'} *
+                                        {uploadType === 'SESSION' ? 'Video URL (YouTube or Direct Link) *' : 'Upload Resource File *'}
                                     </label>
-                                    <input
-                                        type="url"
-                                        className="glass-input"
-                                        placeholder={uploadType === 'SESSION' ? 'https://youtube.com/watch?v=...' : 'https://...'}
-                                        value={formData.videoUrl}
-                                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                                        required
-                                    />
+
+                                    {uploadType === 'SESSION' ? (
+                                        <input
+                                            type="url"
+                                            className="glass-input"
+                                            placeholder="https://youtube.com/watch?v=..."
+                                            value={formData.videoUrl}
+                                            onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                                            required
+                                        />
+                                    ) : (
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                type="file"
+                                                className="glass-input"
+                                                onChange={handleFileChange}
+                                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                                                required
+                                                style={{ padding: '10px' }}
+                                            />
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                                                Accepted formats: PDF, Word, PowerPoint, Excel
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="glass-form-group">
