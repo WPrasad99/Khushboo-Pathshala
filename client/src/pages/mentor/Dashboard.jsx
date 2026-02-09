@@ -5,12 +5,13 @@ import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, ann
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBook,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
-    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2
+    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
 import '../admin/AdminDashboard.css';
 import './MentorDashboard.css';
+import MessagingPage from '../MessagingPage';
 
 const formatDate = (date) => {
     return date.toLocaleDateString('en-US', {
@@ -146,6 +147,12 @@ const MentorDashboard = () => {
                             >
                                 <FiFileText /> Assignments
                             </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'messages' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('messages')}
+                            >
+                                <FiMessageCircle /> Messages
+                            </button>
                         </div>
                     </div>
 
@@ -174,16 +181,18 @@ const MentorDashboard = () => {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <div className="dashboard-header-modern" style={{ marginBottom: '30px' }}>
-                            <div>
-                                <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                                    {activeTab === 'overview'
-                                        ? `Welcome back, ${user?.name?.split(' ')[0]}! 👋`
-                                        : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                                </h1>
-                                <p style={{ color: '#64748b', marginTop: '4px', fontWeight: 500 }}>{formatDate(new Date())}</p>
+                        {activeTab !== 'messages' && (
+                            <div className="dashboard-header-modern" style={{ marginBottom: '30px' }}>
+                                <div>
+                                    <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                                        {activeTab === 'overview'
+                                            ? `Welcome back, ${user?.name?.split(' ')[0]}! 👋`
+                                            : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                                    </h1>
+                                    <p style={{ color: '#64748b', marginTop: '4px', fontWeight: 500 }}>{formatDate(new Date())}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {activeTab === 'overview' && (
                             <OverviewSection
@@ -199,6 +208,19 @@ const MentorDashboard = () => {
                         {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} />}
                         {activeTab === 'forum' && <ForumSection batches={batches} />}
                         {activeTab === 'assignments' && <AssignmentsSection batches={batches} />}
+                        {activeTab === 'messages' && (
+                            <div style={{
+                                position: 'fixed',
+                                top: '80px',
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                zIndex: 100,
+                                background: '#fff'
+                            }}>
+                                <MessagingPage />
+                            </div>
+                        )}
                     </motion.div>
                 </AnimatePresence>
             </div>

@@ -4,10 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2
+    FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
+import MessagingPage from '../MessagingPage';
 import BatchManagement from '../../components/admin/BatchManagement';
 import CreateUserModal from '../../components/admin/CreateUserModal';
 import BulkUserModal from '../../components/admin/BulkUserModal';
@@ -29,10 +30,12 @@ const AdminDashboard = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    const [batches, setBatches] = useState([]);
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
         content: '',
-        priority: 'normal'
+        priority: 'normal',
+        batchIds: []
     });
     const [activeTab, setActiveTab] = useState('overview');
 
@@ -95,6 +98,7 @@ const AdminDashboard = () => {
             setUsers(usersRes.data);
             setFilteredUsers(usersRes.data);
             setAnnouncements(announcementsRes.data || []);
+            setBatches(batchesRes.data || []);
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
@@ -106,11 +110,30 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             await announcementAPI.create(newAnnouncement);
-            setNewAnnouncement({ title: '', content: '', priority: 'normal' });
+            setNewAnnouncement({ title: '', content: '', priority: 'normal', batchIds: [] });
+
+            // Success alert
+            alert('✅ Announcement published successfully! Students in the selected batches will see it on their dashboard.');
+
             fetchData();
         } catch (error) {
             console.error('Failed to create announcement:', error);
+
+            // Error alert
+            alert('❌ Failed to publish announcement. Please try again or check your connection.');
         }
+    };
+
+    const handleBatchSelection = (batchId) => {
+        const currentBatchIds = newAnnouncement.batchIds || [];
+        const isSelected = currentBatchIds.includes(batchId);
+
+        setNewAnnouncement({
+            ...newAnnouncement,
+            batchIds: isSelected
+                ? currentBatchIds.filter(id => id !== batchId)
+                : [...currentBatchIds, batchId]
+        });
     };
 
     const handleDeleteUser = async (userId) => {
@@ -178,6 +201,12 @@ const AdminDashboard = () => {
                                 onClick={() => setActiveTab('announcements')}
                             >
                                 <FiBell /> Announcements
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'messages' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('messages')}
+                            >
+                                <FiMessageCircle /> Messages
                             </button>
                         </div>
                     </div>
@@ -456,6 +485,21 @@ const AdminDashboard = () => {
                         </>
                     )}
 
+                    {/* Messages Tab */}
+                    {activeTab === 'messages' && (
+                        <div style={{
+                            position: 'fixed',
+                            top: '80px',
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 100,
+                            background: '#fff'
+                        }}>
+                            <MessagingPage />
+                        </div>
+                    )}
+
                     {activeTab === 'batches' && (
                         <BatchManagement onRefresh={fetchData} />
                     )}
@@ -587,7 +631,7 @@ const AdminDashboard = () => {
                                             placeholder="Enter announcement details..."
                                         />
                                     </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-lg)' }}>
+                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
                                         <label>Priority</label>
                                         <select
                                             className="select"
@@ -599,6 +643,46 @@ const AdminDashboard = () => {
                                             <option value="high">High</option>
                                         </select>
                                     </div>
+                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-lg)' }}>
+                                        <label>Target Batches (optional - leave empty for all students)</label>
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                                            gap: '12px',
+                                            padding: '12px',
+                                            background: '#f8fafc',
+                                            borderRadius: '8px',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            {batches.length > 0 ? batches.map(batch => (
+                                                <label key={batch.id} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    cursor: 'pointer',
+                                                    padding: '8px',
+                                                    background: (newAnnouncement.batchIds || []).includes(batch.id) ? '#dbeafe' : 'white',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid',
+                                                    borderColor: (newAnnouncement.batchIds || []).includes(batch.id) ? '#3b82f6' : '#e2e8f0',
+                                                    transition: 'all 0.2s'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(newAnnouncement.batchIds || []).includes(batch.id)}
+                                                        onChange={() => handleBatchSelection(batch.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    />
+                                                    <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{batch.name}</span>
+                                                </label>
+                                            )) : (
+                                                <p style={{ color: '#64748b', gridColumn: '1 / -1' }}>No batches available</p>
+                                            )}
+                                        </div>
+                                        <small style={{ color: '#64748b', marginTop: '4px', display: 'block' }}>
+                                            Select specific batches or leave empty to send to all students
+                                        </small>
+                                    </div>
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button type="submit" className="btn btn-primary">
                                             Publish Announcement
@@ -606,7 +690,7 @@ const AdminDashboard = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost"
-                                            onClick={() => setNewAnnouncement({ title: '', content: '', priority: 'normal' })}
+                                            onClick={() => setNewAnnouncement({ title: '', content: '', priority: 'normal', batchIds: [] })}
                                         >
                                             Clear
                                         </button>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { userAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { FiActivity, FiArrowRight, FiCalendar, FiCheckCircle, FiPlayCircle, FiBriefcase } from 'react-icons/fi';
+import { FiActivity, FiArrowRight, FiCalendar, FiCheckCircle, FiPlayCircle, FiBriefcase, FiBell } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import ActivityHeatmap from './ActivityHeatmap';
@@ -35,6 +35,9 @@ const StudentDashboard = () => {
         try {
             setLoading(true);
             const response = await userAPI.getStudentDashboard();
+            console.log('Dashboard API Response:', response.data);
+            console.log('Announcements:', response.data.announcements);
+            console.log('Upcoming Sessions:', response.data.upcomingSessions);
             setDashboardData(response.data);
             setFilteredData({
                 recentActivities: response.data.recentActivities || [],
@@ -163,105 +166,158 @@ const StudentDashboard = () => {
                                 <FiActivity size={24} />
                             </div>
                             <div className="stat-info">
-                                <span className="stat-label">Active This Month</span>
+                                <span className="stat-label">Login Streak</span>
                                 <div className="stat-value-row">
-                                    <span className="stat-value">{activeDaysThisMonth}</span>
-                                    <span className="stat-of">of {totalDaysInMonth}</span>
+                                    {stats?.streakStatus === 'paused' ? (
+                                        <>
+                                            <span className="stat-value" style={{ fontSize: '1.2rem', color: '#ef4444' }}>Paused</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="stat-value">{stats?.loginStreak || 0}</span>
+                                            <span className="stat-of">days</span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
                     </div>
 
-                    {/* Content Grid - Upcoming Sessions (70%) & Announcements (30%) */}
-                    <div className="content-grid">
-                        <div className="grid-col-left">
-                            <motion.div
-                                className="content-card"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                            >
-                                <div className="card-header">
-                                    <h3>Upcoming Sessions & Meetings</h3>
-                                    <button className="btn-icon"><FiArrowRight /></button>
-                                </div>
-                                <div className="sessions-list">
-                                    {upcomingSessions && upcomingSessions.length > 0 ? (
-                                        upcomingSessions.map((session, i) => {
-                                            const isPast = new Date(session.scheduledAt) < new Date();
-                                            return (
-                                                <div key={i} className={`session-item ${isPast ? 'past-session' : ''}`}>
-                                                    <div className="session-date">
-                                                        <span className="date-day">{new Date(session.scheduledAt).getDate()}</span>
-                                                        <span className="date-month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
-                                                    </div>
-                                                    <div className="session-info">
-                                                        <span className="session-title">{session.title}</span>
-                                                        <span className="session-time">
-                                                            <FiCalendar size={12} />
-                                                            {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            {session.mentor && <span className="session-mentor">• with {session.mentor.name.split(' ')[0]}</span>}
-                                                        </span>
-                                                    </div>
-                                                    {!isPast && i === 0 && <span className="badge-soon">Next</span>}
-                                                    {isPast && <span className="badge-past">Done</span>}
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="empty-state">No scheduled sessions</div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        </div>
+                    {/* Dashboard Sections - 70/30 Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
 
-                        <div className="grid-col-right">
-                            <motion.div
-                                className="content-card announcements-card"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6 }}
-                            >
-                                <div className="card-header">
-                                    <h3>Announcements</h3>
-                                </div>
-                                <div className="announcements-timeline">
-                                    {announcements && announcements.length > 0 ? (
-                                        announcements.slice(0, 4).map((ann, i) => (
-                                            <div key={i} className="timeline-item">
-                                                <div className="timeline-dot"></div>
-                                                <div className="timeline-content">
-                                                    <h4>{ann.title}</h4>
-                                                    <p>{ann.content || 'Important update for your learning journey.'}</p>
-                                                    <span className="time-ago">{formatTimeAgo(ann.createdAt)}</span>
-                                                </div>
+                        {/* Left: Upcoming Sessions (70%) */}
+                        <section>
+                            <div className="dashboard-section-header">
+                                <h2><FiCalendar /> Upcoming Sessions & Meetings</h2>
+                                <span className="count">{upcomingSessions.length}</span>
+                            </div>
+                            <div className="list-container">
+                                {upcomingSessions.length === 0 ? (
+                                    <div className="empty-state">
+                                        <div className="empty-state-icon"><FiCalendar /></div>
+                                        <p>No upcoming sessions scheduled</p>
+                                    </div>
+                                ) : (
+                                    upcomingSessions.map((session, i) => (
+                                        <div key={i} className="list-item">
+                                            <div className="date-badge">
+                                                <span className="day">{new Date(session.scheduledAt).getDate()}</span>
+                                                <span className="month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="timeline-item">
-                                            <div className="timeline-dot"></div>
-                                            <div className="timeline-content">
-                                                <h4>Welcome to Pathshala!</h4>
-                                                <p>Start your learning journey today.</p>
-                                                <span className="time-ago">Just now</span>
+                                            <div className="list-item-content">
+                                                <span className="list-item-title">{session.title}</span>
+                                                <span className="list-item-subtitle">
+                                                    {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.type === 'meeting' ? 'Mentorship' : 'Class'}
+                                                </span>
+                                            </div>
+                                            <div className="list-item-action">
+                                                <a href={session.link} target="_blank" rel="noopener noreferrer" className="btn-primary-sm" style={{ textDecoration: 'none', fontSize: '0.8rem', padding: '6px 12px', background: '#4f46e5', color: 'white', borderRadius: '8px' }}>
+                                                    Join
+                                                </a>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        </div>
-                    </div>
+                                    ))
+                                )}
+                            </div>
+                        </section>
 
+                        {/* Right: Announcements (30%) - Meeting Card Style */}
+                        <section>
+                            <div className="dashboard-section-header">
+                                <h2><FiBell /> Announcements</h2>
+                                <span className="count">{announcements.length}</span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {announcements.length === 0 ? (
+                                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
+                                        <FiBell style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }} />
+                                        <p>No announcements</p>
+                                    </div>
+                                ) : (
+                                    announcements.map((announcement, i) => (
+                                        <motion.div
+                                            key={i}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.05 }}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '16px',
+                                                padding: '12px',
+                                                borderRadius: '16px',
+                                                background: '#ffffff',
+                                                border: '1px solid #f1f5f9',
+                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                            whileHover={{
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 12px 20px -5px rgba(0, 0, 0, 0.05)',
+                                                borderColor: '#e2e8f0'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '44px',
+                                                height: '54px',
+                                                background: '#F8FAFC',
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0
+                                            }}>
+                                                <FiBell style={{ fontSize: '1.1rem', fontWeight: '800', color: '#ef4444' }} />
+                                                <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', fontWeight: '700', color: '#94A3B8', marginTop: '2px' }}>
+                                                    New
+                                                </span>
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <h4 style={{
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '700',
+                                                    color: '#1e293b',
+                                                    margin: '0 0 4px 0',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {announcement.title}
+                                                </h4>
+                                                <p style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#64748b',
+                                                    margin: 0,
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 1,
+                                                    WebkitBoxOrient: 'vertical'
+                                                }}>
+                                                    {announcement.content}
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    ))
+                                )}
+                            </div>
+                        </section>
+
+                    </div>
 
                     {/* Activity Heatmap */}
                     <motion.div
-                        className="heatmap-section"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.7 }}
+                        style={{ marginTop: '32px' }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
                     >
                         <ActivityHeatmap loginDates={loginDates} />
                     </motion.div>
+
                 </>
             )}
 

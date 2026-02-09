@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     FiBell, FiLogOut, FiHome, FiBook,
-    FiCalendar, FiMessageSquare, FiUsers, FiFileText, FiMoreVertical, FiFolder
+    FiCalendar, FiMessageSquare, FiMessageCircle, FiUsers, FiFileText, FiMoreVertical, FiFolder
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Navbar.css';
@@ -35,6 +35,7 @@ const StudentNavbar = () => {
 
         { path: '/student/assignments', icon: <FiFileText />, label: 'Assignments' },
         { path: '/student/forum', icon: <FiMessageSquare />, label: 'Forum' },
+        { path: '/student/messages', icon: <FiMessageCircle />, label: 'Messages' },
         { path: '/student/mentor', icon: <FiUsers />, label: 'Mentorship' },
     ];
 

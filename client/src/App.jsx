@@ -12,6 +12,8 @@ import MentorDashboard from './pages/mentor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import Settings from './pages/Settings';
 import Loading from './components/Loading';
+import MessagingPage from './pages/MessagingPage';
+import MessagingLayout from './components/layout/MessagingLayout';
 import './index.css';
 
 // Protected Route Component
@@ -78,6 +80,13 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* Shared Messaging Route - All Authenticated Users */}
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <MessagingLayout />
+        </ProtectedRoute>
+      } />
+
       {/* Dashboard Router */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
@@ -96,6 +105,7 @@ function AppRoutes() {
         <Route path="courses/:courseId" element={<CoursePlayer />} />
         <Route path="resources" element={<StudentDashboard />} />
         <Route path="mentor" element={<MentorProgram />} />
+        <Route path="messages" element={<MessagingPage />} />
         <Route path="forum" element={<Forum />} />
 
         <Route path="assignments" element={<StudentDashboard />} />

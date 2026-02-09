@@ -126,9 +126,14 @@ export const chatAPI = {
     getGroups: () => api.get('/chat/groups'),
     getInvites: () => api.get('/chat/invites'),
     createGroup: (data) => api.post('/chat/groups', data),
+    createBatchGroup: (batchId) => api.post('/chat/groups/batch', { batchId }),
+    createDirectMessage: (userId) => api.post('/chat/groups/direct', { userId }),
     respondToInvite: (id, status) => api.put(`/chat/invites/${id}`, { status }),
     getMessages: (groupId) => api.get(`/chat/groups/${groupId}/messages`),
-    sendMessage: (groupId, content) => api.post(`/chat/groups/${groupId}/messages`, { content }),
+    sendMessage: (groupId, content, attachments) => api.post(`/chat/groups/${groupId}/messages`, { content, attachments }),
+    uploadFiles: (formData) => api.post('/chat/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     getUsers: () => api.get('/chat/users'),
 };
 

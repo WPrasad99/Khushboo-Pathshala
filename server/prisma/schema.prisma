@@ -62,6 +62,8 @@ model User {
   createdAssignments  Assignment[]       @relation("AssignmentCreator")
   submissions         AssignmentSubmission[]
   reviewedSubmissions AssignmentSubmission[] @relation("SubmissionReviewer")
+  messageReads        MessageRead[]
+  messageReactions    MessageReaction[]
 }
 
 model LearningResource {
@@ -168,7 +170,23 @@ model Announcement {
 
   // Relations
   createdBy User @relation(fields: [createdById], references: [id])
+  batches   AnnouncementBatch[]
 }
+
+// Junction table for many-to-many relationship between Announcement and Batch
+model AnnouncementBatch {
+  id             String   @id @default(uuid())
+  announcementId String
+  batchId        String
+  createdAt      DateTime @default(now())
+
+  // Relations
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  batch        Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, batchId])
+}
+
 
 model Achievement {
   id          String          @id @default(uuid())
@@ -219,12 +237,15 @@ model ChatGroup {
   id          String   @id @default(uuid())
   name        String
   description String?
+  groupType   String   @default("group") // "direct", "batch", "group"
+  batchId     String?
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   // Relations
   createdBy User          @relation("GroupCreator", fields: [createdById], references: [id])
+  batch     Batch?        @relation(fields: [batchId], references: [id])
   members   GroupMember[]
   messages  ChatMessage[]
 }
@@ -245,15 +266,43 @@ model GroupMember {
 }
 
 model ChatMessage {
-  id        String   @id @default(uuid())
-  groupId   String
-  senderId  String
-  content   String
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  groupId     String
+  senderId    String
+  content     String
+  attachments Json?    // Array of {type, url, name, size, mimeType}
+  createdAt   DateTime @default(now())
   
   // Relations
-  group   ChatGroup @relation(fields: [groupId], references: [id])
-  sender  User      @relation(fields: [senderId], references: [id])
+  group     ChatGroup         @relation(fields: [groupId], references: [id])
+  sender    User              @relation(fields: [senderId], references: [id])
+  reads     MessageRead[]
+  reactions MessageReaction[]
+}
+
+model MessageRead {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id])
+  
+  @@unique([messageId, userId])
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  emoji     String   // '👍', '❤️', '😂', '😮', '😢', '🙏'
+  createdAt DateTime @default(now())
+  
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id])
+  
+  @@unique([messageId, userId, emoji])
 }
 
 model Notification {
@@ -282,6 +331,8 @@ model Batch {
   mentors     BatchMentor[]
   assignments Assignment[]
   resources   LearningResource[]
+  announcements AnnouncementBatch[]
+  chatGroups  ChatGroup[]
 }
 
 model BatchStudent {

@@ -6,6 +6,9 @@ const { Server } = require('socket.io');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -22,6 +25,42 @@ const io = new Server(server, {
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    // Allowed file types
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|zip/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid file type. Only images, PDFs, and documents are allowed.'));
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: fileFilter
+});
+
 // Middleware
 app.use(cors({
     origin: "http://localhost:5173",
@@ -30,41 +69,7 @@ app.use(cors({
 app.use(express.json());
 
 // Serve uploaded files statically
-const path = require('path');
-const fs = require('fs');
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Ensure upload directory exists
-const uploadDir = path.join(__dirname, '../uploads/avatars');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Config
-const multer = require('multer');
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|pdf|doc|docx|ppt|pptx/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        if (extname) { // Mimetype check can be tricky for docs, relying on extension + magic bytes usually better but simplifying here
-            return cb(null, true);
-        }
-        cb(new Error("Error: File upload only supports images and documents (pdf, doc, ppt)"));
-    }
-});
 
 // Session config
 app.use(session({
@@ -1583,32 +1588,7 @@ app.get('/api/announcements', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (req, res) => {
-    try {
-        const { title, content, priority } = req.body;
 
-        const announcement = await prisma.announcement.create({
-            data: {
-                title,
-                content,
-                priority: priority || 'normal',
-                createdById: req.user.id
-            }
-        });
-
-        // Broadcast notification to all users
-        io.emit('notification', {
-            title: 'New Announcement',
-            content: announcement.title,
-            type: 'announcement',
-            createdAt: new Date()
-        });
-
-        res.status(201).json(announcement);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create announcement' });
-    }
-});
 
 // ============ ADMIN ROUTES ============
 
@@ -1816,6 +1796,83 @@ app.get('/api/chat/groups', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
 
+        // --- AUTO-CREATE DEFAULT CONVERSATIONS START ---
+        // Fetch current user role
+        const currentUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true }
+        });
+
+        if (currentUser) {
+            const targetIds = new Set();
+
+            // 1. Add all Admins (everyone should be able to chat with admin)
+            const admins = await prisma.user.findMany({
+                where: { role: 'ADMIN' },
+                select: { id: true }
+            });
+            admins.forEach(a => targetIds.add(a.id));
+
+            // 2. Add Assigned Mentors (if user is Student)
+            if (currentUser.role === 'STUDENT') {
+                const mentorships = await prisma.mentorship.findMany({
+                    where: { menteeId: userId },
+                    select: { mentorId: true }
+                });
+                mentorships.forEach(m => targetIds.add(m.mentorId));
+            }
+
+            // 3. Add Students (if user is Mentor - optional, but user requested 'added in list')
+            // Note: This might spam mentor if they have many students, but requested behavior implies mutual visibility.
+            if (currentUser.role === 'MENTOR') {
+                // For now, let's strictly follow "when student message to mentor... student should get added".
+                // But also "assigned mentor... added to chat list".
+                // So for Mentor, we won't auto-create chats with all students to avoid clutter, 
+                // as the requirement says "when student message to mentor".
+                // However, "admin should gets added in student and mentor messaging list".
+            }
+
+            // Remove self and ensure no duplicates
+            targetIds.delete(userId);
+
+            // Ensure DM groups exist
+            for (const targetId of targetIds) {
+                // Check if group exists
+                const existingGroup = await prisma.chatGroup.findFirst({
+                    where: {
+                        groupType: 'direct',
+                        AND: [
+                            { members: { some: { userId: userId } } },
+                            { members: { some: { userId: targetId } } }
+                        ]
+                    }
+                });
+
+                if (!existingGroup) {
+                    console.log(`Auto-creating DM between ${userId} and ${targetId}`);
+                    try {
+                        await prisma.chatGroup.create({
+                            data: {
+                                name: 'Direct Message',
+                                groupType: 'direct',
+                                createdById: userId, // User acts as creator
+                                members: {
+                                    create: [
+                                        { userId: userId, role: 'member', status: 'accepted' },
+                                        { userId: targetId, role: 'member', status: 'accepted' }
+                                    ]
+                                }
+                            }
+                        });
+                    } catch (err) {
+                        console.error('Error auto-creating DM:', err);
+                        // Continue to next target, don't fail the request
+                    }
+                }
+            }
+        }
+        // --- AUTO-CREATE DEFAULT CONVERSATIONS END ---
+
         const memberships = await prisma.groupMember.findMany({
             where: {
                 userId,
@@ -1908,6 +1965,146 @@ app.post('/api/chat/groups', authenticateToken, requireRole('MENTOR', 'ADMIN'), 
     }
 });
 
+// Create Batch Group (Admin only)
+app.post('/api/chat/groups/batch', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { batchId } = req.body;
+
+        console.log('Creating batch group for batchId:', batchId);
+
+        if (!batchId) {
+            return res.status(400).json({ error: 'Batch ID is required' });
+        }
+
+        // Get batch with all students and mentors
+        const batch = await prisma.batch.findUnique({
+            where: { id: batchId },
+            include: {
+                students: { include: { student: true } },
+                mentors: { include: { mentor: true } }
+            }
+        });
+
+        if (!batch) {
+            console.log('Batch not found:', batchId);
+            return res.status(404).json({ error: 'Batch not found' });
+        }
+
+        console.log(`Found batch: ${batch.name}, Students: ${batch.students?.length || 0}, Mentors: ${batch.mentors?.length || 0}`);
+
+        // Collect all user IDs (students + mentors)
+        const studentIds = batch.students?.map(s => s.studentId) || [];
+        const mentorIds = batch.mentors?.map(m => m.mentorId) || [];
+        const allMemberIds = [...studentIds, ...mentorIds].filter(id => id !== req.user.id); // Exclude admin creator
+
+        console.log('Member IDs:', allMemberIds);
+
+        // Create batch group
+        const group = await prisma.chatGroup.create({
+            data: {
+                name: `${batch.name} - Batch Group`,
+                description: `Group chat for ${batch.name}`,
+                groupType: 'batch',
+                batchId: batchId,
+                createdById: req.user.id,
+                members: {
+                    create: [
+                        { userId: req.user.id, role: 'admin', status: 'accepted' },
+                        ...allMemberIds.map(id => ({ userId: id, role: 'member', status: 'accepted' }))
+                    ]
+                }
+            },
+            include: {
+                createdBy: { select: { name: true } },
+                batch: { select: { name: true } },
+                members: { include: { user: { select: { id: true, name: true, avatar: true } } } }
+            }
+        });
+
+        console.log('Batch group created successfully:', group.id);
+
+        // Notify all members via socket
+        allMemberIds.forEach(userId => {
+            io.to(`user_${userId}`).emit('group:created', { group });
+        });
+
+        res.status(201).json(group);
+    } catch (error) {
+        console.error('Create batch group error:', error);
+        console.error('Error stack:', error.stack);
+        console.error('Error message:', error.message);
+        res.status(500).json({
+            error: 'Failed to create batch group',
+            message: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
+
+// Create or Get Direct Message Group
+app.post('/api/chat/groups/direct', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.body; // The other user's ID
+        const currentUserId = req.user.id;
+
+        if (userId === currentUserId) {
+            return res.status(400).json({ error: 'Cannot create direct message with yourself' });
+        }
+
+        // Check if direct group already exists between these two users
+        const existingGroup = await prisma.chatGroup.findFirst({
+            where: {
+                groupType: 'direct',
+                AND: [
+                    { members: { some: { userId: currentUserId } } },
+                    { members: { some: { userId } } }
+                ]
+            },
+            include: {
+                members: { include: { user: { select: { id: true, name: true, avatar: true } } } },
+                messages: { orderBy: { createdAt: 'desc' }, take: 1 }
+            }
+        });
+
+        if (existingGroup) {
+            return res.json(existingGroup);
+        }
+
+        // Get the other user's info
+        const otherUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { name: true }
+        });
+
+        // Create new direct message group
+        const group = await prisma.chatGroup.create({
+            data: {
+                name: `${req.user.name} & ${otherUser.name}`,
+                groupType: 'direct',
+                createdById: currentUserId,
+                members: {
+                    create: [
+                        { userId: currentUserId, role: 'admin', status: 'accepted' },
+                        { userId, role: 'member', status: 'accepted' }
+                    ]
+                }
+            },
+            include: {
+                members: { include: { user: { select: { id: true, name: true, avatar: true } } } },
+                messages: { orderBy: { createdAt: 'desc' }, take: 1 }
+            }
+        });
+
+        // Notify the other user
+        io.to(`user_${userId}`).emit('group:created', { group });
+
+        res.status(201).json(group);
+    } catch (error) {
+        console.error('Create direct message error:', error);
+        res.status(500).json({ error: 'Failed to create direct message' });
+    }
+});
+
 // Accept/Reject invite
 app.put('/api/chat/invites/:id', authenticateToken, async (req, res) => {
     try {
@@ -1948,16 +2145,39 @@ app.get('/api/chat/groups/:groupId/messages', authenticateToken, async (req, res
     }
 });
 
+// Upload files for chat
+app.post('/api/chat/upload', authenticateToken, upload.array('files', 5), async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files uploaded' });
+        }
+
+        const fileData = req.files.map(file => ({
+            type: file.mimetype.startsWith('image/') ? 'image' : 'document',
+            url: `/uploads/${file.filename}`,
+            name: file.originalname,
+            size: file.size,
+            mimeType: file.mimetype
+        }));
+
+        res.json({ files: fileData });
+    } catch (error) {
+        console.error('File upload error:', error);
+        res.status(500).json({ error: 'Failed to upload files' });
+    }
+});
+
 // Send message
 app.post('/api/chat/groups/:groupId/messages', authenticateToken, async (req, res) => {
     try {
-        const { content } = req.body;
+        const { content, attachments } = req.body;
 
         const message = await prisma.chatMessage.create({
             data: {
                 groupId: req.params.groupId,
                 senderId: req.user.id,
-                content
+                content: content || '',
+                attachments: attachments || null
             },
             include: {
                 sender: { select: { id: true, name: true, avatar: true } }
@@ -1984,6 +2204,236 @@ app.get('/api/chat/users', authenticateToken, requireRole('MENTOR', 'ADMIN'), as
         res.json(users);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// ============ READ RECEIPTS & REACTIONS ENDPOINTS ============
+
+// Mark messages as read
+app.post('/api/chat/groups/:groupId/messages/read', authenticateToken, async (req, res) => {
+    try {
+        const { messageIds } = req.body;
+        const userId = req.user.id;
+
+        const reads = await Promise.all(
+            messageIds.map(messageId =>
+                prisma.messageRead.upsert({
+                    where: { messageId_userId: { messageId, userId } },
+                    create: { messageId, userId },
+                    update: { readAt: new Date() }
+                })
+            )
+        );
+
+        res.json({ success: true, reads });
+    } catch (error) {
+        console.error('Mark as read error:', error);
+        res.status(500).json({ error: 'Failed to mark messages as read' });
+    }
+});
+
+// Add reaction to message
+app.post('/api/chat/messages/:messageId/reactions', authenticateToken, async (req, res) => {
+    try {
+        const { emoji } = req.body;
+        const messageId = req.params.messageId;
+        const userId = req.user.id;
+
+        const reaction = await prisma.messageReaction.upsert({
+            where: { messageId_userId_emoji: { messageId, userId, emoji } },
+            create: { messageId, userId, emoji },
+            update: {},
+            include: { user: { select: { id: true, name: true, avatar: true } } }
+        });
+
+        const message = await prisma.chatMessage.findUnique({ where: { id: messageId } });
+        io.to(`group_${message.groupId}`).emit('message_reaction', { messageId, reaction });
+
+        res.status(201).json(reaction);
+    } catch (error) {
+        console.error('Add reaction error:', error);
+        res.status(500).json({ error: 'Failed to add reaction' });
+    }
+});
+
+// Remove reaction from message
+app.delete('/api/chat/messages/:messageId/reactions/:emoji', authenticateToken, async (req, res) => {
+    try {
+        const { messageId, emoji } = req.params;
+        const userId = req.user.id;
+
+        await prisma.messageReaction.delete({
+            where: { messageId_userId_emoji: { messageId, userId, emoji } }
+        });
+
+        const message = await prisma.chatMessage.findUnique({ where: { id: messageId } });
+        io.to(`group_${message.groupId}`).emit('reaction_removed', { messageId, userId, emoji });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Remove reaction error:', error);
+        res.status(500).json({ error: 'Failed to remove reaction' });
+    }
+});
+
+// Get reactions for a message
+app.get('/api/chat/messages/:messageId/reactions', authenticateToken, async (req, res) => {
+    try {
+        const reactions = await prisma.messageReaction.findMany({
+            where: { messageId: req.params.messageId },
+            include: { user: { select: { id: true, name: true, avatar: true } } }
+        });
+        res.json(reactions);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch reactions' });
+    }
+});
+
+// ============ MESSAGE SEARCH ============
+
+// Search messages in a group
+app.get('/api/chat/groups/:groupId/messages/search', authenticateToken, async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.json([]);
+
+        const messages = await prisma.chatMessage.findMany({
+            where: {
+                groupId: req.params.groupId,
+                content: { contains: q, mode: 'insensitive' }
+            },
+            include: { sender: { select: { id: true, name: true, avatar: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
+
+        res.json(messages);
+    } catch (error) {
+        console.error('Search messages error:', error);
+        res.status(500).json({ error: 'Failed to search messages' });
+    }
+});
+
+// ============ GROUP MANAGEMENT ============
+
+// Get group details with members
+app.get('/api/chat/groups/:groupId/info', authenticateToken, async (req, res) => {
+    try {
+        const group = await prisma.chatGroup.findUnique({
+            where: { id: req.params.groupId },
+            include: {
+                members: {
+                    include: { user: { select: { id: true, name: true, email: true, avatar: true, role: true } } }
+                },
+                createdBy: { select: { id: true, name: true, avatar: true } },
+                batch: { select: { id: true, name: true } }
+            }
+        });
+
+        if (!group) return res.status(404).json({ error: 'Group not found' });
+        res.json(group);
+    } catch (error) {
+        console.error('Get group info error:', error);
+        res.status(500).json({ error: 'Failed to fetch group info' });
+    }
+});
+
+// Update group details (admin only)
+app.put('/api/chat/groups/:groupId', authenticateToken, async (req, res) => {
+    try {
+        const { name, description } = req.body;
+        const groupId = req.params.groupId;
+
+        const member = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: req.user.id } }
+        });
+
+        if (!member || member.role !== 'admin') {
+            return res.status(403).json({ error: 'Only group admins can update group details' });
+        }
+
+        const group = await prisma.chatGroup.update({
+            where: { id: groupId },
+            data: { name, description }
+        });
+
+        io.to(`group_${groupId}`).emit('group_updated', group);
+        res.json(group);
+    } catch (error) {
+        console.error('Update group error:', error);
+        res.status(500).json({ error: 'Failed to update group' });
+    }
+});
+
+// Add members to group (admin only)
+app.post('/api/chat/groups/:groupId/members', authenticateToken, async (req, res) => {
+    try {
+        const { userIds } = req.body;
+        const groupId = req.params.groupId;
+
+        const member = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: req.user.id } }
+        });
+
+        if (!member || member.role !== 'admin') {
+            return res.status(403).json({ error: 'Only group admins can add members' });
+        }
+
+        const newMembers = await Promise.all(
+            userIds.map(userId =>
+                prisma.groupMember.create({
+                    data: { groupId, userId, status: 'accepted' },
+                    include: { user: { select: { id: true, name: true, avatar: true } } }
+                })
+            )
+        );
+
+        newMembers.forEach(newMember => {
+            io.to(`user_${newMember.userId}`).emit('added_to_group', { groupId, group: { id: groupId } });
+        });
+
+        res.json(newMembers);
+    } catch (error) {
+        console.error('Add members error:', error);
+        res.status(500).json({ error: 'Failed to add members' });
+    }
+});
+
+// Remove member from group (admin only)
+app.delete('/api/chat/groups/:groupId/members/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { groupId, userId } = req.params;
+
+        const requester = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: req.user.id } }
+        });
+
+        if (!requester || requester.role !== 'admin') {
+            return res.status(403).json({ error: 'Only group admins can remove members' });
+        }
+
+        await prisma.groupMember.delete({
+            where: { groupId_userId: { groupId, userId } }
+        });
+
+        io.to(`user_${userId}`).emit('removed_from_group', { groupId });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({ error: 'Failed to remove member' });
+    }
+});
+
+// Leave group
+app.post('/api/chat/groups/:groupId/leave', authenticateToken, async (req, res) => {
+    try {
+        await prisma.groupMember.delete({
+            where: { groupId_userId: { groupId: req.params.groupId, userId: req.user.id } }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Leave group error:', error);
+        res.status(500).json({ error: 'Failed to leave group' });
     }
 });
 
@@ -2995,6 +3445,10 @@ app.get('/api/student/dashboard', authenticateToken, async (req, res) => {
                     include: {
                         batch: true
                     }
+                },
+                loginLogs: {
+                    orderBy: { loginDate: 'desc' },
+                    take: 365
                 }
             }
         });
@@ -3023,16 +3477,104 @@ app.get('/api/student/dashboard', authenticateToken, async (req, res) => {
             take: 5
         });
 
-        // Get announcements
-        const announcements = await prisma.announcement.findMany({
-            orderBy: { createdAt: 'desc' },
-            take: 3
+        // Get announcements for student's batches or global announcements
+        const allAnnouncements = await prisma.announcement.findMany({
+            include: {
+                batches: true
+            },
+            orderBy: { createdAt: 'desc' }
         });
+
+        // Filter for student's batches or announcements with no batch restrictions (global)
+        const announcements = allAnnouncements
+            .filter(ann =>
+                ann.batches.length === 0 || // Global announcement (no batches)
+                ann.batches.some(ab => batchIds.includes(ab.batchId)) // Student's batch
+            )
+            .slice(0, 5); // Take top 5
+
+
+        // Get upcoming sessions for student's batches
+        const now = new Date();
+        const sessions = await prisma.session.findMany({
+            where: {
+                scheduledAt: { gte: now }
+            },
+            orderBy: { scheduledAt: 'asc' },
+            take: 10
+        });
+
+        // Filter sessions relevant to student's batches and transform
+        const upcomingSessions = sessions
+            .filter(session => {
+                try {
+                    const desc = JSON.parse(session.description || '{}');
+                    return desc.batchId && batchIds.includes(desc.batchId);
+                } catch {
+                    return false;
+                }
+            })
+            .map(session => {
+                const desc = JSON.parse(session.description || '{}');
+                return {
+                    id: session.id,
+                    title: session.title,
+                    scheduledAt: session.scheduledAt,
+                    duration: session.duration,
+                    type: session.type,
+                    link: desc.link || ''
+                };
+            });
+
+        // Calculate login streak
+        const loginDates = student.loginLogs
+            .map(l => new Date(l.loginDate).toISOString().split('T')[0])
+            .filter((date, index, self) => self.indexOf(date) === index) // Remove duplicates
+            .sort((a, b) => new Date(b) - new Date(a)); // Sort descending
+
+        let loginStreak = 0;
+        let streakStatus = 'active';
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+        if (loginDates.length > 0) {
+            const mostRecentLogin = loginDates[0];
+
+            if (mostRecentLogin === today || mostRecentLogin === yesterday) {
+                // Calculate streak
+                loginStreak = 1;
+                let checkDate = new Date(mostRecentLogin);
+
+                for (let i = 1; i < loginDates.length; i++) {
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    const expectedDate = checkDate.toISOString().split('T')[0];
+
+                    if (loginDates[i] === expectedDate) {
+                        loginStreak++;
+                    } else {
+                        break;
+                    }
+                }
+
+                streakStatus = mostRecentLogin === today ? 'active' : 'continue';
+            } else {
+                // Streak broken
+                streakStatus = 'paused';
+                loginStreak = 0;
+            }
+        }
 
         res.json({
             assignments,
             announcements,
-            batches: student.batchesAsStudent.map(b => b.batch)
+            batches: student.batchesAsStudent.map(b => b.batch),
+            upcomingSessions,
+            loginDates,
+            stats: {
+                loginStreak,
+                streakStatus,
+                totalLoginDays: loginDates.length
+            }
         });
 
     } catch (error) {
@@ -3286,18 +3828,34 @@ app.get('/api/announcements', authenticateToken, async (req, res) => {
 
 app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (req, res) => {
     try {
-        const { title, content, priority } = req.body;
+        const { title, content, priority, batchIds } = req.body;
+
+        // Create announcement
         const announcement = await prisma.announcement.create({
             data: {
                 title,
                 content,
                 priority: priority || 'normal',
-                createdById: req.user.id
+                createdById: req.user.id,
+                // Create batch associations if batchIds provided
+                ...(batchIds && batchIds.length > 0 && {
+                    batches: {
+                        create: batchIds.map(batchId => ({
+                            batchId
+                        }))
+                    }
+                })
             },
             include: {
-                createdBy: { select: { name: true } }
+                createdBy: { select: { name: true } },
+                batches: {
+                    include: {
+                        batch: { select: { name: true } }
+                    }
+                }
             }
         });
+
         res.status(201).json(announcement);
     } catch (error) {
         console.error('Create announcement error:', error);
