@@ -18,13 +18,23 @@ const StudentLayout = () => {
                 overflow: isMessagesPage ? 'hidden' : 'visible'
             }}
         >
-            <Navbar />
+            <div style={{
+                position: isMessagesPage ? 'fixed' : 'sticky',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                width: '100%'
+            }}>
+                <Navbar />
+            </div>
             <main
                 className="student-main-content"
                 style={{
                     flex: 1,
                     padding: isMessagesPage ? 0 : '20px',
                     paddingTop: isMessagesPage ? '80px' : '20px',
+                    marginTop: isMessagesPage ? 0 : 0,
                     overflow: isMessagesPage ? 'hidden' : 'auto',
                     display: 'flex',
                     flexDirection: 'column'

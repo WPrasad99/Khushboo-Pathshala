@@ -17,6 +17,22 @@
     overflow: hidden;
 }
 
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 600;
+}
+
 .conversations-header {
     padding: 20px;
     border-bottom: 1px solid #e2e8f0;
@@ -187,6 +203,9 @@
     flex-direction: column;
     background: #f8fafc;
     position: relative;
+    height: 100%;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .messages-header {
@@ -427,4 +446,111 @@
     .message {
         max-width: 80%;
     }
+}
+
+/* WhatsApp-style Attachments */
+.message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.attachment-card {
+    max-width: 100%;
+}
+
+/* Image Thumbnails */
+.attachment-image-container {
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #f0f0f0;
+    max-width: 300px;
+    transition: transform 0.2s;
+}
+
+.attachment-image-container:hover {
+    transform: scale(1.02);
+}
+
+.attachment-image-preview {
+    display: block;
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* File Cards */
+.attachment-file-card {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1e293b;
+    gap: 12px;
+    min-width: 240px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: background 0.2s;
+}
+
+.message.own .attachment-file-card {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.attachment-file-card:hover {
+    background: rgba(255, 255, 255, 1);
+}
+
+.message.own .attachment-file-card:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.file-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background: #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #64748b;
+}
+
+.message.own .file-icon-wrapper {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.file-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-type {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.download-icon {
+    font-size: 1.1rem;
+    opacity: 0.7;
 }

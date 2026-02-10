@@ -3,13 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage } from 'react-icons/fi';
 import { chatAPI } from '../api';
 import { socket } from '../api/socket';
+import { useAuth } from '../context/AuthContext';
 import CreateGroupModal from '../components/messaging/CreateGroupModal';
 import FileUpload from '../components/messaging/FileUpload';
 import GroupInfoPanel from '../components/messaging/GroupInfoPanel';
+import UserInfoPanel from '../components/messaging/UserInfoPanel';
 import './MessagingPage.css';
 
 const MessagingPage = () => {
+    const { user: currentUser } = useAuth();
     const [conversations, setConversations] = useState([]);
+    const [contacts, setContacts] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -17,17 +21,19 @@ const MessagingPage = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showGroupInfo, setShowGroupInfo] = useState(false);
+    const [showUserInfo, setShowUserInfo] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [usersTyping, setUsersTyping] = useState([]);
     const messagesEndRef = useRef(null);
     const typingTimeoutRef = useRef(null);
-    const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
-    const currentUserName = JSON.parse(localStorage.getItem('user'))?.name;
 
-    // Fetch conversations
+    const currentUserId = currentUser?.id;
+    const currentUserName = currentUser?.name;
+
+    // Fetch conversations and contacts
     useEffect(() => {
-        fetchConversations();
+        fetchData();
 
         // Socket listeners
         socket.on('message:new', handleNewMessage);
@@ -41,8 +47,10 @@ const MessagingPage = () => {
 
     // Fetch messages when conversation changes
     useEffect(() => {
-        if (selectedConversation) {
+        if (selectedConversation && !selectedConversation.isPlaceholder) {
             fetchMessages(selectedConversation.id);
+        } else {
+            setMessages([]);
         }
     }, [selectedConversation]);
 
@@ -51,15 +59,32 @@ const MessagingPage = () => {
         scrollToBottom();
     }, [messages]);
 
-    const fetchConversations = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await chatAPI.getGroups();
-            setConversations(response.data);
+            const [groupsRes, contactsRes] = await Promise.all([
+                chatAPI.getGroups().catch(err => ({ data: [] })),
+                chatAPI.getContacts().catch(err => ({ data: [] }))
+            ]);
+            setConversations(Array.isArray(groupsRes?.data) ? groupsRes.data : []);
+            setContacts(Array.isArray(contactsRes?.data) ? contactsRes.data : []);
         } catch (error) {
-            console.error('Failed to fetch conversations:', error);
+            console.error('Failed to fetch data:', error);
+            setConversations([]);
+            setContacts([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchConversations = async () => {
+        try {
+            const response = await chatAPI.getGroups();
+            if (Array.isArray(response?.data)) {
+                setConversations(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch conversations:', error);
         }
     };
 
@@ -76,14 +101,26 @@ const MessagingPage = () => {
         if (selectedConversation && data.groupId === selectedConversation.id) {
             setMessages(prev => [...prev, data]);
         }
-
-        // Update conversation list
         fetchConversations();
     };
 
     const handleGroupCreated = (data) => {
         fetchConversations();
     };
+
+
+
+    // ... (logic)
+
+    const handleConversationClick = async (conv) => {
+        // GROUPS ONLY: No placeholder or DM logic needed
+        setShowGroupInfo(false);
+        setShowUserInfo(false);
+        setSelectedConversation(conv);
+        fetchMessages(conv.id);
+    };
+
+    // ... sendMessage ... (keep existing)
 
     const sendMessage = async (e) => {
         e.preventDefault();
@@ -93,18 +130,16 @@ const MessagingPage = () => {
             setUploading(true);
             let attachments = null;
 
-            // Upload files if any selected
+            // ... upload logic ... (keep existing)
             if (selectedFiles.length > 0) {
                 const formData = new FormData();
                 selectedFiles.forEach(file => {
                     formData.append('files', file);
                 });
-
                 const uploadResponse = await chatAPI.uploadFiles(formData);
                 attachments = uploadResponse.data.files;
             }
 
-            // Send message with attachments
             const response = await chatAPI.sendMessage(
                 selectedConversation.id,
                 newMessage.trim(),
@@ -115,7 +150,6 @@ const MessagingPage = () => {
             setNewMessage('');
             setSelectedFiles([]);
 
-            // Emit via socket for real-time delivery
             socket.emit('message:send', {
                 groupId: selectedConversation.id,
                 message: response.data
@@ -139,27 +173,53 @@ const MessagingPage = () => {
         return `${hours}:${minutes}`;
     };
 
-    const formatDate = (timestamp) => {
-        const date = new Date(timestamp);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        if (date.toDateString() === today.toDateString()) return 'Today';
-        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-        return date.toLocaleDateString();
-    };
+    // ... helpers ...
 
     const getOtherUser = (conversation) => {
+        if (!conversation?.members || !Array.isArray(conversation.members)) return null;
+
+        if (conversation.isPlaceholder) {
+            return conversation.members[0]?.user;
+        }
         if (conversation.groupType === 'direct') {
-            return conversation.members.find(m => m.userId !== currentUserId)?.user;
+            // Use loose comparison for ID mismatch safety
+            const other = conversation.members.find(m => m.userId != currentUserId);
+            return other?.user;
         }
         return null;
     };
 
-    const filteredConversations = conversations.filter(conv =>
-        conv.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Merge conversations and contacts
+    const getDisplayList = () => {
+        if (!Array.isArray(conversations)) return [];
+
+        // GROUPS ONLY: Filter out all direct messages
+        const validConversations = conversations.filter(c => c.groupType !== 'direct');
+
+
+
+        const displayList = [...validConversations];
+
+        // GROUPS ONLY: No contact processing needed
+
+        // Filter by search
+        // Search only within group names
+        if (searchQuery) {
+            return displayList.filter(c =>
+                c.name?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        return displayList;
+    };
+
+    const handleLeaveGroup = (groupId) => {
+        setConversations(prev => prev.filter(c => c.id !== groupId));
+        setSelectedConversation(null);
+        setShowGroupInfo(false);
+    };
+
+    const filteredConversations = getDisplayList();
 
     if (loading) {
         return (
@@ -173,11 +233,22 @@ const MessagingPage = () => {
         <div className="messaging-page">
             {/* Left Sidebar - Conversations */}
             <div className="conversations-sidebar">
+                <div className="sidebar-header">
+                    <h2>Messages</h2>
+                    <button
+                        className="create-group-btn"
+                        onClick={() => setShowCreateModal(true)}
+                        title="Create New Group"
+                    >
+                        <FiPlus /> Create Group
+                    </button>
+                </div>
+
                 <div className="search-box">
                     <FiSearch />
                     <input
                         type="text"
-                        placeholder="Search conversations..."
+                        placeholder="Search groups..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -186,37 +257,26 @@ const MessagingPage = () => {
                 <div className="conversations-list">
                     <AnimatePresence>
                         {filteredConversations.map(conv => {
-                            const otherUser = getOtherUser(conv);
                             const lastMessage = conv.messages?.[0];
 
                             return (
                                 <motion.div
                                     key={conv.id}
                                     className={`conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedConversation(conv)}
+                                    onClick={() => handleConversationClick(conv)}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                 >
                                     <div className="conversation-avatar">
-                                        {conv.groupType === 'direct' ? (
-                                            <div className="avatar">
-                                                {otherUser?.avatar ? (
-                                                    <img src={otherUser.avatar} alt={otherUser.name} />
-                                                ) : (
-                                                    otherUser?.name?.charAt(0)?.toUpperCase()
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="avatar group-avatar">
-                                                <FiUsers />
-                                            </div>
-                                        )}
+                                        <div className="avatar group-avatar">
+                                            <FiUsers />
+                                        </div>
                                     </div>
 
                                     <div className="conversation-info">
                                         <div className="conversation-top">
-                                            <h4>{conv.groupType === 'direct' ? otherUser?.name : conv.name}</h4>
+                                            <h4>{conv.name}</h4>
                                             {lastMessage && (
                                                 <span className="conversation-time">
                                                     {formatTime(lastMessage.createdAt)}
@@ -247,27 +307,15 @@ const MessagingPage = () => {
                                 style={{ cursor: 'pointer' }}
                             >
                                 <div className="conversation-avatar">
-                                    {selectedConversation.groupType === 'direct' ? (
-                                        <div className="avatar">
-                                            {getOtherUser(selectedConversation)?.name?.charAt(0)?.toUpperCase()}
-                                        </div>
-                                    ) : (
-                                        <div className="avatar group-avatar">
-                                            <FiUsers />
-                                        </div>
-                                    )}
+                                    <div className="avatar group-avatar">
+                                        <FiUsers />
+                                    </div>
                                 </div>
                                 <div>
-                                    <h3>
-                                        {selectedConversation.groupType === 'direct'
-                                            ? getOtherUser(selectedConversation)?.name
-                                            : selectedConversation.name}
-                                    </h3>
-                                    {selectedConversation.groupType !== 'direct' && (
-                                        <p className="members-count">
-                                            {selectedConversation.members.length} members
-                                        </p>
-                                    )}
+                                    <h3>{selectedConversation.name}</h3>
+                                    <p className="members-count">
+                                        {selectedConversation.members.length} members
+                                    </p>
                                 </div>
                             </div>
                             <button className="more-btn" onClick={() => setShowGroupInfo(true)}>
@@ -292,29 +340,38 @@ const MessagingPage = () => {
                                             <div className="message-bubble">
                                                 {msg.content && <p>{msg.content}</p>}
 
-                                                {/* Render file attachments */}
+                                                {/* Render file attachments WhatsApp Style */}
                                                 {msg.attachments && msg.attachments.length > 0 && (
                                                     <div className="message-attachments">
                                                         {msg.attachments.map((file, idx) => (
-                                                            <div key={idx} className="attachment-wrapper">
-                                                                {file.type === 'image' ? (
-                                                                    <img
-                                                                        src={`http://localhost:5000${file.url}`}
-                                                                        alt={file.name}
-                                                                        className="attachment-image"
+                                                            <div key={idx} className="attachment-card">
+                                                                {file.type === 'image' || (file.url && file.url.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
+                                                                    <div
+                                                                        className="attachment-image-container"
                                                                         onClick={() => window.open(`http://localhost:5000${file.url}`, '_blank')}
-                                                                    />
+                                                                    >
+                                                                        <img
+                                                                            src={`http://localhost:5000${file.url}`}
+                                                                            alt={file.name}
+                                                                            className="attachment-image-preview"
+                                                                        />
+                                                                    </div>
                                                                 ) : (
                                                                     <a
                                                                         href={`http://localhost:5000${file.url}`}
                                                                         download={file.name}
-                                                                        className="attachment-document"
+                                                                        className="attachment-file-card"
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                     >
-                                                                        <FiFile />
-                                                                        <span>{file.name}</span>
-                                                                        <FiDownload />
+                                                                        <div className="file-icon-wrapper">
+                                                                            <FiFile className="file-icon" />
+                                                                        </div>
+                                                                        <div className="file-info">
+                                                                            <span className="file-name">{file.name}</span>
+                                                                            <span className="file-type">{file.name ? file.name.split('.').pop().toUpperCase() : 'FILE'}</span>
+                                                                        </div>
+                                                                        <FiDownload className="download-icon" />
                                                                     </a>
                                                                 )}
                                                             </div>
@@ -375,12 +432,21 @@ const MessagingPage = () => {
             )}
 
             {/* Group Info Panel */}
+            {/* Right Side Panels */}
             <AnimatePresence>
                 {showGroupInfo && selectedConversation && (
                     <GroupInfoPanel
                         group={selectedConversation}
                         onClose={() => setShowGroupInfo(false)}
                         currentUserId={currentUserId}
+                        currentUser={currentUser}
+                        onLeave={handleLeaveGroup}
+                    />
+                )}
+                {showUserInfo && selectedConversation && selectedConversation.groupType === 'direct' && (
+                    <UserInfoPanel
+                        user={getOtherUser(selectedConversation)}
+                        onClose={() => setShowUserInfo(false)}
                     />
                 )}
             </AnimatePresence>

@@ -135,6 +135,16 @@ export const chatAPI = {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
     getUsers: () => api.get('/chat/users'),
+    getContacts: () => api.get('/chat/contacts'),
+};
+
+export const quizAPI = {
+    createQuiz: (data) => api.post('/quizzes', data),
+    getMentorQuizzes: () => api.get('/quizzes/mentor'),
+    getStudentQuizzes: () => api.get('/quizzes/student'),
+    getQuizDetails: (id) => api.get(`/quizzes/${id}`),
+    startQuiz: (id) => api.post(`/quizzes/${id}/start`),
+    submitQuiz: (id, answers) => api.post(`/quizzes/${id}/submit`, { answers }),
 };
 
 export const chatbotAPI = {

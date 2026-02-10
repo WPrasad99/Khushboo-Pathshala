@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
 import ActivityHeatmap from './ActivityHeatmap';
 import StudentAssignmentSection from '../../components/StudentAssignmentSection';
 import StudentResourcesSection from '../../components/StudentResourcesSection';
+
 import './Dashboard.css';
 
 const StudentDashboard = () => {
@@ -17,7 +18,7 @@ const StudentDashboard = () => {
     const [loginDates, setLoginDates] = useState([]);
 
     // Determine active view based on URL path
-    const isAssignmentsView = location.pathname.includes('/assignments');
+    const isAssignmentsView = location.pathname.includes('/assignments') || location.pathname.includes('/quizzes');
     const isResourcesView = location.pathname.includes('/resources');
     const isOverview = !isAssignmentsView && !isResourcesView;
 
@@ -330,6 +331,8 @@ const StudentDashboard = () => {
                     <StudentAssignmentSection />
                 </motion.div>
             )}
+
+
 
             {isResourcesView && (
                 <motion.div

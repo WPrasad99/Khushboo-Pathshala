@@ -1789,6 +1789,161 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Khushboo Pathshala API is running!' });
 });
 
+// ============ CHAT CONTACTS ============
+
+// Get available contacts for new chats
+app.get('/api/chat/contacts', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const currentUser = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                batchesAsStudent: { include: { batch: { include: { mentors: { include: { mentor: true } } } } } },
+                batchesAsMentor: { include: { batch: { include: { students: { include: { student: true } } } } } },
+                mentorships: { include: { mentor: true } },
+                menteeships: { include: { mentee: true } }
+            }
+        });
+
+        if (!currentUser) return res.status(404).json({ error: 'User not found' });
+
+        const contacts = new Map();
+
+        // Helper to add contact
+        const addContact = (user, type) => {
+            if (user.id !== userId && !contacts.has(user.id)) {
+                contacts.set(user.id, {
+                    id: user.id,
+                    name: user.name,
+                    avatar: user.avatar,
+                    role: user.role,
+                    type // 'mentor', 'student', 'admin'
+                });
+            }
+        };
+
+        // 1. Add Admins (visible to everyone)
+        const admins = await prisma.user.findMany({
+            where: { role: 'ADMIN' },
+            select: { id: true, name: true, avatar: true, role: true }
+        });
+        admins.forEach(admin => addContact(admin, 'admin'));
+
+        // 2. Add specific contacts based on role
+        if (currentUser.role === 'STUDENT') {
+            // Add Batch Mentors
+            currentUser.batchesAsStudent.forEach(bs => {
+                bs.batch.mentors.forEach(bm => {
+                    addContact(bm.mentor, 'mentor');
+                });
+            });
+            // Add Direct Mentors
+            currentUser.mentorships.forEach(m => {
+                addContact(m.mentor, 'mentor');
+            });
+        } else if (currentUser.role === 'MENTOR') {
+            // Add Batch Students
+            currentUser.batchesAsMentor.forEach(bm => {
+                bm.batch.students.forEach(bs => {
+                    addContact(bs.student, 'student');
+                });
+            });
+            // Add Direct Mentees
+            currentUser.menteeships.forEach(m => {
+                addContact(m.mentee, 'student');
+            });
+        } else if (currentUser.role === 'ADMIN') {
+            // Admins can see everyone (or at least Mentors and Students)
+            // For scalability, maybe limit this, but user asked for visibility.
+            // Let's strictly follow "admin should gets added in student and mentor messaging list"
+            // -> This endpoint is for the user to see contacts. Admin sees everyone?
+            // Let's fetch all Mentors and Students for Admin.
+            const allUsers = await prisma.user.findMany({
+                where: { role: { in: ['STUDENT', 'MENTOR'] } },
+                select: { id: true, name: true, avatar: true, role: true }
+            });
+            allUsers.forEach(u => addContact(u, u.role.toLowerCase()));
+        }
+
+        res.json(Array.from(contacts.values()));
+    } catch (error) {
+        console.error('Get contacts error:', error);
+        res.status(500).json({ error: 'Failed to fetch contacts' });
+    }
+});
+
+// Create Direct Message Group
+app.post('/api/chat/groups/direct', authenticateToken, async (req, res) => {
+    try {
+        const { userId: targetUserId } = req.body;
+        const currentUserId = req.user.id;
+
+        if (!targetUserId) {
+            return res.status(400).json({ error: 'Target user ID is required' });
+        }
+
+        // Check if DM already exists
+        const existingGroup = await prisma.chatGroup.findFirst({
+            where: {
+                groupType: 'direct',
+                AND: [
+                    { members: { some: { userId: currentUserId } } },
+                    { members: { some: { userId: targetUserId } } }
+                ]
+            },
+            include: {
+                members: {
+                    include: {
+                        user: { select: { id: true, name: true, avatar: true, role: true } }
+                    }
+                },
+                createdBy: { select: { id: true, name: true, avatar: true } },
+                messages: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 1,
+                    include: { sender: { select: { name: true } } }
+                }
+            }
+        });
+
+        if (existingGroup) {
+            return res.json(existingGroup);
+        }
+
+        // Create new DM group
+        const newGroup = await prisma.chatGroup.create({
+            data: {
+                name: 'Direct Message',
+                groupType: 'direct',
+                createdById: currentUserId,
+                members: {
+                    create: [
+                        { userId: currentUserId, role: 'member', status: 'accepted' },
+                        { userId: targetUserId, role: 'member', status: 'accepted' }
+                    ]
+                }
+            },
+            include: {
+                members: {
+                    include: {
+                        user: { select: { id: true, name: true, avatar: true, role: true } }
+                    }
+                },
+                createdBy: { select: { id: true, name: true, avatar: true } },
+                messages: true // Empty initially
+            }
+        });
+
+        // Notify target user
+        io.to(`user_${targetUserId}`).emit('group_invite', { group: newGroup });
+
+        res.status(201).json(newGroup);
+    } catch (error) {
+        console.error('Create DM error:', error);
+        res.status(500).json({ error: 'Failed to create conversation' });
+    }
+});
+
 // ============ CHAT SYSTEM ROUTES ============
 
 // Get all groups for user
@@ -3862,6 +4017,388 @@ app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (r
         res.status(500).json({ error: 'Failed to create announcement' });
     }
 });
+
+// ============ ASSIGNMENT ROUTES ============
+
+// Create assignment (Mentor/Admin)
+app.post('/api/assignments', authenticateToken, async (req, res) => {
+    try {
+        const { title, description, dueDate, batchId, maxMarks } = req.body;
+
+        const assignment = await prisma.assignment.create({
+            data: {
+                title,
+                description,
+                dueDate: new Date(dueDate),
+                maxMarks: maxMarks || 100,
+                createdById: req.user.id,
+                batchId
+            },
+            include: {
+                batch: { select: { name: true } }
+            }
+        });
+
+        res.status(201).json(assignment);
+    } catch (error) {
+        console.error('Create assignment error:', error);
+        res.status(500).json({ error: 'Failed to create assignment' });
+    }
+});
+
+// Get assignments
+app.get('/api/assignments', authenticateToken, async (req, res) => {
+    try {
+        const { batchId } = req.query;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        let assignments;
+
+        if (userRole === 'STUDENT') {
+            // Get student's batches
+            const studentBatches = await prisma.batchStudent.findMany({
+                where: { studentId: userId },
+                select: { batchId: true }
+            });
+            const batchIds = studentBatches.map(b => b.batchId);
+
+            assignments = await prisma.assignment.findMany({
+                where: { batchId: { in: batchIds } },
+                include: {
+                    batch: { select: { name: true } },
+                    submissions: {
+                        where: { studentId: userId },
+                        include: {
+                            reviewedBy: { select: { name: true } }
+                        }
+                    }
+                },
+                orderBy: { dueDate: 'asc' }
+            });
+        } else {
+            // Mentor/Admin
+            const where = batchId ? { batchId } : {};
+            assignments = await prisma.assignment.findMany({
+                where,
+                include: {
+                    batch: { select: { name: true } },
+                    submissions: {
+                        include: {
+                            student: { select: { id: true, name: true, avatar: true } }
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+
+        res.json(assignments);
+    } catch (error) {
+        console.error('Get assignments error:', error);
+        res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+});
+
+// Get assignment details
+app.get('/api/assignments/:id', authenticateToken, async (req, res) => {
+    try {
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: req.params.id },
+            include: {
+                batch: { select: { name: true } },
+                submissions: {
+                    include: {
+                        student: { select: { id: true, name: true, avatar: true } },
+                        reviewedBy: { select: { name: true } }
+                    },
+                    orderBy: { submittedAt: 'desc' }
+                }
+            }
+        });
+
+        res.json(assignment);
+    } catch (error) {
+        console.error('Get assignment details error:', error);
+        res.status(500).json({ error: 'Failed to fetch assignment details' });
+    }
+});
+
+// Submit assignment
+app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { content } = req.body;
+        const studentId = req.user.id;
+
+        const submissionContent = req.file ? `/uploads/${req.file.filename}` : content;
+
+        const submission = await prisma.assignmentSubmission.upsert({
+            where: {
+                assignmentId_studentId: {
+                    assignmentId: id,
+                    studentId
+                }
+            },
+            update: {
+                content: submissionContent,
+                submittedAt: new Date(),
+                status: 'PENDING',
+                marks: null,
+                feedback: null,
+                reviewedAt: null,
+                reviewedById: null
+            },
+            create: {
+                assignmentId: id,
+                studentId,
+                content: submissionContent,
+                status: 'PENDING'
+            }
+        });
+
+        res.status(201).json(submission);
+    } catch (error) {
+        console.error('Submit assignment error:', error);
+        res.status(500).json({ error: 'Failed to submit assignment' });
+    }
+});
+
+// Review submission (Mentor/Admin)
+app.put('/api/assignments/submissions/:id/review', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, marks, feedback } = req.body;
+
+        const submission = await prisma.assignmentSubmission.update({
+            where: { id },
+            data: {
+                status,
+                marks,
+                feedback,
+                reviewedAt: new Date(),
+                reviewedById: req.user.id
+            }
+        });
+
+        res.json(submission);
+    } catch (error) {
+        console.error('Review submission error:', error);
+        res.status(500).json({ error: 'Failed to review submission' });
+    }
+});
+
+// ============ QUIZ ROUTES ============
+
+// Create quiz (Mentor/Admin)
+app.post('/api/quizzes', authenticateToken, async (req, res) => {
+    try {
+        const { title, description, duration, totalMarks, passingMarks, dueDate, batches, questions } = req.body;
+
+        const quiz = await prisma.quiz.create({
+            data: {
+                title,
+                description,
+                duration,
+                totalMarks,
+                passingMarks,
+                dueDate: dueDate ? new Date(dueDate) : null,
+                batches: batches || [],
+                questions: questions || [],
+                createdById: req.user.id
+            }
+        });
+
+        res.status(201).json(quiz);
+    } catch (error) {
+        console.error('Create quiz error:', error);
+        res.status(500).json({ error: 'Failed to create quiz' });
+    }
+});
+
+// Get quizzes for mentor
+app.get('/api/quizzes/mentor', authenticateToken, async (req, res) => {
+    try {
+        const quizzes = await prisma.quiz.findMany({
+            where: { createdById: req.user.id },
+            include: {
+                submissions: {
+                    include: {
+                        student: { select: { id: true, name: true, avatar: true } }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(quizzes);
+    } catch (error) {
+        console.error('Get mentor quizzes error:', error);
+        res.status(500).json({ error: 'Failed to fetch quizzes' });
+    }
+});
+
+// Get quizzes for student
+app.get('/api/quizzes/student', authenticateToken, async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Get student's batches
+        const studentBatches = await prisma.batchStudent.findMany({
+            where: { studentId },
+            select: { batchId: true }
+        });
+        const batchIds = studentBatches.map(b => b.batchId);
+
+        // Get quizzes assigned to these batches
+        const allQuizzes = await prisma.quiz.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Filter quizzes where batches array contains at least one of student's batchIds
+        const quizzes = allQuizzes.filter(quiz => {
+            const quizBatches = quiz.batches || [];
+            return quizBatches.some(qb => batchIds.includes(qb));
+        });
+
+        // Get submissions for each quiz
+        const quizzesWithSubmissions = await Promise.all(
+            quizzes.map(async (quiz) => {
+                const submission = await prisma.quizSubmission.findUnique({
+                    where: {
+                        quizId_studentId: {
+                            quizId: quiz.id,
+                            studentId
+                        }
+                    }
+                });
+                return { ...quiz, submission };
+            })
+        );
+
+        res.json(quizzesWithSubmissions);
+    } catch (error) {
+        console.error('Get student quizzes error:', error);
+        res.status(500).json({ error: 'Failed to fetch quizzes' });
+    }
+});
+
+// Get quiz details
+app.get('/api/quizzes/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        const quiz = await prisma.quiz.findUnique({
+            where: { id }
+        });
+
+        if (!quiz) {
+            return res.status(404).json({ error: 'Quiz not found' });
+        }
+
+        // Check if student has already started or submitted
+        const submission = await prisma.quizSubmission.findUnique({
+            where: {
+                quizId_studentId: {
+                    quizId: id,
+                    studentId: userId
+                }
+            }
+        });
+
+        res.json({ ...quiz, submission });
+    } catch (error) {
+        console.error('Get quiz details error:', error);
+        res.status(500).json({ error: 'Failed to fetch quiz details' });
+    }
+});
+
+// Start quiz (creates submission record)
+app.post('/api/quizzes/:id/start', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const studentId = req.user.id;
+
+        // Check if already started
+        const existing = await prisma.quizSubmission.findUnique({
+            where: {
+                quizId_studentId: { quizId: id, studentId }
+            }
+        });
+
+        if (existing) {
+            return res.json(existing);
+        }
+
+        const submission = await prisma.quizSubmission.create({
+            data: {
+                quizId: id,
+                studentId,
+                answers: {},
+                status: 'IN_PROGRESS'
+            }
+        });
+
+        res.status(201).json(submission);
+    } catch (error) {
+        console.error('Start quiz error:', error);
+        res.status(500).json({ error: 'Failed to start quiz' });
+    }
+});
+
+// Submit quiz
+app.post('/api/quizzes/:id/submit', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { answers } = req.body;
+        const studentId = req.user.id;
+
+        // Get quiz
+        const quiz = await prisma.quiz.findUnique({
+            where: { id }
+        });
+
+        if (!quiz) {
+            return res.status(404).json({ error: 'Quiz not found' });
+        }
+
+        // Calculate score
+        const questions = quiz.questions || [];
+        let score = 0;
+        const totalQuestions = questions.length;
+
+        questions.forEach(q => {
+            if (answers[q.id] === q.correctOption) {
+                score++;
+            }
+        });
+
+        const finalScore = Math.round((score / totalQuestions) * quiz.totalMarks);
+
+        // Update submission
+        const submission = await prisma.quizSubmission.update({
+            where: {
+                quizId_studentId: {
+                    quizId: id,
+                    studentId
+                }
+            },
+            data: {
+                answers,
+                score: finalScore,
+                submittedAt: new Date(),
+                status: 'COMPLETED'
+            }
+        });
+
+        res.json({ ...submission, totalMarks: quiz.totalMarks });
+    } catch (error) {
+        console.error('Submit quiz error:', error);
+        res.status(500).json({ error: 'Failed to submit quiz' });
+    }
+});
+
 
 // ============ SOCKET.IO EVENTS ============
 

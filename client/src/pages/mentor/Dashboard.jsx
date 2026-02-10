@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, announcementAPI, forumAPI, assignmentAPI } from '../../api';
+import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, announcementAPI, forumAPI, assignmentAPI, quizAPI } from '../../api';
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBook,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
@@ -1304,9 +1304,13 @@ const ForumSection = ({ batches }) => {
     );
 };
 
+
+
+
 const AssignmentsSection = ({ batches }) => {
     const [assignments, setAssignments] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [activeTab, setActiveTab] = useState('assignments');
     const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
     const [reviewingSubmission, setReviewingSubmission] = useState(null);
@@ -1323,6 +1327,23 @@ const AssignmentsSection = ({ batches }) => {
         marks: '',
         feedback: ''
     });
+
+    // Quiz-related states
+    const [quizzes, setQuizzes] = useState([]);
+    const [showCreateQuiz, setShowCreateQuiz] = useState(false);
+    const [quizFormData, setQuizFormData] = useState({
+        title: '',
+        description: '',
+        duration: 30,
+        totalMarks: 100,
+        passingMarks: 40,
+        dueDate: '',
+        batches: [],
+        questions: []
+    });
+    const [csvFile, setCsvFile] = useState(null);
+    const [csvPreview, setCsvPreview] = useState([]);
+    const [showCsvPreview, setShowCsvPreview] = useState(false);
 
     useEffect(() => {
         fetchAssignments();
@@ -1409,18 +1430,112 @@ const AssignmentsSection = ({ batches }) => {
         return { bg: color.bg, text: color.text };
     };
 
+    // Quiz functions
+    const fetchQuizzes = async () => {
+        try {
+            const response = await quizAPI.getMentorQuizzes();
+            setQuizzes(response.data || []);
+        } catch (error) {
+            console.error('Failed to fetch quizzes:', error);
+        }
+    };
+
+    const handleCSVUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setCsvFile(file);
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            const text = event.target.result;
+            const lines = text.split('\n').filter(line => line.trim());
+            const dataLines = lines[0].toLowerCase().includes('question') ? lines.slice(1) : lines;
+
+            const questions = dataLines.map((line, idx) => {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 6) {
+                    return {
+                        id: `q_${idx + 1}`,
+                        question: parts[0],
+                        options: [parts[1], parts[2], parts[3], parts[4]],
+                        correctOption: parseInt(parts[5]) || 0
+                    };
+                }
+                return null;
+            }).filter(q => q !== null);
+
+            setCsvPreview(questions);
+            setShowCsvPreview(true);
+        };
+
+        reader.readAsText(file);
+    };
+
+    const handleUseCsvQuestions = () => {
+        setQuizFormData({ ...quizFormData, questions: csvPreview });
+        setShowCsvPreview(false);
+        setCsvFile(null);
+    };
+
+    const handleCreateQuiz = async (e) => {
+        e.preventDefault();
+        try {
+            await quizAPI.createQuiz(quizFormData);
+            setQuizFormData({
+                title: '',
+                description: '',
+                duration: 30,
+                totalMarks: 100,
+                passingMarks: 40,
+                dueDate: '',
+                batches: [],
+                questions: []
+            });
+            setShowCreateQuiz(false);
+            fetchQuizzes();
+            alert('Quiz created successfully!');
+        } catch (error) {
+            console.error('Failed to create quiz:', error);
+            alert('Failed to create quiz. Please check all fields.');
+        }
+    };
+
+    const handleBatchSelect = (batchId) => {
+        const currentBatches = quizFormData.batches || [];
+        if (currentBatches.includes(batchId)) {
+            setQuizFormData({ ...quizFormData, batches: currentBatches.filter(b => b !== batchId) });
+        } else {
+            setQuizFormData({ ...quizFormData, batches: [...currentBatches, batchId] });
+        }
+    };
+
+    // Fetch both assignments and quizzes on mount
+    useEffect(() => {
+        fetchQuizzes();
+    }, []);
+
     return (
         <div className="assignments-container">
             <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: '#f8faff', border: '1px solid #edf2f7' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ margin: 0, color: '#1e3a8a' }}>Assignments Management</h3>
-                    <button
-                        className="btn-glass-primary"
-                        onClick={() => setShowCreateForm(!showCreateForm)}
-                        style={{ background: '#3b82f6', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                    >
-                        <FiPlus /> {showCreateForm ? 'Cancel' : 'Create Assignment'}
-                    </button>
+                    <h3 style={{ margin: 0, color: '#1e3a8a' }}>Assignments & Quizzes</h3>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button
+                            className="btn-glass-primary"
+                            onClick={() => setShowCreateQuiz(true)}
+                            style={{ background: '#10b981', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                            <FiPlus /> Create Quiz
+                        </button>
+                        <button
+                            className="btn-glass-primary"
+                            onClick={() => setShowCreateForm(!showCreateForm)}
+                            style={{ background: '#3b82f6', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                            <FiPlus /> {showCreateForm ? 'Cancel' : 'Create Assignment'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Create Assignment Form */}
@@ -1498,55 +1613,381 @@ const AssignmentsSection = ({ batches }) => {
                     )}
                 </AnimatePresence>
 
-                {/* Assignments List */}
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>Loading assignments...</div>
-                ) : assignments.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                        {assignments.map(assignment => {
-                            const submissionsCount = assignment.submissions?.length || 0;
-                            const pendingCount = assignment.submissions?.filter(s => s.status === 'PENDING').length || 0;
-                            return (
-                                <div key={assignment.id} style={{ padding: '20px', background: 'white', borderRadius: '12px', border: '1px solid #edf2f7' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                        <div className="stat-icon-wrapper" style={{ background: '#dbeafe', color: '#2563eb' }}><FiFileText /></div>
-                                        <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>
-                                            Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                    <h4 style={{ margin: '0 0 8px', fontSize: '1rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {assignment.title}
-                                    </h4>
-                                    <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 12px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                        {assignment.description}
-                                    </p>
-                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600, marginBottom: '16px' }}>
-                                        📚 {assignment.batch?.name}
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
-                                            {submissionsCount} Submissions
-                                            {pendingCount > 0 && <span style={{ color: '#f59e0b', marginLeft: '8px' }}>({pendingCount} pending)</span>}
-                                        </div>
-                                        <button
-                                            className="btn-glass-secondary"
-                                            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                                            onClick={() => handleViewSubmissions(assignment.id)}
+                {/* Tabs & Search Bar */}
+                <div style={{ marginBottom: '32px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '6px', borderRadius: '12px' }}>
+                            <button
+                                onClick={() => setActiveTab('assignments')}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: activeTab === 'assignments' ? 'white' : 'transparent',
+                                    color: activeTab === 'assignments' ? '#3b82f6' : '#64748b',
+                                    fontWeight: activeTab === 'assignments' ? 700 : 500,
+                                    boxShadow: activeTab === 'assignments' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <FiFileText /> Assignments
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('quizzes')}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: activeTab === 'quizzes' ? 'white' : 'transparent',
+                                    color: activeTab === 'quizzes' ? '#3b82f6' : '#64748b',
+                                    fontWeight: activeTab === 'quizzes' ? 700 : 500,
+                                    boxShadow: activeTab === 'quizzes' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <FiCheckCircle /> Quizzes
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Content Grid */}
+                    {activeTab === 'assignments' && (
+                        loading ? (
+                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading assignments...</div>
+                        ) : assignments.length > 0 ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                                {assignments.map(assignment => {
+                                    const submissionsCount = assignment.submissions?.length || 0;
+                                    const pendingCount = assignment.submissions?.filter(s => s.status === 'PENDING').length || 0;
+
+                                    return (
+                                        <motion.div
+                                            key={assignment.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{
+                                                background: 'white',
+                                                borderRadius: '16px',
+                                                border: '1px solid #e2e8f0',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                                                transition: 'transform 0.2s, box-shadow 0.2s'
+                                            }}
+                                            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                                         >
-                                            View
-                                        </button>
+                                            <div style={{
+                                                height: '100px',
+                                                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                padding: '20px',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start'
+                                            }}>
+                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                    {assignment.batch?.name || 'General'}
+                                                </div>
+                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
+                                                    <FiFileText size={20} />
+                                                </div>
+                                            </div>
+
+                                            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                    {assignment.title}
+                                                </h4>
+                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                    {assignment.description}
+                                                </p>
+
+                                                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                        <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
+                                                        <span style={{ fontWeight: 600, color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
+                                                            {submissionsCount} Subs {pendingCount > 0 && `(${pendingCount} new)`}
+                                                        </span>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => handleViewSubmissions(assignment.id)}
+                                                        style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                    >
+                                                        View Submissions
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                                <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No assignments yet</h3>
+                                <p style={{ color: '#64748b', margin: 0 }}>Create your first assignment to get started.</p>
+                            </div>
+                        )
+                    )}
+
+                    {activeTab === 'quizzes' && (
+                        loading ? (
+                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading quizzes...</div>
+                        ) : quizzes.length > 0 ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                                {quizzes.map(quiz => {
+                                    const submissionsCount = quiz.submissions?.length || 0;
+
+                                    return (
+                                        <motion.div
+                                            key={quiz.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{
+                                                background: 'white',
+                                                borderRadius: '16px',
+                                                border: '1px solid #e2e8f0',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                                                transition: 'transform 0.2s, box-shadow 0.2s'
+                                            }}
+                                            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                        >
+                                            <div style={{
+                                                height: '100px',
+                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                padding: '20px',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start'
+                                            }}>
+                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                    {quiz.questions?.length || 0} Questions
+                                                </div>
+                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#059669' }}>
+                                                    <FiCheckCircle size={20} />
+                                                </div>
+                                            </div>
+
+                                            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                    {quiz.title}
+                                                </h4>
+                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                    {quiz.description || 'No description provided.'}
+                                                </p>
+
+                                                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                        <span>⏱ {quiz.duration} mins</span>
+                                                        <span>🎯 {quiz.totalMarks} Marks</span>
+                                                        <span>👥 {submissionsCount} Attempts</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                                <FiCheckCircle size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No quizzes yet</h3>
+                                <p style={{ color: '#64748b', margin: 0 }}>Create a quiz to assess your students.</p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </div>
+
+            {/* Create Quiz Modal */}
+            <AnimatePresence>
+                {showCreateQuiz && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+                        onClick={() => setShowCreateQuiz(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ background: 'white', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
+                        >
+                            <h2 style={{ margin: '0 0 24px', fontSize: '1.5rem', color: '#1e293b' }}>Create New Quiz</h2>
+                            <form onSubmit={handleCreateQuiz}>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Title</label>
+                                    <input
+                                        type="text"
+                                        className="glass-input"
+                                        value={quizFormData.title}
+                                        onChange={(e) => setQuizFormData({ ...quizFormData, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Description</label>
+                                    <textarea
+                                        className="glass-input"
+                                        value={quizFormData.description}
+                                        onChange={(e) => setQuizFormData({ ...quizFormData, description: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                                    <div className="glass-form-group">
+                                        <label className="glass-label">Duration (mins)</label>
+                                        <input
+                                            type="number"
+                                            className="glass-input"
+                                            value={quizFormData.duration}
+                                            onChange={(e) => setQuizFormData({ ...quizFormData, duration: parseInt(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div className="glass-form-group">
+                                        <label className="glass-label">Total Marks</label>
+                                        <input
+                                            type="number"
+                                            className="glass-input"
+                                            value={quizFormData.totalMarks}
+                                            onChange={(e) => setQuizFormData({ ...quizFormData, totalMarks: parseInt(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div className="glass-form-group">
+                                        <label className="glass-label">Passing Marks</label>
+                                        <input
+                                            type="number"
+                                            className="glass-input"
+                                            value={quizFormData.passingMarks}
+                                            onChange={(e) => setQuizFormData({ ...quizFormData, passingMarks: parseInt(e.target.value) })}
+                                        />
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                        <FiFileText size={40} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                        <p>No assignments created yet. Create your first assignment!</p>
-                    </div>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Due Date</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="glass-input"
+                                        value={quizFormData.dueDate}
+                                        onChange={(e) => setQuizFormData({ ...quizFormData, dueDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Assign Batches</label>
+                                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                        {batches?.map(b => (
+                                            <div
+                                                key={b.id}
+                                                onClick={() => handleBatchSelect(b.id)}
+                                                style={{
+                                                    padding: '8px 16px',
+                                                    background: quizFormData.batches.includes(b.id) ? '#3b82f6' : '#f1f5f9',
+                                                    color: quizFormData.batches.includes(b.id) ? 'white' : '#64748b',
+                                                    borderRadius: '20px',
+                                                    cursor: 'pointer',
+                                                    border: '1px solid transparent',
+                                                    fontSize: '0.9rem'
+                                                }}
+                                            >
+                                                {b.name}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Questions (Manual or CSV)</label>
+                                    <div style={{ marginBottom: '16px', padding: '16px', background: '#f8faff', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                                        <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: '#64748b' }}>
+                                            Upload a CSV file with format: <code>question, option1, option2, option3, option4, correctOptionIndex</code>
+                                        </p>
+                                        <input
+                                            type="file"
+                                            accept=".csv"
+                                            onChange={handleCSVUpload}
+                                            style={{ display: 'block', width: '100%' }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                        {quizFormData.questions.length} questions added
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateQuiz(false)}
+                                        style={{ flex: 1, padding: '12px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        style={{ flex: 1, padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                    >
+                                        Create Quiz
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
                 )}
-            </div>
+            </AnimatePresence>
+
+            {/* CSV Preview Modal */}
+            <AnimatePresence>
+                {showCsvPreview && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}
+                    >
+                        <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '600px', width: '90%', maxHeight: '80vh', overflowY: 'auto' }}>
+                            <h3 style={{ margin: '0 0 16px' }}>CSV Preview ({csvPreview.length} questions)</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {csvPreview.map((q, i) => (
+                                    <div key={i} style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                        <p style={{ fontWeight: 600, margin: '0 0 8px' }}>{i + 1}. {q.question}</p>
+                                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: '#64748b' }}>
+                                            {q.options.map((opt, optIdx) => (
+                                                <li key={optIdx} style={{ color: optIdx === q.correctOption ? '#16a34a' : 'inherit', fontWeight: optIdx === q.correctOption ? 600 : 400 }}>
+                                                    {opt} {optIdx === q.correctOption && '(Correct)'}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                                <button
+                                    onClick={() => setShowCsvPreview(false)}
+                                    style={{ flex: 1, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUseCsvQuestions}
+                                    style={{ flex: 1, padding: '10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                >
+                                    Use Questions
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Submissions Modal */}
             <AnimatePresence>

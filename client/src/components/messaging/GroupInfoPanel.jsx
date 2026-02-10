@@ -3,15 +3,19 @@ import { FiX, FiUserPlus, FiUserMinus, FiEdit2, FiLogOut } from 'react-icons/fi'
 import { motion } from 'framer-motion';
 import './GroupInfoPanel.css';
 
-const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
+const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [groupName, setGroupName] = useState(group.name);
     const [groupDescription, setGroupDescription] = useState(group.description || '');
     const [members, setMembers] = useState(group.members || []);
     const [availableUsers, setAvailableUsers] = useState([]);
     const [showAddMember, setShowAddMember] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const isAdmin = members.find(m => m.userId === currentUserId)?.role === 'admin';
+    // Check if user is group admin OR system-level Admin/Mentor
+    const isGroupAdmin = members.find(m => m.userId === currentUserId)?.role === 'admin';
+    const isSystemAdminOrMentor = currentUser?.role === 'ADMIN' || currentUser?.role === 'MENTOR';
+    const canManageMembers = isGroupAdmin || isSystemAdminOrMentor;
 
     useEffect(() => {
         setGroupName(group.name);
@@ -111,8 +115,8 @@ const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
             });
 
             if (response.ok) {
-                onClose();
-                window.location.reload();
+                if (onClose) onClose();
+                if (onLeave) onLeave(group.id);
             }
         } catch (error) {
             console.error('Failed to leave group:', error);
@@ -163,7 +167,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
                     <div className="group-details">
                         <h3>{group.name}</h3>
                         {group.description && <p>{group.description}</p>}
-                        {isAdmin && (
+                        {canManageMembers && (
                             <button onClick={() => setIsEditing(true)} className="edit-group-btn">
                                 <FiEdit2 /> Edit Group
                             </button>
@@ -174,7 +178,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
                 <div className="members-section">
                     <div className="members-header">
                         <h4>{members.length} Members</h4>
-                        {isAdmin && (
+                        {canManageMembers && (
                             <button onClick={() => setShowAddMember(!showAddMember)} className="add-member-btn">
                                 <FiUserPlus /> Add Member
                             </button>
@@ -183,12 +187,46 @@ const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
 
                     {showAddMember && (
                         <div className="add-member-list">
-                            {availableUsers.map(user => (
-                                <div key={user.id} className="available-user" onClick={() => handleAddMember(user.id)}>
-                                    <span>{user.name}</span>
-                                    <FiUserPlus />
-                                </div>
-                            ))}
+                            <input
+                                type="text"
+                                placeholder="Search by name or email..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="member-search-input"
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    marginBottom: '15px',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '8px',
+                                    fontSize: '14px'
+                                }}
+                            />
+                            {availableUsers
+                                .filter(user => {
+                                    const query = searchQuery.toLowerCase();
+                                    return user.name.toLowerCase().includes(query) ||
+                                        user.email.toLowerCase().includes(query);
+                                })
+                                .map(user => (
+                                    <div key={user.id} className="available-user" onClick={() => handleAddMember(user.id)}>
+                                        <div>
+                                            <div style={{ fontWeight: '500' }}>{user.name}</div>
+                                            <div style={{ fontSize: '12px', color: '#64748b' }}>{user.email}</div>
+                                        </div>
+                                        <FiUserPlus />
+                                    </div>
+                                ))
+                            }
+                            {availableUsers.filter(user => {
+                                const query = searchQuery.toLowerCase();
+                                return user.name.toLowerCase().includes(query) ||
+                                    user.email.toLowerCase().includes(query);
+                            }).length === 0 && (
+                                    <p style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
+                                        No users found
+                                    </p>
+                                )}
                         </div>
                     )}
 
@@ -202,7 +240,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId }) => {
                                     <div className="member-name">{member.user?.name}</div>
                                     <div className="member-role">{member.role}</div>
                                 </div>
-                                {isAdmin && member.userId !== currentUserId && (
+                                {canManageMembers && member.userId !== currentUserId && (
                                     <button
                                         onClick={() => handleRemoveMember(member.userId)}
                                         className="remove-member-btn"
