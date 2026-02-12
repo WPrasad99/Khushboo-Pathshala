@@ -230,89 +230,91 @@ const CoursePlayer = () => {
             </div>
 
             <div className="player-layout">
-                {/* Video Section */}
-                <div className="video-section">
-                    <motion.div
-                        className="video-wrapper"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        key={currentVideoIndex}
-                    >
-                        <iframe
-                            src={videoSrc}
-                            title={`${course.title} - ${currentVideo?.title || 'Video'}`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            frameBorder="0"
-                        />
-                    </motion.div>
-
-                    {/* Course Info */}
-                    <div className="course-info-panel">
-                        <h1>{currentVideo?.title || course.title}</h1>
-                        <p className="course-desc">{course.description}</p>
-
-                        <div className="course-stats">
-                            <div className="stat-item">
-                                <FiBook />
-                                <span>{videos.length} Videos</span>
-                            </div>
-                            <div className="stat-item">
-                                <FiClock />
-                                <span>{currentVideo?.duration || '10:00'}</span>
-                            </div>
-                            <div className="stat-item">
-                                <FiCheckCircle />
-                                <span>{completedVideos.size} Completed</span>
-                            </div>
-                        </div>
-
-                        {/* Mark Complete Button */}
-                        <button
-                            className={`mark-complete-btn ${completedVideos.has(currentVideoIndex) ? 'completed' : ''}`}
-                            onClick={handleVideoComplete}
-                            disabled={completedVideos.has(currentVideoIndex)}
+                {/* Top Section: Video & Playlist */}
+                <div className="player-top-section">
+                    <div className="video-section">
+                        <motion.div
+                            className="video-wrapper"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            key={currentVideoIndex}
                         >
-                            {completedVideos.has(currentVideoIndex)
-                                ? '✓ Video Completed'
-                                : 'Mark Video as Complete'}
-                        </button>
+                            <iframe
+                                src={videoSrc}
+                                title={`${course.title} - ${currentVideo?.title || 'Video'}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                frameBorder="0"
+                            />
+                        </motion.div>
+                    </div>
 
-                        {/* Notice */}
-                        <div className="notice-box">
-                            <strong>Note:</strong> You must complete each video fully before unlocking the next one.
-                            Completed videos: {completedVideos.size}/{videos.length}
+                    {/* Video List Sidebar */}
+                    <div className="video-list-sidebar">
+                        <h3>Course Content</h3>
+                        <div className="video-list">
+                            {videos.map((video) => (
+                                <div
+                                    key={video.index}
+                                    className={`video-item ${currentVideoIndex === video.index ? 'active' : ''} ${video.completed ? 'completed' : ''} ${video.locked ? 'locked' : ''}`}
+                                    onClick={() => selectVideo(video.index)}
+                                >
+                                    <div className="video-item-icon">
+                                        {video.locked ? (
+                                            <FiLock />
+                                        ) : video.completed ? (
+                                            <FiCheckCircle />
+                                        ) : (
+                                            <FiPlay />
+                                        )}
+                                    </div>
+                                    <div className="video-item-info">
+                                        <span className="video-item-title">{video.title}</span>
+                                        {video.duration && <span className="video-item-duration">{video.duration}</span>}
+                                        {video.locked && <span className="video-item-status">Complete previous</span>}
+                                        {video.completed && <span className="video-item-status completed">Completed</span>}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Video List Sidebar */}
-                <div className="video-list-sidebar">
-                    <h3>Course Content</h3>
-                    <div className="video-list">
-                        {videos.map((video) => (
-                            <div
-                                key={video.index}
-                                className={`video-item ${currentVideoIndex === video.index ? 'active' : ''} ${video.completed ? 'completed' : ''} ${video.locked ? 'locked' : ''}`}
-                                onClick={() => selectVideo(video.index)}
-                            >
-                                <div className="video-item-icon">
-                                    {video.locked ? (
-                                        <FiLock />
-                                    ) : video.completed ? (
-                                        <FiCheckCircle />
-                                    ) : (
-                                        <FiPlay />
-                                    )}
-                                </div>
-                                <div className="video-item-info">
-                                    <span className="video-item-title">{video.title}</span>
-                                    {video.duration && <span className="video-item-duration">{video.duration}</span>}
-                                    {video.locked && <span className="video-item-status">Complete previous</span>}
-                                    {video.completed && <span className="video-item-status completed">Completed</span>}
-                                </div>
-                            </div>
-                        ))}
+                {/* Course Info - Full Width Below */}
+                <div className="course-info-panel">
+                    <h1>{currentVideo?.title || course.title}</h1>
+                    <p className="course-desc">{course.description}</p>
+
+                    <div className="course-stats">
+                        <div className="stat-item">
+                            <FiBook />
+                            <span>{videos.length} Videos</span>
+                        </div>
+                        <div className="stat-item">
+                            <FiClock />
+                            <span>{currentVideo?.duration || '10:00'}</span>
+                        </div>
+                        <div className="stat-item">
+                            <FiCheckCircle />
+                            <span>{completedVideos.size} Completed</span>
+                        </div>
+                    </div>
+
+                    {/* Mark Complete Button */}
+                    <button
+                        className={`mark-complete-btn ${completedVideos.has(currentVideoIndex) ? 'completed' : ''}`}
+                        onClick={handleVideoComplete}
+                        disabled={completedVideos.has(currentVideoIndex)}
+                    >
+                        {completedVideos.has(currentVideoIndex)
+                            ? '✓ Video Completed'
+                            : 'Mark Video as Complete'}
+                    </button>
+
+                    {/* Notice */}
+                    <div className="notice-box">
+                        <strong>Note:</strong> You must complete each video fully before unlocking the next one.
+                        Completed videos: {completedVideos.size}/{videos.length}
                     </div>
                 </div>
             </div>

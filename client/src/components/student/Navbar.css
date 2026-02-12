@@ -199,3 +199,133 @@
         padding: 0 20px;
     }
 }
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 320px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1001;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.mark-read-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.mark-read-btn:hover {
+    background: #eff6ff;
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notification-item:hover {
+    background: #f8fafc;
+}
+
+.notification-item.unread {
+    background: #f0f9ff;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.empty-notifications {
+    padding: 40px 20px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+/* Ensure relative positioning for dropdown parent */
+.navbar-right-actions {
+    position: relative;
+}

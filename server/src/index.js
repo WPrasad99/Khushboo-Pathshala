@@ -149,6 +149,57 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+// Get Unread Notifications Count
+app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Count unread notifications
+        const count = await prisma.notification.count({
+            where: {
+                userId,
+                read: false
+            }
+        });
+        // You might also want to count unread messages here if logic permits
+        res.json({ count });
+    } catch (error) {
+        console.error('Unread count error:', error);
+        res.status(500).json({ error: 'Failed to fetch unread count' });
+    }
+});
+
+// Get User Notifications
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const notifications = await prisma.notification.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: 20
+        });
+        res.json(notifications);
+    } catch (error) {
+        console.error('Fetch notifications error:', error);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+});
+
+// Mark Notifications as Read
+app.put('/api/notifications/read', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Mark all as read for simplicity, or accept specific IDs
+        await prisma.notification.updateMany({
+            where: { userId, read: false },
+            data: { read: true }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Mark notifications read error:', error);
+        res.status(500).json({ error: 'Failed to mark notifications as read' });
+    }
+});
+
 // Role-based access middleware
 const requireRole = (...roles) => {
     return (req, res, next) => {
@@ -1109,6 +1160,28 @@ app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR')
             }
         });
 
+        // Broadcast new session
+        io.emit('new_resource', { ...session, type: 'SESSION' });
+
+        // Notification
+        try {
+            const students = await prisma.batchStudent.findMany({
+                where: { batchId },
+                select: { studentId: true }
+            });
+            const recipientIds = students.map(s => s.studentId);
+            if (recipientIds.length > 0) {
+                await prisma.notification.createMany({
+                    data: recipientIds.map(uid => ({
+                        userId: uid,
+                        title: `New Session: ${title}`,
+                        message: `A new learning session has been uploaded.`,
+                        type: 'success'
+                    }))
+                });
+            }
+        } catch (notifError) { console.error('Notif error', notifError); }
+
         res.json({ success: true, session });
     } catch (error) {
         console.error('Upload session error:', error);
@@ -1157,6 +1230,28 @@ app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'
                 uploadedBy: { select: { name: true, avatar: true } }
             }
         });
+
+        // Broadcast new resource
+        io.emit('new_resource', { ...resource, type: 'RESOURCE' });
+
+        // Notification
+        try {
+            const students = await prisma.batchStudent.findMany({
+                where: { batchId },
+                select: { studentId: true }
+            });
+            const recipientIds = students.map(s => s.studentId);
+            if (recipientIds.length > 0) {
+                await prisma.notification.createMany({
+                    data: recipientIds.map(uid => ({
+                        userId: uid,
+                        title: `New Resource: ${title}`,
+                        message: `A new resource has been uploaded for your batch.`,
+                        type: 'success'
+                    }))
+                });
+            }
+        } catch (notifError) { console.error('Notif error', notifError); }
 
         res.json({ success: true, resource });
     } catch (error) {
@@ -1362,6 +1457,9 @@ app.post('/api/mentor/meetings', authenticateToken, requireRole('MENTOR'), async
                 type: mode
             }
         });
+
+        // Broadcast new meeting
+        io.emit('new_meeting', session);
 
         res.json(session);
     } catch (error) {
@@ -1586,7 +1684,7 @@ app.post('/api/mentorship/meetings', authenticateToken, async (req, res) => {
 
         // Create Notification for the other party
         const otherPartyId = role === 'MENTOR' ? mentorship.menteeId : mentorship.mentorId;
-        await prisma.notification.create({
+        const note = await prisma.notification.create({
             data: {
                 userId: otherPartyId,
                 title: 'New Meeting Scheduled',
@@ -1594,6 +1692,9 @@ app.post('/api/mentorship/meetings', authenticateToken, async (req, res) => {
                 type: 'info'
             }
         });
+
+        // Socket notification
+        io.to(`user_${otherPartyId}`).emit('notification', note);
 
         res.status(201).json(meeting);
     } catch (error) {
@@ -2474,6 +2575,17 @@ app.post('/api/chat/groups/:groupId/messages', authenticateToken, async (req, re
 
         // Broadcast message to group
         io.to(`group_${req.params.groupId}`).emit('new_message', message);
+
+        // Notify all group members (for Navbar badge)
+        const groupMembers = await prisma.groupMember.findMany({
+            where: { groupId: req.params.groupId }
+        });
+
+        groupMembers.forEach(member => {
+            if (member.userId !== req.user.id) {
+                io.to(`user_${member.userId}`).emit('new_message_notification', message);
+            }
+        });
 
         res.status(201).json(message);
     } catch (error) {
@@ -4145,6 +4257,42 @@ app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (r
         });
 
         res.status(201).json(announcement);
+
+        // Broadcast new announcement
+        io.emit('new_announcement', announcement);
+
+        // Create Notifications for Users
+        try {
+            let recipientIds = [];
+            if (batchIds && batchIds.length > 0) {
+                // Get students in these batches
+                const students = await prisma.batchStudent.findMany({
+                    where: { batchId: { in: batchIds } },
+                    select: { studentId: true }
+                });
+                recipientIds = [...new Set(students.map(s => s.studentId))];
+            } else {
+                // Global announcement - get all students (and maybe mentors?)
+                const users = await prisma.user.findMany({
+                    where: { role: { in: ['STUDENT', 'MENTOR'] } },
+                    select: { id: true }
+                });
+                recipientIds = users.map(u => u.id);
+            }
+
+            if (recipientIds.length > 0) {
+                await prisma.notification.createMany({
+                    data: recipientIds.map(uid => ({
+                        userId: uid,
+                        title: `New Announcement: ${title}`,
+                        message: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+                        type: 'info'
+                    }))
+                });
+            }
+        } catch (notifError) {
+            console.error('Failed to create announcement notifications:', notifError);
+        }
     } catch (error) {
         console.error('Create announcement error:', error);
         res.status(500).json({ error: 'Failed to create announcement' });
@@ -4173,6 +4321,32 @@ app.post('/api/assignments', authenticateToken, async (req, res) => {
         });
 
         res.status(201).json(assignment);
+
+        // Broadcast new assignment
+        io.emit('new_assignment', assignment);
+
+        // Create Notifications for Batch Students
+        try {
+            const students = await prisma.batchStudent.findMany({
+                where: { batchId },
+                select: { studentId: true }
+            });
+
+            const recipientIds = students.map(s => s.studentId);
+
+            if (recipientIds.length > 0) {
+                await prisma.notification.createMany({
+                    data: recipientIds.map(uid => ({
+                        userId: uid,
+                        title: `New Assignment: ${title}`,
+                        message: `Due: ${new Date(dueDate).toLocaleDateString()}`,
+                        type: 'warning'
+                    }))
+                });
+            }
+        } catch (notifError) {
+            console.error('Failed to create assignment notifications:', notifError);
+        }
     } catch (error) {
         console.error('Create assignment error:', error);
         res.status(500).json({ error: 'Failed to create assignment' });
@@ -4343,6 +4517,36 @@ app.post('/api/quizzes', authenticateToken, async (req, res) => {
         });
 
         res.status(201).json(quiz);
+
+        // Broadcast new quiz
+        io.emit('new_quiz', quiz);
+
+        // Create Notifications
+        try {
+            const quizBatches = batches || [];
+            if (quizBatches.length > 0) {
+                const students = await prisma.batchStudent.findMany({
+                    where: { batchId: { in: quizBatches } },
+                    select: { studentId: true }
+                });
+
+                const recipientIds = [...new Set(students.map(s => s.studentId))];
+
+                if (recipientIds.length > 0) {
+                    await prisma.notification.createMany({
+                        data: recipientIds.map(uid => ({
+                            userId: uid,
+                            title: `New Quiz: ${title}`,
+                            message: `Duration: ${duration} mins. Good luck!`,
+                            type: 'warning'
+                        }))
+                    });
+                }
+            }
+        } catch (notifError) {
+            console.error('Failed to create quiz notifications:', notifError);
+        }
+
     } catch (error) {
         console.error('Create quiz error:', error);
         res.status(500).json({ error: 'Failed to create quiz' });

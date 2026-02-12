@@ -87,13 +87,20 @@
 
 /* Player Layout */
 .player-layout {
-    display: grid;
-    grid-template-columns: 7fr 3fr;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     max-width: 1280px;
     margin: 32px auto;
-    gap: 24px;
+    gap: 32px;
     padding: 0 24px;
+}
+
+.player-top-section {
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    gap: 24px;
+    width: 100%;
     align-items: start;
 }
 
@@ -106,6 +113,12 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Fill grid cell height */
+    max-height: 500px;
+    /* Fallback constraint */
 }
 
 .video-list-sidebar h3 {
@@ -123,8 +136,8 @@
 }
 
 .video-list {
-    max-height: 480px;
-    /* Matches approx height of video player */
+    flex: 1;
+    /* Fill remaining height */
     overflow-y: auto;
 }
 
@@ -137,7 +150,7 @@
     border-radius: 16px;
     overflow: hidden;
     aspect-ratio: 16 / 9;
-    margin-bottom: 32px;
+    margin-bottom: 0;
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
     border: 1px solid #1F2937;
 }
@@ -401,11 +414,8 @@
         justify-content: space-between;
     }
 
-    .player-layout {
+    .player-top-section {
         grid-template-columns: 1fr;
-        padding: 0 16px;
-        margin: 20px auto;
-        gap: 24px;
     }
 
     .course-stats {

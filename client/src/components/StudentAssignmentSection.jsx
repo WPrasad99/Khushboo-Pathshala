@@ -543,7 +543,7 @@ const StudentAssignmentSection = () => {
         <div style={{ padding: '24px' }}>
             {/* Header */}
             <div style={{ marginBottom: '16px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>Assignments & Quizzes</h1>
+                {/* Header Text Removed */}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {/* Top Bar: Tabs & Search */}
