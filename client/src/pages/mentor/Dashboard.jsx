@@ -163,7 +163,7 @@ const MentorDashboard = () => {
                         </button>
                         <div className="user-info-pill" onClick={() => navigate('/settings')}>
                             <img src={user?.avatar} alt={user?.name} className="avatar-sm" />
-                            <span>{user?.name?.split(' ')[0]} (Mentor)</span>
+                            <span>{user?.name?.split(' ')[0]}</span>
                         </div>
                         <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
@@ -181,7 +181,7 @@ const MentorDashboard = () => {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        {activeTab !== 'messages' && (
+                        {activeTab === 'overview' && (
                             <div className="dashboard-header-modern" style={{ marginBottom: '30px' }}>
                                 <div>
                                     <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>

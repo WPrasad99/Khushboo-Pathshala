@@ -96,7 +96,7 @@ const Courses = () => {
             >
                 <div className="content-thumbnail">
                     <img
-                        src={item.thumbnailUrl || `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`}
+                        src={(item.thumbnailUrl && item.thumbnailUrl.startsWith('http')) ? item.thumbnailUrl : `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`}
                         alt={item.title}
                         onError={(e) => {
                             e.target.src = `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`;

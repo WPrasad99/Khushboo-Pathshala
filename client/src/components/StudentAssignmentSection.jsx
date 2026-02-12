@@ -267,88 +267,249 @@ const StudentAssignmentSection = () => {
 
     // --- Render Logic ---
 
-    // 1. Quiz Player Mode
+    // --- Extended Quiz State ---
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [markedForReview, setMarkedForReview] = useState(new Set());
+    const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
+
+    // Update visited questions when index changes
+    useEffect(() => {
+        if (activeQuiz) {
+            setVisitedQuestions(prev => new Set(prev).add(currentQuestionIndex));
+        }
+    }, [currentQuestionIndex, activeQuiz]);
+
+    // Helper to get question status color for palette
+    const getQuestionStatusColor = (idx) => {
+        const questionId = quizData.questions[idx].id;
+        const isAnswered = answers[questionId] !== undefined;
+        const isMarked = markedForReview.has(questionId);
+        const isCurrent = currentQuestionIndex === idx;
+        const isVisited = visitedQuestions.has(idx);
+
+        if (isCurrent) return '#3b82f6'; // Blue
+        if (isMarked) return '#8b5cf6'; // Purple
+        if (isAnswered) return '#10b981'; // Green
+        if (isVisited && !isAnswered) return '#ef4444'; // Red (Visited but not answered)
+        return '#cbd5e1'; // Grey (Not Visited)
+    };
+
+    const toggleMarkForReview = () => {
+        const questionId = quizData.questions[currentQuestionIndex].id;
+        setMarkedForReview(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(questionId)) {
+                newSet.delete(questionId);
+            } else {
+                newSet.add(questionId);
+            }
+            return newSet;
+        });
+    };
+
+    const handleClearResponse = () => {
+        const questionId = quizData.questions[currentQuestionIndex].id;
+        const newAnswers = { ...answers };
+        delete newAnswers[questionId];
+        setAnswers(newAnswers);
+    };
+
+    // 1. Quiz Player Mode (Redesigned)
     if (activeQuiz && quizData && !showResult) {
+        const currentQuestion = quizData.questions[currentQuestionIndex];
+        const totalQuestions = quizData.questions.length;
+
         return (
             <div
                 ref={quizContainerRef}
                 style={{
                     position: isFullScreen ? 'fixed' : 'relative',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    background: '#fff',
+                    background: '#f1f5f9',
                     zIndex: isFullScreen ? 9999 : 1,
-                    padding: '40px',
-                    overflowY: 'auto'
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: isFullScreen ? '100vh' : '85vh',
+                    overflow: 'hidden'
                 }}
                 onContextMenu={(e) => e.preventDefault()}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', padding: '20px', background: '#f8faff', borderRadius: '12px' }}>
-                    <div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#1e3a8a' }}>{quizData.title}</h2>
-                        <p style={{ margin: '4px 0 0', color: '#64748b' }}>{quizData.description}</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ padding: '12px 20px', background: timeLeft < 60 ? '#fef2f2' : '#f0f9ff', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FiClock style={{ color: timeLeft < 60 ? '#dc2626' : '#3b82f6' }} />
-                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: timeLeft < 60 ? '#dc2626' : '#3b82f6' }}>
-                                {formatTime(timeLeft)}
-                            </span>
-                        </div>
+                {/* Header */}
+                <div style={{
+                    background: '#e2e8f0',
+                    padding: '12px 24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderBottom: '1px solid #cbd5e1',
+                    flexShrink: 0
+                }}>
+                    <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 600 }}>
+                        Online Test - {quizData.title}
+                    </h2>
+                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                        Attempt 1
                     </div>
                 </div>
 
-                {tabSwitchCount > 0 && (
-                    <div style={{ padding: '12px 20px', background: '#fef2f2', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FiAlertCircle style={{ color: '#dc2626' }} />
-                        <span style={{ color: '#dc2626', fontWeight: 600 }}>
-                            Warning: {tabSwitchCount} tab switch(es) detected. Quiz will auto-submit after 3 attempts.
-                        </span>
-                    </div>
-                )}
+                {/* Main Content: Split View */}
+                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-                    {quizData.questions?.map((question, qIdx) => (
-                        <div key={question.id} style={{ marginBottom: '32px', padding: '24px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                            <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', color: '#1e293b' }}>
-                                Q{qIdx + 1}. {question.question}
+                    {/* Left: Question Area */}
+                    <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'white', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>
+                                Question {currentQuestionIndex + 1}
                             </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {question.options?.map((option, idx) => (
-                                    <label
+                        </div>
+
+                        <div style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#0f172a', marginBottom: '32px' }}>
+                            {currentQuestion.question}
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
+                            {currentQuestion.options?.map((option, idx) => (
+                                <label
+                                    key={idx}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+                                        background: answers[currentQuestion.id] === idx ? '#eff6ff' : 'white',
+                                        border: `1px solid ${answers[currentQuestion.id] === idx ? '#3b82f6' : '#cbd5e1'}`,
+                                        borderRadius: '8px', cursor: 'pointer', transition: 'all 0.1s'
+                                    }}
+                                >
+                                    <input
+                                        type="radio"
+                                        name={`question_${currentQuestion.id}`}
+                                        checked={answers[currentQuestion.id] === idx}
+                                        onChange={() => handleAnswerSelect(currentQuestion.id, idx)}
+                                        style={{ accentColor: '#3b82f6', width: '18px', height: '18px' }}
+                                    />
+                                    <span style={{ fontSize: '1rem', color: '#334155' }}>{option}</span>
+                                </label>
+                            ))}
+                        </div>
+
+                        {/* Bottom Control Bar */}
+                        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={toggleMarkForReview}
+                                    style={{
+                                        padding: '10px 20px', background: markedForReview.has(currentQuestion.id) ? '#7c3aed' : '#8b5cf6',
+                                        color: 'white', border: 'none', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                    }}
+                                >
+                                    {markedForReview.has(currentQuestion.id) ? 'Unmark Review' : 'Mark for Review'}
+                                </button>
+                                <button
+                                    onClick={handleClearResponse}
+                                    style={{
+                                        padding: '10px 20px', background: 'transparent', color: '#ef4444',
+                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                    }}
+                                >
+                                    Clear Response
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                                    disabled={currentQuestionIndex === 0}
+                                    style={{
+                                        padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none',
+                                        borderRadius: '6px', fontWeight: 600, cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                                        opacity: currentQuestionIndex === 0 ? 0.5 : 1
+                                    }}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (currentQuestionIndex < totalQuestions - 1) {
+                                            setCurrentQuestionIndex(prev => prev + 1);
+                                        } else {
+                                            handleSubmitQuiz();
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '10px 24px', background: currentQuestionIndex === totalQuestions - 1 ? '#10b981' : '#3b82f6',
+                                        color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer'
+                                    }}
+                                >
+                                    {currentQuestionIndex === totalQuestions - 1 ? 'Submit Test' : 'Next'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Legend */}
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem', color: '#64748b', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div> Current</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}></div> Answered</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}></div> Not Answered</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }}></div> Marked for Review</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#cbd5e1' }}></div> Not Visited</div>
+                        </div>
+                    </div>
+
+                    {/* Right: Sidebar */}
+                    <div style={{ width: '320px', background: '#f8fafc', borderLeft: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column' }}>
+                        {/* Timer Section */}
+                        <div style={{ padding: '24px', background: '#e2e8f0', textAlign: 'center', borderBottom: '1px solid #cbd5e1' }}>
+                            <div style={{ marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Time Left</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? '#dc2626' : '#1e293b', fontFamily: 'monospace' }}>
+                                {formatTime(timeLeft)}
+                            </div>
+                        </div>
+
+                        {/* User Info (Placeholder) */}
+                        <div style={{ padding: '16px', background: '#e2e8f0', borderBottom: '1px solid #cbd5e1', marginBottom: '16px' }}>
+                            <div style={{ fontWeight: 700, color: '#1e293b' }}>Section: General</div>
+                        </div>
+
+                        {/* Question Palette */}
+                        <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
+                            <h4 style={{ margin: '0 0 16px', color: '#1e293b', fontSize: '1rem' }}>Question Palette</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                                {quizData.questions.map((q, idx) => (
+                                    <button
                                         key={idx}
+                                        onClick={() => setCurrentQuestionIndex(idx)}
                                         style={{
-                                            display: 'flex', alignItems: 'center', gap: '12px', padding: '16px',
-                                            background: answers[question.id] === idx ? '#dbeafe' : 'white',
-                                            border: `2px solid ${answers[question.id] === idx ? '#3b82f6' : '#e2e8f0'}`,
-                                            borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                                            aspectRatio: '1',
+                                            borderRadius: '4px',
+                                            border: 'none',
+                                            background: getQuestionStatusColor(idx),
+                                            color: getQuestionStatusColor(idx) === '#cbd5e1' ? '#475569' : 'white',
+                                            fontWeight: 600,
+                                            fontSize: '1rem',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            position: 'relative' // For polygon shape if needed, but square/rounded is standard
                                         }}
                                     >
-                                        <input
-                                            type="radio"
-                                            name={`question_${question.id}`}
-                                            checked={answers[question.id] === idx}
-                                            onChange={() => handleAnswerSelect(question.id, idx)}
-                                            style={{ accentColor: '#3b82f6' }}
-                                        />
-                                        <span style={{ fontSize: '0.95rem', color: '#1e293b' }}>{option}</span>
-                                    </label>
+                                        {idx + 1}
+                                    </button>
                                 ))}
                             </div>
                         </div>
-                    ))}
-                </div>
 
-                <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', gap: '12px' }}>
-                    <button
-                        onClick={handleSubmitQuiz}
-                        style={{
-                            padding: '16px 32px', background: '#3b82f6', color: 'white', border: 'none',
-                            borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer',
-                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                        }}
-                    >
-                        Submit Quiz
-                    </button>
+                        <div style={{ padding: '20px', borderTop: '1px solid #cbd5e1' }}>
+                            <button
+                                onClick={handleSubmitQuiz}
+                                style={{
+                                    width: '100%', padding: '12px', background: '#10b981', color: 'white',
+                                    border: 'none', borderRadius: '24px', fontWeight: 600, fontSize: '1rem',
+                                    cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                }}
+                            >
+                                Submit Test
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

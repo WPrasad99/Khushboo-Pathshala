@@ -159,6 +159,82 @@ const requireRole = (...roles) => {
     };
 };
 
+// Helper: Fetch YouTube Playlist Data
+const fetchPlaylistData = async (playlistId) => {
+    try {
+        const response = await fetch(`https://www.youtube.com/playlist?list=${playlistId}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9'
+            }
+        });
+        const html = await response.text();
+
+        // Robust JSON extractor using brace counting
+        // Find "ytInitialData =" regardless of var/window/const
+        const marker = 'ytInitialData =';
+        let startIndex = html.indexOf(marker);
+        if (startIndex === -1) return null;
+
+        startIndex += marker.length;
+
+        // Find the first '{'
+        while (startIndex < html.length && html[startIndex] !== '{') {
+            startIndex++;
+        }
+
+        if (startIndex >= html.length) return null;
+
+        let braceCount = 0;
+        let endIndex = startIndex;
+        let found = false;
+
+        for (let i = startIndex; i < html.length; i++) {
+            if (html[i] === '{') {
+                braceCount++;
+            } else if (html[i] === '}') {
+                braceCount--;
+            }
+
+            if (braceCount === 0) {
+                endIndex = i + 1;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) return null;
+
+        const jsonString = html.substring(startIndex, endIndex);
+        const data = JSON.parse(jsonString);
+
+        // Navigate to playlist contents
+        const contents = data.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer?.contents;
+
+        if (!contents) return null;
+
+        const lessons = contents
+            .filter(item => item.playlistVideoRenderer)
+            .map(item => {
+                const video = item.playlistVideoRenderer;
+                const thumbnails = video.thumbnail?.thumbnails;
+                const thumb = thumbnails?.[thumbnails.length - 1]?.url;
+
+                return {
+                    title: video.title?.runs?.[0]?.text || 'Untitled Video',
+                    videoId: video.videoId,
+                    duration: video.lengthText?.simpleText || '0:00',
+                    thumbnailUrl: thumb
+                };
+            });
+
+        return lessons;
+    } catch (error) {
+        console.error('Error fetching playlist data:', error);
+        return null;
+    }
+};
+
 // ============ AUTH ROUTES ============
 
 // Register
@@ -837,6 +913,31 @@ app.post('/api/resources', authenticateToken, requireRole('MENTOR', 'ADMIN'), as
     try {
         const { title, description, category, videoUrl, duration, thumbnailUrl, lessonsCount, isHot } = req.body;
 
+        let finalThumbnailUrl = thumbnailUrl; // Initialize with provided thumbnail
+
+        let lessons = [];
+        let finalLessonsCount = lessonsCount || 1;
+
+        if (videoUrl && videoUrl.includes('list=')) {
+            try {
+                const urlObj = new URL(videoUrl);
+                const listId = urlObj.searchParams.get('list');
+                if (listId) {
+                    const playlistLessons = await fetchPlaylistData(listId);
+                    if (playlistLessons && playlistLessons.length > 0) {
+                        lessons = playlistLessons;
+                        finalLessonsCount = playlistLessons.length;
+                        // Use first video thumbnail if none provided
+                        if (!finalThumbnailUrl && playlistLessons[0].thumbnailUrl) {
+                            finalThumbnailUrl = playlistLessons[0].thumbnailUrl;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing playlist URL:', e);
+            }
+        }
+
         const resource = await prisma.learningResource.create({
             data: {
                 title,
@@ -844,8 +945,9 @@ app.post('/api/resources', authenticateToken, requireRole('MENTOR', 'ADMIN'), as
                 category,
                 videoUrl,
                 duration,
-                thumbnailUrl,
-                lessonsCount: lessonsCount || 1,
+                thumbnailUrl: finalThumbnailUrl,
+                lessonsCount: finalLessonsCount,
+                lessons: lessons.length > 0 ? lessons : undefined,
                 isHot: isHot || false,
                 uploadedById: req.user.id
             }
@@ -958,6 +1060,34 @@ app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR')
             return res.status(403).json({ error: 'You are not assigned to this batch' });
         }
 
+        let lessons = [];
+        let finalDuration = parseInt(duration) || 45;
+
+        // Check for playlist
+        let finalThumbnailUrl = null;
+
+        if (videoUrl && videoUrl.includes('list=')) {
+            try {
+                const urlObj = new URL(videoUrl);
+                const listId = urlObj.searchParams.get('list');
+                if (listId) {
+                    const playlistLessons = await fetchPlaylistData(listId);
+                    if (playlistLessons && playlistLessons.length > 0) {
+                        lessons = playlistLessons;
+                        // Calculate total duration roughly
+                        finalDuration = playlistLessons.length * 10; // Assume 10 mins per video if unknown
+
+                        // Use first video thumbnail
+                        if (playlistLessons[0].thumbnailUrl) {
+                            finalThumbnailUrl = playlistLessons[0].thumbnailUrl;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing playlist URL:', e);
+            }
+        }
+
         // Create session as LearningResource with type='SESSION'
         const session = await prisma.learningResource.create({
             data: {
@@ -966,9 +1096,12 @@ app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR')
                 videoUrl,
                 type: 'SESSION',
                 batchId,
-                duration: parseInt(duration) || 45,
+                duration: finalDuration,
+                thumbnailUrl: finalThumbnailUrl, // Save generated thumbnail
                 category: category || 'TECHNICAL_SKILLS',
-                uploadedById: req.user.id
+                uploadedById: req.user.id,
+                lessonsCount: lessons.length > 0 ? lessons.length : 1,
+                lessons: lessons.length > 0 ? lessons : undefined
             },
             include: {
                 batch: { select: { name: true } },
