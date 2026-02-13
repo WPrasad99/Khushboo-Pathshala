@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, announcementAPI, forumAPI, assignmentAPI, quizAPI } from '../../api';
 import {
-    FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBook,
+    FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBookOpen,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
-    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle
+    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle, FiMenu, FiX
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
 import '../admin/AdminDashboard.css';
 import './MentorDashboard.css';
 import MessagingPage from '../MessagingPage';
+import CalendarWidget from '../../components/dashboard/CalendarWidget';
 
 const formatDate = (date) => {
     return date.toLocaleDateString('en-US', {
@@ -31,9 +33,12 @@ const MentorDashboard = () => {
     const [meetingLogs, setMeetingLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+
     const [announcements, setAnnouncements] = useState([]);
+    const [startChatUser, setStartChatUser] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -48,6 +53,15 @@ const MentorDashboard = () => {
             return () => socket.off('notification');
         }
     }, [socket]);
+
+    const handleStartChat = (student) => {
+        setStartChatUser(student);
+        setActiveTab('messages');
+    };
+
+    const handleClearStartChat = () => {
+        setStartChatUser(null);
+    };
 
     const fetchData = async () => {
         try {
@@ -102,15 +116,20 @@ const MentorDashboard = () => {
 
     return (
         <div className="mentor-dashboard-page">
-            <nav className="navbar">
+            <nav className="mentor-navbar">
                 <div className="navbar-brand-mentor">
                     <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
                     <span className="mentor-logo-text">Khushboo Pathshala</span>
                 </div>
 
+                {/* Mobile Menu Button - Visible only on mobile */}
+                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+                </button>
+
                 <div className="navbar-actions-mentor">
                     <div className="mentor-tabs-container">
-                        <div className="mentor-tabs">
+                        <div className="mentor-tabs nav-links-desktop">
                             <button
                                 className={`mentor-tab ${activeTab === 'overview' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('overview')}
@@ -127,7 +146,7 @@ const MentorDashboard = () => {
                                 className={`mentor-tab ${activeTab === 'sessions' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('sessions')}
                             >
-                                <FiBook /> Sessions
+                                <FiBookOpen /> Sessions
                             </button>
                             <button
                                 className={`mentor-tab ${activeTab === 'mentorship' ? 'active' : ''}`}
@@ -168,9 +187,76 @@ const MentorDashboard = () => {
                         <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
                         </button>
+                        {/* Mobile Toggle moved outside */}
                     </div>
                 </div>
             </nav>
+
+            {/* Mobile Menu - Sidebar Style via Portal */}
+            {ReactDOM.createPortal(
+                <AnimatePresence>
+                    {isMobileMenuOpen && (
+                        <motion.div
+                            className="mobile-menu-overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            <motion.div
+                                className="mobile-menu"
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'tween', duration: 0.3 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="mobile-menu-header">
+                                    <h3>Menu</h3>
+                                    <button onClick={() => setIsMobileMenuOpen(false)}>
+                                        <FiX size={24} />
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-links">
+                                    <button className={`mobile-menu-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }}>
+                                        <FiBarChart2 /> <span>Overview</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'batches' ? 'active' : ''}`} onClick={() => { setActiveTab('batches'); setIsMobileMenuOpen(false); }}>
+                                        <FiLayers /> <span>Batches</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => { setActiveTab('sessions'); setIsMobileMenuOpen(false); }}>
+                                        <FiBookOpen /> <span>Sessions</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'mentorship' ? 'active' : ''}`} onClick={() => { setActiveTab('mentorship'); setIsMobileMenuOpen(false); }}>
+                                        <FiUsers /> <span>Mentorship</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'forum' ? 'active' : ''}`} onClick={() => { setActiveTab('forum'); setIsMobileMenuOpen(false); }}>
+                                        <FiMessageSquare /> <span>Forum</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'assignments' ? 'active' : ''}`} onClick={() => { setActiveTab('assignments'); setIsMobileMenuOpen(false); }}>
+                                        <FiFileText /> <span>Assignments</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => { setActiveTab('messages'); setIsMobileMenuOpen(false); }}>
+                                        <FiMessageCircle /> <span>Messages</span>
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-footer">
+                                    <button className="mobile-settings-btn" onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }}>
+                                        <FiSettings />
+                                        <span>Settings</span>
+                                    </button>
+                                    <button className="mobile-logout-btn" onClick={() => { logout(); navigate('/login'); setIsMobileMenuOpen(false); }}>
+                                        <FiLogOut />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
 
             <div className="dashboard-content">
                 <AnimatePresence mode="wait">
@@ -205,7 +291,7 @@ const MentorDashboard = () => {
                         )}
                         {activeTab === 'batches' && <BatchesSection batches={batches} />}
                         {activeTab === 'sessions' && <SessionsSection batches={batches} />}
-                        {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} />}
+                        {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} onStartChat={handleStartChat} />}
                         {activeTab === 'forum' && <ForumSection batches={batches} />}
                         {activeTab === 'assignments' && <AssignmentsSection batches={batches} />}
                         {activeTab === 'messages' && (
@@ -218,13 +304,13 @@ const MentorDashboard = () => {
                                 zIndex: 100,
                                 background: '#fff'
                             }}>
-                                <MessagingPage />
+                                <MessagingPage initialChatUser={startChatUser} onClearInitialChatUser={handleClearStartChat} />
                             </div>
                         )}
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -233,7 +319,7 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
         <div className="mentor-stats-grid-5">
             {[
                 { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#3b82f6' },
-                { label: 'Active Sessions', value: '8', icon: <FiBook />, color: '#3b82f6' },
+                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3b82f6' },
                 { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#3b82f6' },
                 { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#3b82f6' },
                 { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#3b82f6' }
@@ -282,85 +368,9 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                 </div>
             </div>
 
-            <div style={{ padding: '24px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                    <FiClock color="#3b82f6" />
-                    <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e3a8a', fontWeight: 700 }}>Meeting Logs</h3>
-                </div>
-
-                <div style={{
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    paddingRight: '8px'
-                }}>
-                    {meetingLogs && meetingLogs.length > 0 ? (
-                        meetingLogs.slice(0, 3).map(log => (
-                            <div key={log.id} style={{
-                                padding: '16px',
-                                borderRadius: '12px',
-                                background: 'white',
-                                border: '1px solid #edf2f7'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {log.title || log.discussionSummary || 'Meeting Session'}
-                                    </span>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap' }}>
-                                            {formatDate(new Date(log.meetingDate))}
-                                        </div>
-                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-                                            {new Date(log.meetingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600, marginTop: '4px' }}>
-                                    {log.mentorship?.mentee?.name ? `with ${log.mentorship.mentee.name}` : (log.batch?.name || 'Batch Session')}
-                                </div>
-                                {log.remarks && log.remarks.startsWith('http') && (
-                                    <a
-                                        href={log.remarks}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            display: 'inline-block',
-                                            marginTop: '12px',
-                                            padding: '6px 12px',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            color: 'white',
-                                            background: '#3b82f6',
-                                            borderRadius: '6px',
-                                            textDecoration: 'none'
-                                        }}
-                                    >
-                                        Join Meeting
-                                    </a>
-                                )}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                                    <span style={{
-                                        fontSize: '0.7rem',
-                                        fontWeight: 700,
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        background: new Date(log.meetingDate) > new Date() ? '#dbeafe' : '#dcfce7',
-                                        color: new Date(log.meetingDate) > new Date() ? '#1e40af' : '#166534'
-                                    }}>
-                                        {new Date(log.meetingDate) > new Date() ? 'Upcoming' : 'Completed'}
-                                    </span>
-                                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                        {log.duration} mins
-                                    </span>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p style={{ color: '#94a3b8', textAlign: 'center', fontSize: '0.9rem', padding: '40px 20px' }}>No meeting logs found.</p>
-                    )}
-                </div>
+            {/* Calendar Widget Replacement for Meeting Logs */}
+            <div style={{ minHeight: '400px', height: 'auto', marginTop: '24px' }}>
+                <CalendarWidget meetings={meetingLogs} />
             </div>
         </div>
     </div>
@@ -805,7 +815,7 @@ const SessionsSection = ({ batches }) => {
     );
 };
 
-const MentorshipSection = ({ students, batches, onRefresh }) => {
+const MentorshipSection = ({ students, batches, onRefresh, onStartChat }) => {
     const [meetingForm, setMeetingForm] = useState({
         title: '',
         date: '',
@@ -827,8 +837,9 @@ const MentorshipSection = ({ students, batches, onRefresh }) => {
         try {
             await mentorAPI.scheduleMeeting({
                 ...meetingForm,
-                discussionSummary: meetingForm.description, // Map description to discussionSummary
-                remarks: meetingForm.link // Store link in remarks field
+                ...meetingForm,
+                discussionSummary: meetingForm.description + (meetingForm.link ? `\n\nLink: ${meetingForm.link}` : ''), // Append link to description
+                remarks: meetingForm.link // Keep remarks just in case
             });
             setMeetingForm({
                 title: '',
@@ -896,7 +907,6 @@ const MentorshipSection = ({ students, batches, onRefresh }) => {
                                         </div>
                                         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span style={{ fontSize: '0.75rem', background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '8px', fontWeight: 600 }}>{s.status}</span>
-                                            <button className="icon-btn-minimal" style={{ padding: '6px', color: '#3b82f6', background: 'white', borderRadius: '50%', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}><FiMessageSquare size={16} /></button>
                                         </div>
                                     </div>
                                 ))

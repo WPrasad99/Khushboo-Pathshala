@@ -10,7 +10,7 @@ import GroupInfoPanel from '../components/messaging/GroupInfoPanel';
 import UserInfoPanel from '../components/messaging/UserInfoPanel';
 import './MessagingPage.css';
 
-const MessagingPage = () => {
+const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
     const { user: currentUser } = useAuth();
     const [conversations, setConversations] = useState([]);
     const [contacts, setContacts] = useState([]);
@@ -32,9 +32,39 @@ const MessagingPage = () => {
     const currentUserId = currentUser?.id;
     const currentUserName = currentUser?.name;
 
+    // Handle initial chat user (from Mentor Dashboard)
+    useEffect(() => {
+        const initDirectMessage = async () => {
+            if (initialChatUser?.id) {
+                try {
+                    // Try to find existing or create new DM
+                    const response = await chatAPI.createDirectMessage(initialChatUser.id);
+                    if (response.data) {
+                        const group = response.data;
+                        // Refresh lists
+                        await fetchData();
+                        setSelectedConversation(group);
+                        setShowMobileSidebar(false); // Open chat view
+
+                        // Clear the initial user in parent to prevent re-triggering
+                        if (onClearInitialChatUser) {
+                            onClearInitialChatUser();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize chat:', error);
+                }
+            }
+        };
+
+        if (initialChatUser) {
+            initDirectMessage();
+        }
+    }, [initialChatUser]);
+
     // Fetch conversations and contacts
     useEffect(() => {
-        fetchData();
+        fetchData(); // Keeping original fetch logic
 
         // Socket listeners
         socket.on('message:new', handleNewMessage);

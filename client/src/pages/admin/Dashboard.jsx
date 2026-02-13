@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2
+    FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2, FiMenu, FiX
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
@@ -169,11 +170,17 @@ const AdminDashboard = () => {
     return (
         <div className="dashboard-page">
             {/* Navbar Refined to match Mentor/Student */}
-            <nav className="navbar admin-navbar">
+            {/* Navbar Refined to match Mentor/Student */}
+            <nav className="admin-navbar">
                 <div className="navbar-brand-mentor" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
                     <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
                     <span className="mentor-logo-text">Khushboo Pathshala</span>
                 </div>
+
+                {/* Mobile Menu Button - Visible only on mobile */}
+                <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                    {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+                </button>
 
                 <div className="navbar-actions-mentor">
                     <div className="mentor-tabs-container nav-links-desktop">
@@ -223,81 +230,102 @@ const AdminDashboard = () => {
                         <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
                         </button>
-                        <button className="icon-btn menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                            <FiMoreVertical />
-                        </button>
+                        {/* Mobile Toggle removed from here */}
                     </div>
                 </div>
+            </nav>
 
-                {/* Mobile Menu */}
+            {/* Mobile Menu - Sidebar Style via Portal */}
+            {ReactDOM.createPortal(
                 <AnimatePresence>
                     {isMenuOpen && (
                         <motion.div
-                            className="mobile-nav-menu"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
+                            className="mobile-menu-overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMenuOpen(false)}
                         >
-                            <button
-                                className={`mobile-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-                                onClick={() => { setActiveTab('overview'); setIsMenuOpen(false); }}
+                            <motion.div
+                                className="mobile-menu"
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'tween', duration: 0.3 }}
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                <FiBarChart2 /> Overview
-                            </button>
-                            <button
-                                className={`mobile-nav-item ${activeTab === 'batches' ? 'active' : ''}`}
-                                onClick={() => { setActiveTab('batches'); setIsMenuOpen(false); }}
-                            >
-                                <FiLayers /> Batches
-                            </button>
-                            <button
-                                className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
-                                onClick={() => { setActiveTab('users'); setIsMenuOpen(false); }}
-                            >
-                                <FiUsers /> Users
-                            </button>
-                            <button
-                                className={`mobile-nav-item ${activeTab === 'announcements' ? 'active' : ''}`}
-                                onClick={() => { setActiveTab('announcements'); setIsMenuOpen(false); }}
-                            >
-                                <FiBell /> Announcements
-                            </button>
+                                <div className="mobile-menu-header">
+                                    <h3>Menu</h3>
+                                    <button onClick={() => setIsMenuOpen(false)}>
+                                        <FiX size={24} />
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-links">
+                                    <button className={`mobile-menu-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsMenuOpen(false); }}>
+                                        <FiBarChart2 /> <span>Overview</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'batches' ? 'active' : ''}`} onClick={() => { setActiveTab('batches'); setIsMenuOpen(false); }}>
+                                        <FiLayers /> <span>Batches</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'users' ? 'active' : ''}`} onClick={() => { setActiveTab('users'); setIsMenuOpen(false); }}>
+                                        <FiUsers /> <span>Users</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'announcements' ? 'active' : ''}`} onClick={() => { setActiveTab('announcements'); setIsMenuOpen(false); }}>
+                                        <FiBell /> <span>Announcements</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => { setActiveTab('messages'); setIsMenuOpen(false); }}>
+                                        <FiMessageCircle /> <span>Messages</span>
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-footer">
+                                    <button className="mobile-settings-btn" onClick={() => { navigate('/settings'); setIsMenuOpen(false); }}>
+                                        <FiSettings />
+                                        <span>Settings</span>
+                                    </button>
+                                    <button className="mobile-logout-btn" onClick={() => { logout(); navigate('/login'); setIsMenuOpen(false); }}>
+                                        <FiLogOut />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </motion.div>
                         </motion.div>
                     )}
-                </AnimatePresence>
+                </AnimatePresence>,
+                document.body
+            )}
 
-                {/* Notifications Dropdown */}
-                <AnimatePresence>
-                    {showNotifications && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className="notification-dropdown-refined"
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <h4 style={{ margin: 0 }}>Notifications</h4>
-                                <button className="btn-ghost btn-sm" onClick={() => setUnreadNotifications(0)}>Clear all</button>
-                            </div>
-                            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                {unreadNotifications > 0 ? (
-                                    <div className="mentee-card" style={{ marginBottom: '8px', cursor: 'pointer' }}>
-                                        <FiBell style={{ color: '#3B82F6' }} />
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Real-time Update</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>New activity detected on the platform.</div>
-                                        </div>
+            {/* Notifications Dropdown */}
+            <AnimatePresence>
+                {showNotifications && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="notification-dropdown-refined"
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <h4 style={{ margin: 0 }}>Notifications</h4>
+                            <button className="btn-ghost btn-sm" onClick={() => setUnreadNotifications(0)}>Clear all</button>
+                        </div>
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {unreadNotifications > 0 ? (
+                                <div className="mentee-card" style={{ marginBottom: '8px', cursor: 'pointer' }}>
+                                    <FiBell style={{ color: '#3B82F6' }} />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Real-time Update</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>New activity detected on the platform.</div>
                                     </div>
-                                ) : (
-                                    <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem', padding: '20px 0' }}>
-                                        No new notifications
-                                    </p>
-                                )}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </nav>
+                                </div>
+                            ) : (
+                                <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem', padding: '20px 0' }}>
+                                    No new notifications
+                                </p>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
 
             {/* Main Content */}
             <div className="dashboard-content">
@@ -703,19 +731,23 @@ const AdminDashboard = () => {
             </div>
 
             {/* Modals */}
-            {showCreateUserModal && (
-                <CreateUserModal
-                    onClose={() => setShowCreateUserModal(false)}
-                    onSuccess={fetchData}
-                />
-            )}
-            {showBulkUserModal && (
-                <BulkUserModal
-                    onClose={() => setShowBulkUserModal(false)}
-                    onSuccess={fetchData}
-                />
-            )}
-        </div>
+            {
+                showCreateUserModal && (
+                    <CreateUserModal
+                        onClose={() => setShowCreateUserModal(false)}
+                        onSuccess={fetchData}
+                    />
+                )
+            }
+            {
+                showBulkUserModal && (
+                    <BulkUserModal
+                        onClose={() => setShowBulkUserModal(false)}
+                        onSuccess={fetchData}
+                    />
+                )
+            }
+        </div >
     );
 };
 
