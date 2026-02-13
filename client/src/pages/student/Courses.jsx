@@ -99,7 +99,14 @@ const Courses = () => {
                         src={(item.thumbnailUrl && item.thumbnailUrl.startsWith('http')) ? item.thumbnailUrl : `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`}
                         alt={item.title}
                         onError={(e) => {
-                            e.target.src = `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`;
+                            // Try hqdefault for YouTube thumbnails, then fall back to generic
+                            const src = e.target.src;
+                            if (src.includes('maxresdefault')) {
+                                e.target.src = src.replace('maxresdefault', 'hqdefault');
+                            } else {
+                                e.target.src = `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop`;
+                                e.target.onerror = null; // Prevent infinite loop
+                            }
                         }}
                     />
                     <div className="content-type-badge">

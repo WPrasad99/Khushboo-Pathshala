@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage, FiArrowLeft } from 'react-icons/fi';
 import { chatAPI } from '../api';
 import { socket } from '../api/socket';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +25,7 @@ const MessagingPage = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [usersTyping, setUsersTyping] = useState([]);
+    const [showMobileSidebar, setShowMobileSidebar] = useState(true);
     const messagesEndRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
@@ -117,6 +118,7 @@ const MessagingPage = () => {
         setShowGroupInfo(false);
         setShowUserInfo(false);
         setSelectedConversation(conv);
+        setShowMobileSidebar(false); // Switch to chat view on mobile
         fetchMessages(conv.id);
     };
 
@@ -230,7 +232,7 @@ const MessagingPage = () => {
     }
 
     return (
-        <div className="messaging-page">
+        <div className={`messaging-page ${showMobileSidebar ? 'show-sidebar' : ''}`}>
             {/* Left Sidebar - Conversations */}
             <div className="conversations-sidebar">
                 <div className="sidebar-header">
@@ -301,6 +303,13 @@ const MessagingPage = () => {
                 {selectedConversation ? (
                     <>
                         <div className="messages-header">
+                            <button
+                                className="mobile-back-btn"
+                                onClick={() => setShowMobileSidebar(true)}
+                                title="Back to conversations"
+                            >
+                                <FiArrowLeft />
+                            </button>
                             <div
                                 className="header-info"
                                 onClick={() => setShowGroupInfo(true)}

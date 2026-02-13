@@ -100,8 +100,27 @@ const MentorProgram = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                         >
-                            <div className="card-badge">Your Mentor</div>
-                            {mentorship?.mentor ? (
+                            <div className="card-badge">Your Mentors</div>
+                            {mentorship?.mentors && mentorship.mentors.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {mentorship.mentors.map((mentor, idx) => (
+                                        <div className="mentor-details" key={mentor.id || idx} style={idx > 0 ? { borderTop: '1px solid #e2e8f0', paddingTop: '16px' } : {}}>
+                                            <div className="avatar-wrapper">
+                                                <img src={mentor.avatar} alt={mentor.name} />
+                                                <div className="status-indicator"></div>
+                                            </div>
+                                            <div className="info">
+                                                <h2>{mentor.name}</h2>
+                                                <p className="specialization">Expert Guide & Mentor</p>
+                                                <div className="contact-pills">
+                                                    <span>{mentor.email}</span>
+                                                    {mentor.phone && <span>{mentor.phone}</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : mentorship?.mentor ? (
                                 <div className="mentor-details">
                                     <div className="avatar-wrapper">
                                         <img src={mentorship.mentor.avatar} alt={mentorship.mentor.name} />

@@ -9,6 +9,7 @@ import StudentAssignmentSection from '../../components/StudentAssignmentSection'
 import StudentResourcesSection from '../../components/StudentResourcesSection';
 
 import './Dashboard.css';
+import './DashboardMobileFix.css';
 
 const StudentDashboard = () => {
     const { user } = useAuth();
@@ -134,7 +135,7 @@ const StudentDashboard = () => {
                                 </svg>
                             </div>
                             <div className="stat-info">
-                                <span className="stat-label">Courses</span>
+                                <span className="stat-label">Courses Completed</span>
                                 <span className="stat-value">{stats?.completedCourses || 0}</span>
                             </div>
                         </motion.div>
@@ -147,13 +148,13 @@ const StudentDashboard = () => {
                         >
                             <div className="stat-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="12" cy="8" r="7" />
-                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                                 </svg>
                             </div>
                             <div className="stat-info">
-                                <span className="stat-label">Badges</span>
-                                <span className="stat-value">{stats?.badgesCount || 0}</span>
+                                <span className="stat-label">Learning Resources</span>
+                                <span className="stat-value">{stats?.learningResources || 0}</span>
                             </div>
                         </motion.div>
 
@@ -185,7 +186,7 @@ const StudentDashboard = () => {
                     </div>
 
                     {/* Dashboard Sections - 70/30 Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
+                    <div className="overview-grid" style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
 
                         {/* Left: Upcoming Sessions (70%) */}
                         <section>
@@ -236,7 +237,7 @@ const StudentDashboard = () => {
                                         <p>No announcements</p>
                                     </div>
                                 ) : (
-                                    announcements.map((announcement, i) => (
+                                    announcements.slice(0, 3).map((announcement, i) => (
                                         <motion.div
                                             key={i}
                                             initial={{ opacity: 0, y: 20 }}

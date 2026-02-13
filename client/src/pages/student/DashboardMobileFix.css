@@ -1,0 +1,363 @@
+/* CRITICAL MOBILE FIXES - Load this LAST to override everything */
+
+/* Prevent horizontal scrolling globally */
+html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+/* ========== MOBILE RESPONSIVE - 768px ========== */
+@media (max-width: 768px) {
+
+    /* Prevent horizontal scroll on ALL containers */
+    .student-layout,
+    .student-main-content,
+    .dashboard-content,
+    .content-grid,
+    .grid-col-left,
+    .grid-col-right,
+    .stats-grid,
+    .dashboard-sections,
+    .dashboard-section,
+    section {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Dashboard main padding */
+    .dashboard-content {
+        padding: 16px !important;
+    }
+
+    /* ===== CRITICAL: Stack Sessions & Announcements vertically ===== */
+    .overview-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        grid-template-columns: unset !important;
+    }
+
+    .overview-grid>section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ===== STAT CARDS GRID - Display 2 per row ===== */
+    .stats-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .stat-card {
+        padding: 14px !important;
+        border-radius: 14px !important;
+        min-height: auto !important;
+    }
+
+    .stat-card .stat-icon {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .stat-card .stat-icon svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    .stat-card .stat-info .stat-label {
+        font-size: 0.7rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .stat-card .stat-info .stat-value {
+        font-size: 1.3rem !important;
+    }
+
+    .stat-card .stat-of {
+        font-size: 0.65rem !important;
+    }
+
+    .stat-value-row {
+        align-items: baseline !important;
+        gap: 4px !important;
+    }
+
+    /* ===== CONTENT GRID - Stack vertically ===== */
+    .content-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        width: 100% !important;
+    }
+
+    .grid-col-left,
+    .grid-col-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 14px !important;
+    }
+
+    /* ===== DASHBOARD SECTIONS ===== */
+    .dashboard-section-header {
+        flex-wrap: wrap !important;
+        padding: 12px 14px !important;
+    }
+
+    .dashboard-section-header h2 {
+        font-size: 0.95rem !important;
+    }
+
+    /* ===== SESSION / MEETING / ANNOUNCEMENT CARDS ===== */
+    .list-container,
+    .activity-card,
+    .session-card,
+    .announcement-card,
+    .meeting-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+    }
+
+    /* ===== FIX ANNOUNCEMENTS GETTING CUT ===== */
+    /* Override inline styles on announcement cards */
+    section>div {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Announcement card items rendered with inline styles */
+    section>div>div {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Fix meeting and announcement card inner elements */
+    section div[style*="display: flex"][style*="gap"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Announcement card text containers */
+    section div[style*="flex: 1"] {
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    section div[style*="flex: 1"] h4 {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: 0.85rem !important;
+    }
+
+    section div[style*="flex: 1"] p {
+        font-size: 0.7rem !important;
+    }
+
+    /* List items inside cards */
+    .list-item {
+        padding: 10px 12px !important;
+        gap: 10px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .list-item-icon,
+    .date-badge {
+        width: 40px !important;
+        height: 44px !important;
+        flex-shrink: 0 !important;
+        border-radius: 10px !important;
+    }
+
+    .date-badge .day {
+        font-size: 1rem !important;
+    }
+
+    .date-badge .month {
+        font-size: 0.6rem !important;
+    }
+
+    .list-item-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .list-item-content h4,
+    .list-item-title {
+        font-size: 0.85rem !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    .list-item-content p,
+    .list-item-subtitle {
+        font-size: 0.75rem !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .list-item-action .btn-primary-sm,
+    .list-item-action a {
+        font-size: 0.7rem !important;
+        padding: 5px 10px !important;
+    }
+
+    /* ===== ACTIVITY HEATMAP ===== */
+    .activity-heatmap,
+    .heatmap-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        box-sizing: border-box !important;
+        padding: 12px !important;
+    }
+
+    /* ===== DASHBOARD HEADER ===== */
+    .dashboard-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 0 0 16px 0 !important;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem !important;
+    }
+
+    .dashboard-header p {
+        font-size: 0.85rem !important;
+    }
+
+    /* ===== ASSIGNMENT SECTION - Mobile Layout ===== */
+    /* Fix assignment/quiz card grid to single column */
+    div[style*="grid-template-columns: repeat(auto-fill, minmax(320px"] {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding: 0 !important;
+    }
+
+    /* Fix assignment section container padding */
+    div[style*="padding: '24px'"],
+    div[style*="padding: 24px"] {
+        padding: 12px !important;
+    }
+
+    /* Fix search box min-width */
+    div[style*="minWidth: '300px'"],
+    div[style*="min-width: 300px"] {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Fix tab bar and search to stack vertically */
+    div[style*="justifyContent: 'space-between'"][style*="flexWrap: 'wrap'"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    /* Assignment card header height */
+    div[style*="height: '140px'"],
+    div[style*="height: 140px"] {
+        height: 100px !important;
+    }
+
+    /* Assignment card body padding */
+    div[style*="padding: '20px'"][style*="flex: 1"] {
+        padding: 14px !important;
+    }
+
+    /* Assignment card title */
+    div[style*="padding: '20px'"] h3,
+    div[style*="padding: 20px"] h3 {
+        font-size: 0.95rem !important;
+    }
+
+    /* Quiz player mobile fix */
+    div[style*="flex: 1"][style*="padding: '40px'"] {
+        padding: 16px !important;
+    }
+
+    /* Quiz sidebar mobile fix */
+    div[style*="width: '280px'"] {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ========== EXTRA SMALL SCREENS - 480px ========== */
+@media (max-width: 480px) {
+
+    .dashboard-content {
+        padding: 10px !important;
+    }
+
+    /* Stat cards still 2 per row on very small screens */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .stat-card {
+        padding: 10px !important;
+    }
+
+    .stat-card .stat-icon {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .stat-card .stat-info .stat-label {
+        font-size: 0.6rem !important;
+    }
+
+    .stat-card .stat-info .stat-value {
+        font-size: 1.1rem !important;
+    }
+
+    .content-grid {
+        gap: 10px !important;
+    }
+
+    .grid-col-left,
+    .grid-col-right {
+        gap: 10px !important;
+    }
+
+    .list-item {
+        padding: 8px 10px !important;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Assignment cards single column */
+    div[style*="grid-template-columns: repeat(auto-fill, minmax(320px"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Assignment card header even smaller */
+    div[style*="height: '140px'"],
+    div[style*="height: 140px"] {
+        height: 80px !important;
+    }
+}

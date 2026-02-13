@@ -271,3 +271,91 @@
 .leave-group-btn:hover {
     background: #fecaca;
 }
+
+/* ========== MOBILE RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .group-info-panel {
+        width: 100% !important;
+        max-width: 100vw !important;
+        left: 0;
+        right: 0;
+        box-shadow: none;
+        border-left: none;
+        z-index: 999999;
+    }
+
+    .group-info-header {
+        padding: 16px;
+        position: sticky;
+        top: 0;
+        background: #ffffff;
+        z-index: 10;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .close-panel-btn {
+        font-size: 1.8rem;
+        padding: 10px;
+        background: #fee2e2;
+        border-radius: 50%;
+        color: #dc2626;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .close-panel-btn:hover {
+        background: #fecaca;
+    }
+
+    .group-info-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .group-info-content {
+        padding: 16px;
+    }
+
+    .group-details h3 {
+        font-size: 1rem;
+    }
+
+    .group-details p {
+        font-size: 0.8rem;
+    }
+
+    .member-item {
+        padding: 10px;
+    }
+
+    .member-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .member-name {
+        font-size: 0.8rem;
+    }
+
+    .member-role {
+        font-size: 0.7rem;
+    }
+
+    .edit-group-form input,
+    .edit-group-form textarea {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+
+    .add-member-list {
+        max-height: 160px;
+    }
+
+    .available-user {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+}

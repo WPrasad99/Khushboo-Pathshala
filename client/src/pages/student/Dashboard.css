@@ -4,11 +4,16 @@
     flex-direction: column;
     min-height: 100vh;
     background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .student-main-content {
     flex: 1;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 @media (max-width: 900px) {
@@ -197,6 +202,9 @@
 /* Dashboard Content */
 .dashboard-content {
     padding: 24px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
     /* max-width: 1400px; Removed to full width */
 }
 
@@ -516,6 +524,9 @@
     gap: 40px;
     margin-bottom: 32px;
     align-items: start;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     /* Prevent stretching if content height differs significantly */
 }
 
@@ -878,18 +889,102 @@
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .dashboard-content {
+        padding: 24px;
+    }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .dashboard-content {
-        padding: 20px;
+        padding: 20px 16px;
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .welcome-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem !important;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.9rem !important;
+    }
+
+    .list-item {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .list-item-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .content-grid {
+        gap: 20px;
+    }
+
+    .activity-card,
+    .session-card,
+    .announcement-card {
+        padding: 16px;
+    }
+
+    .dashboard-section-header h2 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-content {
+        padding: 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .welcome-title {
+        font-size: 1.4rem !important;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.85rem !important;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-value {
+        font-size: 1.6rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .list-item {
+        padding: 14px;
+    }
+
+    .dashboard-section-header {
+        margin-bottom: 16px;
+    }
+
+    .dashboard-section-header h2 {
+        font-size: 1rem;
+    }
+
+    .content-grid {
+        gap: 16px;
     }
 }

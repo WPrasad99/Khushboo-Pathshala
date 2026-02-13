@@ -168,6 +168,26 @@ app.get('/api/notifications/unread-count', authenticateToken, async (req, res) =
     }
 });
 
+// Delete Notification
+app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+
+        await prisma.notification.deleteMany({
+            where: {
+                id,
+                userId // Ensure user owns the notification
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete notification error:', error);
+        res.status(500).json({ error: 'Failed to delete notification' });
+    }
+});
+
 // Get User Notifications
 app.get('/api/notifications', authenticateToken, async (req, res) => {
     try {
@@ -1513,8 +1533,8 @@ app.get('/api/mentorship', authenticateToken, async (req, res) => {
         const role = req.user.role;
 
         if (role === 'STUDENT') {
-            // Get student's mentor
-            const mentorship = await prisma.mentorship.findFirst({
+            // 1. Get mentors from direct Mentorship records
+            const mentorships = await prisma.mentorship.findMany({
                 where: { menteeId: userId },
                 include: {
                     mentor: {
@@ -1526,7 +1546,41 @@ app.get('/api/mentorship', authenticateToken, async (req, res) => {
                     }
                 }
             });
-            res.json(mentorship);
+
+            // 2. Get mentors assigned to the student's batches via BatchMentor
+            const studentBatches = await prisma.batchStudent.findMany({
+                where: { studentId: userId },
+                select: { batchId: true }
+            });
+            const batchIds = studentBatches.map(b => b.batchId);
+
+            let batchMentors = [];
+            if (batchIds.length > 0) {
+                const batchMentorRecords = await prisma.batchMentor.findMany({
+                    where: { batchId: { in: batchIds } },
+                    include: {
+                        mentor: {
+                            select: { id: true, name: true, email: true, avatar: true, phone: true }
+                        }
+                    }
+                });
+                batchMentors = batchMentorRecords.map(bm => bm.mentor);
+            }
+
+            // 3. Merge and deduplicate all mentors
+            const directMentors = mentorships.map(m => m.mentor).filter(Boolean);
+            const allMentorsMap = new Map();
+            [...directMentors, ...batchMentors].forEach(m => {
+                if (m && m.id) allMentorsMap.set(m.id, m);
+            });
+            const allMentors = Array.from(allMentorsMap.values());
+
+            res.json({
+                mentor: allMentors[0] || null,
+                mentors: allMentors,
+                meetings: mentorships.flatMap(m => m.meetings),
+                mentorships: mentorships
+            });
         } else if (role === 'MENTOR') {
             // Get mentor's mentees
             const mentorships = await prisma.mentorship.findMany({
@@ -3964,6 +4018,32 @@ app.get('/api/student/dashboard', authenticateToken, async (req, res) => {
             }
         }
 
+        // Calculate attendance percentage from sessionTracking
+        const totalTracked = await prisma.sessionTracking.count({
+            where: { userId: studentId }
+        });
+
+        const attendedCount = await prisma.sessionTracking.count({
+            where: {
+                userId: studentId,
+                attendanceMarked: true
+            }
+        });
+
+        const attendancePercentage = totalTracked > 0
+            ? Math.round((attendedCount / totalTracked) * 100)
+            : 0;
+
+        // Count learning resources (LearningResource model) for student's batches
+        const learningResourcesCount = await prisma.learningResource.count({
+            where: {
+                OR: [
+                    { batchId: { in: batchIds } },
+                    { batchId: null }
+                ]
+            }
+        });
+
         res.json({
             assignments,
             announcements,
@@ -3973,7 +4053,15 @@ app.get('/api/student/dashboard', authenticateToken, async (req, res) => {
             stats: {
                 loginStreak,
                 streakStatus,
-                totalLoginDays: loginDates.length
+                totalLoginDays: loginDates.length,
+                attendancePercentage,
+                completedCourses: await prisma.sessionTracking.count({
+                    where: {
+                        userId: studentId,
+                        completionPercentage: { gte: 95 }
+                    }
+                }),
+                learningResources: learningResourcesCount
             }
         });
 

@@ -297,7 +297,7 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                     paddingRight: '8px'
                 }}>
                     {meetingLogs && meetingLogs.length > 0 ? (
-                        meetingLogs.map(log => (
+                        meetingLogs.slice(0, 3).map(log => (
                             <div key={log.id} style={{
                                 padding: '16px',
                                 borderRadius: '12px',
@@ -306,28 +306,39 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                                     <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {log.title || 'Meeting Session'}
+                                        {log.title || log.discussionSummary || 'Meeting Session'}
                                     </span>
-                                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-                                        {new Date(log.meetingDate).toLocaleDateString()}
-                                    </span>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                                            {formatDate(new Date(log.meetingDate))}
+                                        </div>
+                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                                            {new Date(log.meetingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600, marginTop: '4px' }}>
-                                    {log.batch?.name || 'Batch Session'}
+                                    {log.mentorship?.mentee?.name ? `with ${log.mentorship.mentee.name}` : (log.batch?.name || 'Batch Session')}
                                 </div>
-                                {log.discussionSummary && (
-                                    <p style={{
-                                        fontSize: '0.8rem',
-                                        color: '#64748b',
-                                        margin: '8px 0',
-                                        lineHeight: '1.5',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: '2',
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {log.discussionSummary}
-                                    </p>
+                                {log.remarks && log.remarks.startsWith('http') && (
+                                    <a
+                                        href={log.remarks}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            display: 'inline-block',
+                                            marginTop: '12px',
+                                            padding: '6px 12px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600,
+                                            color: 'white',
+                                            background: '#3b82f6',
+                                            borderRadius: '6px',
+                                            textDecoration: 'none'
+                                        }}
+                                    >
+                                        Join Meeting
+                                    </a>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
                                     <span style={{
@@ -335,10 +346,10 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                                         fontWeight: 700,
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        background: '#dcfce7',
-                                        color: '#166534'
+                                        background: new Date(log.meetingDate) > new Date() ? '#dbeafe' : '#dcfce7',
+                                        color: new Date(log.meetingDate) > new Date() ? '#1e40af' : '#166534'
                                     }}>
-                                        Completed
+                                        {new Date(log.meetingDate) > new Date() ? 'Upcoming' : 'Completed'}
                                     </span>
                                     <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                                         {log.duration} mins
@@ -814,7 +825,11 @@ const MentorshipSection = ({ students, batches, onRefresh }) => {
         }
         setIsSubmitting(true);
         try {
-            await mentorAPI.scheduleMeeting(meetingForm);
+            await mentorAPI.scheduleMeeting({
+                ...meetingForm,
+                discussionSummary: meetingForm.description, // Map description to discussionSummary
+                remarks: meetingForm.link // Store link in remarks field
+            });
             setMeetingForm({
                 title: '',
                 date: '',
@@ -1335,12 +1350,21 @@ const AssignmentsSection = ({ batches }) => {
         title: '',
         description: '',
         duration: 30,
-        totalMarks: 100,
+        totalMarks: 0,
+        marksPerQuestion: 1,
         passingMarks: 40,
         dueDate: '',
         batches: [],
         questions: []
     });
+
+    // Auto-calculate total marks whenever marksPerQuestion or questions length changes
+    useEffect(() => {
+        if (showCreateQuiz) {
+            const total = (quizFormData.questions?.length || 0) * (parseInt(quizFormData.marksPerQuestion) || 0);
+            setQuizFormData(prev => ({ ...prev, totalMarks: total }));
+        }
+    }, [quizFormData.questions?.length, quizFormData.marksPerQuestion, showCreateQuiz]);
     const [csvFile, setCsvFile] = useState(null);
     const [csvPreview, setCsvPreview] = useState([]);
     const [showCsvPreview, setShowCsvPreview] = useState(false);
@@ -1858,12 +1882,23 @@ const AssignmentsSection = ({ batches }) => {
                                         />
                                     </div>
                                     <div className="glass-form-group">
-                                        <label className="glass-label">Total Marks</label>
+                                        <label className="glass-label">Marks Per Question</label>
+                                        <input
+                                            type="number"
+                                            className="glass-input"
+                                            value={quizFormData.marksPerQuestion}
+                                            onChange={(e) => setQuizFormData({ ...quizFormData, marksPerQuestion: parseInt(e.target.value) })}
+                                            min="1"
+                                        />
+                                    </div>
+                                    <div className="glass-form-group">
+                                        <label className="glass-label">Total Marks (Auto)</label>
                                         <input
                                             type="number"
                                             className="glass-input"
                                             value={quizFormData.totalMarks}
-                                            onChange={(e) => setQuizFormData({ ...quizFormData, totalMarks: parseInt(e.target.value) })}
+                                            readOnly
+                                            style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
                                         />
                                     </div>
                                     <div className="glass-form-group">
