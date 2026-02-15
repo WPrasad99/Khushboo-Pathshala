@@ -624,7 +624,7 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
 
         if (userRole === 'STUDENT') {
             // Get student dashboard data
-            const [trackings, achievements, activities, announcements, studentBatches] = await Promise.all([
+            const [trackings, achievements, activities, announcements, studentBatches, manualAttendance] = await Promise.all([
                 prisma.sessionTracking.findMany({
                     where: { userId },
                     include: { resource: true }
@@ -643,6 +643,12 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
                 prisma.batchStudent.findMany({
                     where: { studentId: userId },
                     select: { batchId: true }
+                }),
+                prisma.activity.findMany({
+                    where: {
+                        userId,
+                        type: { startsWith: 'ATTENDANCE_' }
+                    }
                 })
             ]);
 
@@ -726,8 +732,13 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
             const sessions = [...futureSessions, ...pastSessions].slice(0, 5);
 
             // Calculate stats
-            const totalSessions = trackings.length;
-            const attendedSessions = trackings.filter(t => t.attendanceMarked).length;
+            // Calculate stats
+            const manualPresent = manualAttendance.filter(a => a.type === 'ATTENDANCE_PRESENT').length;
+            const manualTotal = manualAttendance.length;
+
+            const totalSessions = trackings.length + manualTotal;
+            const attendedSessions = trackings.filter(t => t.attendanceMarked).length + manualPresent;
+
             const attendancePercentage = totalSessions > 0 ? Math.round((attendedSessions / totalSessions) * 100) : 0;
             const completedCourses = trackings.filter(t => t.completionPercentage >= 80).length;
             const badges = achievements.filter(a => a.type === 'BADGE');
@@ -750,16 +761,24 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
             const activeDaysThisMonth = loginLogsThisMonth.length;
 
             res.json({
+                user: {
+                    name: req.user.name,
+                    email: req.user.email,
+                    avatar: req.user.avatar,
+                    role: req.user.role,
+                    profileCompleted: req.user.profileCompleted
+                },
                 stats: {
                     attendancePercentage,
                     completedCourses,
                     badgesCount: badges.length,
-                    activeDaysThisMonth,
-                    totalDaysInMonth
+                    activeDaysThisMonth: activeDaysThisMonth, // Mock data
+                    totalDaysInMonth: totalDaysInMonth
                 },
-                recentActivities: activities,
+                recentActivity: activities,
                 upcomingSessions: sessions,
-                announcements,
+                announcements, // Kept announcements as it was in the original response
+                learningProgress: trackings, // Assuming trackings is the learning progress
                 achievements: badges
             });
         } else if (userRole === 'MENTOR') {
@@ -1277,6 +1296,55 @@ app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'
     } catch (error) {
         console.error('Upload resource error:', error);
         res.status(500).json({ error: 'Failed to upload resource' });
+    }
+});
+
+// Mark Batch Attendance (Upload CSV)
+app.post('/api/mentor/attendance', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const { date, records } = req.body;
+        // records: [{ email, status: 'Present' | 'Absent' }]
+
+        if (!records || !Array.isArray(records)) {
+            return res.status(400).json({ error: 'Invalid records format' });
+        }
+
+        const stats = { success: 0, failed: 0 };
+        const activityDate = date ? new Date(date) : new Date();
+
+        // Process sequentially to avoid race conditions or DB locks if large
+        for (const record of records) {
+            try {
+                if (!record.email) continue;
+
+                const student = await prisma.user.findUnique({
+                    where: { email: record.email }
+                });
+
+                if (student) {
+                    await prisma.activity.create({
+                        data: {
+                            userId: student.id,
+                            type: record.status === 'Present' ? 'ATTENDANCE_PRESENT' : 'ATTENDANCE_ABSENT',
+                            title: `Attendance: ${activityDate.toLocaleDateString()}`,
+                            description: `Marked as ${record.status} by Mentor`,
+                            createdAt: activityDate
+                        }
+                    });
+                    stats.success++;
+                } else {
+                    stats.failed++;
+                }
+            } catch (err) {
+                console.error(`Error marking attendance for ${record.email}:`, err);
+                stats.failed++;
+            }
+        }
+
+        res.json({ message: 'Attendance marked', stats });
+    } catch (error) {
+        console.error('Attendance upload error:', error);
+        res.status(500).json({ error: 'Failed to upload attendance' });
     }
 });
 

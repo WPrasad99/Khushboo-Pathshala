@@ -6,7 +6,7 @@ import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, ann
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBookOpen,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
-    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle, FiMenu, FiX
+    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle, FiMenu, FiX, FiZap
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
@@ -318,58 +318,58 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
     <div className="overview-container">
         <div className="mentor-stats-grid-5">
             {[
-                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#3b82f6' },
-                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3b82f6' },
-                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#3b82f6' },
-                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#3b82f6' },
-                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#3b82f6' }
+                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#10B981', bgColor: '#ECFDF5' },
+                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3B82F6', bgColor: '#EFF6FF' },
+                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#F59E0B', bgColor: '#FFFBEB' },
+                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#8B5CF6', bgColor: '#F5F3FF' },
+                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#6366F1', bgColor: '#EEF2FF' }
             ].map((stat, idx) => (
-                <div key={idx} className="stat-card-refined read-only" style={{ background: '#f8faff', border: '1px solid #edf2f7' }}>
-                    <div className="stat-icon-refined" style={{ background: 'white', color: stat.color, boxShadow: '0 2px 10px rgba(59, 130, 246, 0.05)' }}>
+                <div key={idx} className="stat-card-refined read-only" style={{ background: 'white', border: '1px solid #edf2f7' }}>
+                    <div className="stat-icon-refined" style={{ background: stat.bgColor, color: stat.color, boxShadow: 'none' }}>
                         {stat.icon}
                     </div>
-                    <span className="stat-value-bold" style={{ color: '#1e3a8a', fontSize: '1.4rem' }}>{stat.value}</span>
+                    <span className="stat-value-bold" style={{ color: '#1e293b', fontSize: '1.4rem' }}>{stat.value}</span>
                     <span className="stat-label-muted" style={{ color: '#64748b', fontWeight: 600 }}>{stat.label}</span>
                 </div>
             ))}
         </div>
 
         <div className="mentor-grid">
-            <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: '#f8faff', border: '1px solid #edf2f7' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: '#1e3a8a' }}>
+            <div className="glass-card" style={{ padding: '20px', background: 'white', border: '1px solid #edf2f7' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: '#1e293b', fontSize: '1.1rem' }}>
                         <FiClock color="#3b82f6" /> Recent Updates
                     </h3>
                     <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{announcements?.length || 0} Total</span>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px', maxHeight: '300px' }}>
                     {announcements && announcements.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {announcements.map((ann, idx) => (
-                                <div key={idx} style={{ padding: '16px', background: 'white', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                <div key={idx} style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b' }}>{ann.title}</h4>
-                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#334155' }}>{ann.title}</h4>
+                                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
                                             {formatDate(new Date(ann.createdAt))}
                                         </span>
                                     </div>
-                                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', lineHeight: '1.4' }}>{ann.content}</p>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>{ann.content}</p>
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
-                            <div style={{ background: '#f0f7ff', padding: '16px', borderRadius: '50%' }}>
-                                <FiBell size={24} color="#3b82f6" />
+                            <div style={{ background: '#f0f7ff', padding: '12px', borderRadius: '50%' }}>
+                                <FiBell size={20} color="#3b82f6" />
                             </div>
-                            <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>No new announcements from admin.</p>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>No new announcements from admin.</p>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Calendar Widget Replacement for Meeting Logs */}
-            <div style={{ minHeight: '400px', height: 'auto', marginTop: '24px' }}>
+            <div style={{ minHeight: '350px', height: 'auto', marginTop: '0px' }}>
                 <CalendarWidget meetings={meetingLogs} />
             </div>
         </div>
@@ -377,91 +377,195 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
 );
 
 const BatchesSection = ({ batches }) => {
-    const [expandedBatch, setExpandedBatch] = useState(null);
+    const [selectedBatch, setSelectedBatch] = useState(null);
 
     return (
         <div className="batches-container">
-            {batches && batches.length > 0 ? (
-                batches.map(batch => (
-                    <div key={batch.id} className="batch-accordion-item read-only" style={{ background: '#f8faff', border: '1px solid #edf2f7', borderRadius: '16px', marginBottom: '16px', overflow: 'hidden' }}>
-                        <div
-                            className="batch-accordion-header"
-                            onClick={() => setExpandedBatch(expandedBatch === batch.id ? null : batch.id)}
-                            style={{ cursor: 'pointer' }}
+            <AnimatePresence>
+                {selectedBatch && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+                        }}
+                        onClick={() => setSelectedBatch(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                                background: 'white',
+                                borderRadius: '24px',
+                                padding: '32px',
+                                width: '100%',
+                                maxWidth: '800px',
+                                maxHeight: '85vh',
+                                overflowY: 'auto',
+                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                            }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <div className="stat-icon-wrapper" style={{ margin: 0 }}><FiLayers /></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                                 <div>
-                                    <h3 style={{ margin: 0 }}>{batch.name}</h3>
-                                    <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                        {batch.studentsCount} Students • {batch.status}
-                                    </span>
+                                    <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#1e293b' }}>{selectedBatch.name}</h2>
+                                    <p style={{ margin: '4px 0 0', color: '#64748b' }}>{selectedBatch.studentsCount} Students • {selectedBatch.status}</p>
                                 </div>
+                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
+                                    <FiX size={20} />
+                                </button>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>Mentor(s)</div>
-                                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                                        {batch.assignedMentors?.map(m => (
-                                            <img key={m.id} src={m.avatar} alt={m.name} className="avatar-xs" title={m.name} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} />
-                                        ))}
-                                    </div>
-                                </div>
-                                {expandedBatch === batch.id ? <FiChevronUp color="#3b82f6" /> : <FiChevronDown color="#3b82f6" />}
-                            </div>
-                        </div>
 
-                        <AnimatePresence>
-                            {expandedBatch === batch.id && (
-                                <motion.div
-                                    className="batch-accordion-content"
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                >
-                                    <div style={{ overflowX: 'auto', marginTop: '10px' }}>
-                                        <table className="student-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Student</th>
-                                                    <th>Joined Date</th>
-                                                    <th>Actions (Disabled)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {batch.students?.map(s => (
-                                                    <tr key={s.id} className="student-row">
-                                                        <td>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                <img src={s.avatar} className="avatar-sm" alt="" />
-                                                                <div>
-                                                                    <div style={{ fontWeight: 600 }}>{s.name}</div>
-                                                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{s.email}</div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>{new Date(s.createdAt).toLocaleDateString()}</td>
-                                                        <td>
-                                                            <div style={{ display: 'flex', gap: '8px', opacity: 0.5, pointerEvents: 'none' }}>
-                                                                <button className="action-icon-btn"><FiUser /></button>
-                                                                <button className="action-icon-btn"><FiEdit2 /></button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table className="student-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
+                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Student</th>
+                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Joined Date</th>
+                                            <th style={{ padding: '16px', textAlign: 'right', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedBatch.students?.map(s => (
+                                            <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <td style={{ padding: '16px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <img src={s.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                                                        <div>
+                                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</div>
+                                                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{s.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '16px', color: '#64748b' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
+                                                <td style={{ padding: '16px', textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.5 }}>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiUser size={14} /></button>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginBottom: '24px' }}>Your Batches</h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+                {batches && batches.length > 0 ? (
+                    batches.map(batch => (
+                        <motion.div
+                            key={batch.id}
+                            whileHover={{ y: -5 }}
+                            className="glass-card"
+                            style={{
+                                padding: '0',
+                                overflow: 'hidden',
+                                background: 'white',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '20px',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}
+                        >
+                            {/* Creative Header */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                                padding: '24px',
+                                borderBottom: '1px solid #e2e8f0',
+                                position: 'relative'
+                            }}>
+                                <div style={{
+                                    position: 'absolute', top: '20px', right: '20px',
+                                    background: '#dbeafe', color: '#1e40af',
+                                    padding: '4px 12px', borderRadius: '20px',
+                                    fontSize: '0.75rem', fontWeight: 700
+                                }}>
+                                    {batch.status}
+                                </div>
+                                <div style={{
+                                    width: '48px', height: '48px',
+                                    background: 'white', borderRadius: '12px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    marginBottom: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                                }}>
+                                    <FiLayers size={24} color="#3b82f6" />
+                                </div>
+                                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>{batch.name}</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>Batch ID: #{batch.id.substring(0, 8)}</p>
+                            </div>
+
+                            {/* Body */}
+                            <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Students</div>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#334155' }}>{batch.studentsCount}</div>
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', textAlign: 'right' }}>Mentors</div>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingLeft: '8px' }}>
+                                            {batch.assignedMentors?.map((m, i) => (
+                                                <img
+                                                    key={m.id}
+                                                    src={m.avatar}
+                                                    alt={m.name}
+                                                    title={m.name}
+                                                    style={{
+                                                        width: '28px', height: '28px', borderRadius: '50%',
+                                                        border: '2px solid white', marginLeft: i > 0 ? '-10px' : '0',
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: 'auto' }}>
+                                    <button
+                                        onClick={() => setSelectedBatch(batch)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            background: '#f8fafc',
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: '12px',
+                                            color: '#3b82f6',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={e => { e.target.style.background = '#e0f2fe'; e.target.style.borderColor = '#bae6fd'; }}
+                                        onMouseOut={e => { e.target.style.background = '#f8fafc'; e.target.style.borderColor = '#e2e8f0'; }}
+                                    >
+                                        View Students <FiArrowRight />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                ) : (
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                        <div style={{ background: '#f1f5f9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                            <FiLayers size={32} opacity={0.5} />
+                        </div>
+                        <h3>No Batches Assigned</h3>
+                        <p>You haven't been assigned to any batches yet.</p>
                     </div>
-                ))
-            ) : (
-                <div className="glass-card" style={{ padding: '40px', textAlign: 'center' }}>
-                    <p style={{ color: '#64748b' }}>You are not assigned to any batches yet.</p>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
@@ -815,7 +919,9 @@ const SessionsSection = ({ batches }) => {
     );
 };
 
-const MentorshipSection = ({ students, batches, onRefresh, onStartChat }) => {
+{/* Modals placed before MentorshipSection or inside Dashboard if they were used there, but here is fine */ }
+const ScheduleMeetingModal = ({ isOpen, onClose, batches, onSuccess }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [meetingForm, setMeetingForm] = useState({
         title: '',
         date: '',
@@ -825,7 +931,6 @@ const MentorshipSection = ({ students, batches, onRefresh, onStartChat }) => {
         description: '',
         batchId: ''
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleScheduleMeeting = async (e) => {
         e.preventDefault();
@@ -837,21 +942,10 @@ const MentorshipSection = ({ students, batches, onRefresh, onStartChat }) => {
         try {
             await mentorAPI.scheduleMeeting({
                 ...meetingForm,
-                ...meetingForm,
-                discussionSummary: meetingForm.description + (meetingForm.link ? `\n\nLink: ${meetingForm.link}` : ''), // Append link to description
-                remarks: meetingForm.link // Keep remarks just in case
+                discussionSummary: meetingForm.description + (meetingForm.link ? `\n\nLink: ${meetingForm.link}` : ''),
+                remarks: meetingForm.link
             });
-            setMeetingForm({
-                title: '',
-                date: '',
-                duration: '60',
-                mode: 'Online',
-                link: '',
-                description: '',
-                batchId: ''
-            });
-            alert('Meeting scheduled successfully!');
-            onRefresh();
+            onSuccess();
         } catch (error) {
             console.error('Failed to schedule meeting:', error);
             alert('Failed to schedule meeting');
@@ -861,167 +955,373 @@ const MentorshipSection = ({ students, batches, onRefresh, onStartChat }) => {
     };
 
     return (
-        <div className="mentorship-container">
-            <div className="mentorship-grid-modern" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 450px', gap: '24px', alignItems: 'start' }}>
-                {/* Left Column: Student List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%' }}>
-                    <div className="glass-card" style={{ padding: '24px', background: '#f8faff', border: '1px solid #edf2f7', height: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>Student Directory</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>Manage and track students from your assigned batches</p>
-                            </div>
-                            <div style={{ background: '#f0f9ff', color: '#0369a1', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
-                                {students?.length || 0} Students
-                            </div>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }}
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                style={{
+                    background: 'white', padding: '24px', borderRadius: '16px',
+                    width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                }}
+                onClick={e => e.stopPropagation()}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>Schedule New Meeting</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><FiX size={24} /></button>
+                </div>
+                <form onSubmit={handleScheduleMeeting}>
+                    <div className="glass-form-group">
+                        <label className="glass-label">Title</label>
+                        <input type="text" className="glass-input" value={meetingForm.title} onChange={e => setMeetingForm({ ...meetingForm, title: e.target.value })} required />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="glass-form-group">
+                            <label className="glass-label">Date</label>
+                            <input type="datetime-local" className="glass-input" value={meetingForm.date} onChange={e => setMeetingForm({ ...meetingForm, date: e.target.value })} required />
                         </div>
+                        <div className="glass-form-group">
+                            <label className="glass-label">Mode</label>
+                            <select className="glass-input" value={meetingForm.mode} onChange={e => setMeetingForm({ ...meetingForm, mode: e.target.value })}>
+                                <option value="Online">Online</option>
+                                <option value="Offline">Offline</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="glass-form-group">
+                        <label className="glass-label">Batch</label>
+                        <select className="glass-input" value={meetingForm.batchId} onChange={e => setMeetingForm({ ...meetingForm, batchId: e.target.value })} required>
+                            <option value="">Select Batch</option>
+                            {batches?.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                        </select>
+                    </div>
+                    {meetingForm.mode === 'Online' && (
+                        <div className="glass-form-group">
+                            <label className="glass-label">Link</label>
+                            <input type="url" className="glass-input" placeholder="Zoom/GMeet Link" value={meetingForm.link} onChange={e => setMeetingForm({ ...meetingForm, link: e.target.value })} required />
+                        </div>
+                    )}
+                    <div className="glass-form-group">
+                        <label className="glass-label">Description</label>
+                        <textarea className="glass-input" value={meetingForm.description} onChange={e => setMeetingForm({ ...meetingForm, description: e.target.value })} />
+                    </div>
+                    <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>
+                        {isSubmitting ? 'Scheduling...' : 'Confirm Schedule'}
+                    </button>
+                </form>
+            </motion.div>
+        </motion.div>
+    );
+};
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                            {students && students.length > 0 ? (
-                                students.map(s => (
-                                    <div key={s.id} className="mentee-card-modern" style={{
-                                        padding: '20px',
-                                        borderRadius: '16px',
-                                        border: '1px solid #edf2f7',
-                                        background: '#f8faff',
-                                        transition: 'all 0.2s ease'
-                                    }}>
-                                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                            <div style={{ position: 'relative' }}>
-                                                <img src={s.avatar} alt={s.name} style={{ width: '56px', height: '56px', borderRadius: '16px', objectFit: 'cover' }} />
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    bottom: '-2px',
-                                                    right: '-2px',
-                                                    width: '14px',
-                                                    height: '14px',
-                                                    borderRadius: '50%',
-                                                    background: '#10b981',
-                                                    border: '2px solid white'
-                                                }}></div>
-                                            </div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
-                                                <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>{s.batchName}</div>
-                                            </div>
+const UploadAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
+    const [file, setFile] = useState(null);
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        if (!file) {
+            alert("Please select a CSV file.");
+            return;
+        }
+
+        setIsUploading(true);
+        const reader = new FileReader();
+
+        reader.onload = async ({ target }) => {
+            const csv = target.result;
+            const lines = csv.split('\n');
+            const records = [];
+
+            // Simple CSV parsing: assumes header is Email, Status
+            const startIndex = lines[0].toLowerCase().includes('email') ? 1 : 0;
+
+            for (let i = startIndex; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const [email, status] = line.split(',');
+                if (email && status) {
+                    records.push({ email: email.trim(), status: status.trim() }); // status: Present/Absent
+                }
+            }
+
+            try {
+                // Call API (using axios directly or api helper)
+                // Assuming `mentorAPI` exists or importing `api`
+                // Since this file uses `import api from '../../api'`, I'll use `api` if available, or just declare it if not imported?
+                // `api` is usually imported at top.
+                const response = await api.post('/mentor/attendance', { date, records });
+                onSuccess(response.data.stats);
+            } catch (error) {
+                console.error('Upload failed', error);
+                alert('Upload failed');
+            } finally {
+                setIsUploading(false);
+            }
+        };
+
+        reader.readAsText(file);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }}
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                style={{
+                    background: 'white', padding: '24px', borderRadius: '16px',
+                    width: '100%', maxWidth: '400px',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                }}
+                onClick={e => e.stopPropagation()}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>Upload Attendance</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><FiX size={24} /></button>
+                </div>
+                <form onSubmit={handleUpload}>
+                    <div className="glass-form-group">
+                        <label className="glass-label">Date</label>
+                        <input type="date" className="glass-input" value={date} onChange={e => setDate(e.target.value)} required />
+                    </div>
+                    <div className="glass-form-group">
+                        <label className="glass-label">CSV File</label>
+                        <input type="file" accept=".csv" className="glass-input" onChange={handleFileChange} required />
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>Format: Email, Status (Present/Absent)</p>
+                    </div>
+                    <button type="submit" disabled={isUploading} className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>
+                        {isUploading ? 'Uploading...' : 'Upload'}
+                    </button>
+                    <a href="#" onClick={(e) => {
+                        e.preventDefault();
+                        const csvContent = "data:text/csv;charset=utf-8,Email,Status\nstudent@example.com,Present";
+                        const encodedUri = encodeURI(csvContent);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodedUri);
+                        link.setAttribute("download", "attendance_template.csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }} style={{ display: 'block', textAlign: 'center', marginTop: '12px', fontSize: '0.85rem', color: '#3b82f6' }}>
+                        Download Template
+                    </a>
+                </form>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) => {
+    const [isScheduling, setIsScheduling] = useState(false);
+    const [isUploadingAttendance, setIsUploadingAttendance] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleScheduleSuccess = () => {
+        setIsScheduling(false);
+        onRefresh();
+        alert('Meeting scheduled successfully!');
+    };
+
+    const handleAttendanceSuccess = (stats) => {
+        setIsUploadingAttendance(false);
+        alert(`Attendance Uploaded! Success: ${stats.success}, Failed: ${stats.failed}`);
+        onRefresh();
+    };
+
+    const filteredStudents = students?.filter(s =>
+        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.email.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+
+    return (
+        <div className="mentorship-container">
+            {/* Modals */}
+            <AnimatePresence>
+                {isScheduling && (
+                    <ScheduleMeetingModal
+                        isOpen={isScheduling}
+                        onClose={() => setIsScheduling(false)}
+                        batches={batches}
+                        onSuccess={handleScheduleSuccess}
+                    />
+                )}
+                {isUploadingAttendance && (
+                    <UploadAttendanceModal
+                        isOpen={isUploadingAttendance}
+                        onClose={() => setIsUploadingAttendance(false)}
+                        onSuccess={handleAttendanceSuccess}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Header Removed as per request */}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '24px', alignItems: 'start', marginTop: '20px' }}>
+                {/* Left Column: Mentees Grid */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                    {/* Search & Filter Bar */}
+                    <div className="glass-card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #edf2f7' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>My Mentees <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 400 }}>({filteredStudents.length})</span></h3>
+                        <div className="search-box-refined" style={{ width: '300px', display: 'flex', alignItems: 'center', background: '#f8fafc', borderRadius: '12px', padding: '8px 16px', border: '1px solid #e2e8f0' }}>
+                            <FiSearch style={{ color: '#94a3b8', marginRight: '10px' }} />
+                            <input
+                                type="text"
+                                placeholder="Search by name or email..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem', color: '#1e293b' }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Mentees Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                        {filteredStudents.length > 0 ? (
+                            filteredStudents.map((s, idx) => (
+                                <div key={s.id || idx} className="mentee-card-modern" style={{ position: 'relative', padding: '20px', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', transition: 'all 0.3s ease' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '16px' }}>
+                                        <div className="avatar-wrapper">
+                                            <img src={s.avatar} alt={s.name} className="avatar-lg" style={{ width: '56px', height: '56px' }} />
+                                            <div className="status-indicator online" style={{ width: '12px', height: '12px', border: '2px solid white' }}></div>
                                         </div>
-                                        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '0.75rem', background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '8px', fontWeight: 600 }}>{s.status}</span>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
+                                            <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>{s.batchName}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{s.email}</div>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                                    <FiUsers size={40} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                                    <p>No students assigned yet.</p>
+
+                                    {/* Mock Progress - can be real if data available */}
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '6px', color: '#64748b' }}>
+                                            <span>Course Progress</span>
+                                            <span style={{ fontWeight: 600, color: '#3b82f6' }}>75%</span>
+                                        </div>
+                                        <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                                            <div style={{ width: '75%', height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #f8fafc' }}>
+                                        <button
+                                            onClick={() => onStartChat(s)}
+                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#eff6ff', color: '#3b82f6', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                                        >
+                                            <FiMessageCircle size={16} /> Message
+                                        </button>
+                                        <button
+                                            onClick={() => { setIsScheduling(true); /* Ideally pre-fill form with this student */ }}
+                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#f0fdf4', color: '#16a34a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                                        >
+                                            <FiCalendar size={16} /> Schedule
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
+                            ))
+                        ) : (
+                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#94a3b8', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
+                                <FiUsers size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                                <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>No students found matching "{searchTerm}"</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Right Column: Meeting Scheduler - Always Open */}
+                {/* Right Column: Sidebar */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div className="glass-card" style={{ padding: '24px', background: '#f8faff', border: '1px solid #edf2f7' }}>
-                        <div style={{ marginBottom: '16px' }}>
-                            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Schedule New Meeting</h3>
-                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>Create a meeting for your students</p>
-                        </div>
 
-                        <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px' }}>
-                            <form onSubmit={handleScheduleMeeting}>
-                                <div className="glass-form-group">
-                                    <label className="glass-label" style={{ fontSize: '0.8rem' }}>Title</label>
-                                    <input
-                                        type="text"
-                                        className="glass-input"
-                                        style={{ padding: '10px' }}
-                                        placeholder="Meeting Title"
-                                        value={meetingForm.title}
-                                        onChange={(e) => setMeetingForm({ ...meetingForm, title: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                    <div className="glass-form-group">
-                                        <label className="glass-label" style={{ fontSize: '0.8rem' }}>Date</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="glass-input"
-                                            style={{ padding: '10px' }}
-                                            value={meetingForm.date}
-                                            onChange={(e) => setMeetingForm({ ...meetingForm, date: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="glass-form-group">
-                                        <label className="glass-label" style={{ fontSize: '0.8rem' }}>Mode</label>
-                                        <select
-                                            className="glass-input"
-                                            style={{ padding: '10px' }}
-                                            value={meetingForm.mode}
-                                            onChange={(e) => setMeetingForm({ ...meetingForm, mode: e.target.value })}
-                                        >
-                                            <option value="Online">Online</option>
-                                            <option value="Offline">Offline</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="glass-form-group">
-                                    <label className="glass-label" style={{ fontSize: '0.8rem' }}>Batch</label>
-                                    <select
-                                        className="glass-input"
-                                        style={{ padding: '10px' }}
-                                        value={meetingForm.batchId}
-                                        onChange={(e) => setMeetingForm({ ...meetingForm, batchId: e.target.value })}
-                                        required
-                                    >
-                                        <option value="">Select Batch</option>
-                                        {batches?.map(b => (
-                                            <option key={b.id} value={b.id}>{b.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {meetingForm.mode === 'Online' && (
-                                    <div className="glass-form-group">
-                                        <label className="glass-label" style={{ fontSize: '0.8rem' }}>Link</label>
-                                        <input
-                                            type="url"
-                                            className="glass-input"
-                                            style={{ padding: '10px' }}
-                                            placeholder="Zoom/GMeet Link"
-                                            value={meetingForm.link}
-                                            onChange={(e) => setMeetingForm({ ...meetingForm, link: e.target.value })}
-                                            required={meetingForm.mode === 'Online'}
-                                        />
-                                    </div>
-                                )}
-                                <div className="glass-form-group">
-                                    <label className="glass-label" style={{ fontSize: '0.8rem' }}>Description</label>
-                                    <textarea
-                                        className="glass-input"
-                                        style={{ padding: '10px', minHeight: '80px', resize: 'vertical' }}
-                                        placeholder="Meeting description..."
-                                        value={meetingForm.description}
-                                        onChange={(e) => setMeetingForm({ ...meetingForm, description: e.target.value })}
-                                    />
-                                </div>
-                                <button type="submit" disabled={isSubmitting} style={{
-                                    width: '100%',
-                                    background: '#3b82f6',
-                                    color: 'white',
-                                    border: 'none',
-                                    padding: '12px',
-                                    borderRadius: '8px',
-                                    fontWeight: 600,
-                                    marginTop: '10px',
-                                    cursor: 'pointer'
-                                }}>
-                                    {isSubmitting ? 'Scheduling...' : 'Confirm Schedule'}
-                                </button>
-                            </form>
+                    {/* Quick Actions Card - White Glassy */}
+                    <div className="glass-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)' }}>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '10px', color: '#1e293b' }}>
+                            <FiZap style={{ color: '#f59e0b' }} /> Quick Actions
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button
+                                onClick={() => setIsScheduling(true)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            >
+                                <div style={{ background: '#eff6ff', color: '#3b82f6', padding: '6px', borderRadius: '6px', display: 'flex' }}><FiCalendar size={18} /></div>
+                                Schedule Meeting
+                            </button>
+                            <button
+                                onClick={() => setIsUploadingAttendance(true)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            >
+                                <div style={{ background: '#f0fdf4', color: '#10b981', padding: '6px', borderRadius: '6px', display: 'flex' }}><FiCheckCircle size={18} /></div>
+                                Upload Attendance
+                            </button>
                         </div>
                     </div>
+
+                    {/* Insights Card */}
+                    <div className="glass-card" style={{ padding: '24px', border: '1px solid #edf2f7' }}>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1rem', color: '#1e293b' }}>Insights</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3b82f6' }}>{students?.length || 0}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Total Mentees</div>
+                            </div>
+                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>{batches?.length || 0}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Active Batches</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Upcoming Sessions Preview (Mini) */}
+                    <div className="glass-card" style={{ padding: '20px', border: '1px solid #edf2f7' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Upcoming</h3>
+                            <span style={{ fontSize: '0.8rem', color: '#3b82f6', cursor: 'pointer' }}>View All</span>
+                        </div>
+
+                        {/* Mock Mini List */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px', background: '#fff', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px', background: '#eff6ff', borderRadius: '8px', minWidth: '50px' }}>
+                                    <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 700 }}>FEB</span>
+                                    <span style={{ fontSize: '1.1rem', color: '#1e293b', fontWeight: 800 }}>20</span>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1e293b' }}>Resume Review</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>10:00 AM • Online</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -1092,60 +1392,129 @@ const ForumSection = ({ batches }) => {
 
     return (
         <div className="forum-container">
-            <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3>Q&A / Discussion Forum</h3>
+            <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: 'linear-gradient(to bottom, #ffffff, #f8fafc)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <div>
+                        <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#1e293b' }}>Q&A / Discussion Forum</h3>
+                        <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Engage with your students and solve their queries</p>
+                    </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <select
-                            className="glass-input"
-                            style={{ width: '200px', padding: '8px' }}
-                            value={selectedBatch}
-                            onChange={(e) => setSelectedBatch(e.target.value)}
-                        >
-                            <option value="">All My Batches</option>
-                            {batches?.map(b => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
+                        <div style={{ position: 'relative' }}>
+                            <select
+                                className="glass-input"
+                                style={{
+                                    width: '220px',
+                                    padding: '10px 16px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #e2e8f0',
+                                    background: 'white',
+                                    color: '#475569',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    appearance: 'none'
+                                }}
+                                value={selectedBatch}
+                                onChange={(e) => setSelectedBatch(e.target.value)}
+                            >
+                                <option value="">All My Batches</option>
+                                {batches?.map(b => (
+                                    <option key={b.id} value={b.id}>{b.name}</option>
+                                ))}
+                            </select>
+                            <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                        </div>
                     </div>
                 </div>
 
-                <div className="forum-threads">
+                <div className="forum-threads" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                            <p>Loading forum posts...</p>
+                        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                            <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
+                            <p>Loading discussions...</p>
                         </div>
                     ) : forumPosts.length > 0 ? (
                         forumPosts.map(post => {
                             return (
-                                <div key={post.id} className="forum-thread-card">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <motion.div
+                                    key={post.id}
+                                    className="forum-thread-card-modern"
+                                    whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}
+                                    style={{
+                                        background: 'white',
+                                        borderRadius: '16px',
+                                        padding: '24px',
+                                        border: '1px solid #f1f5f9',
+                                        transition: 'all 0.2s ease',
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                    onClick={() => handleViewPost(post.id)}
+                                >
+                                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                                        {/* Author Avatar or Initials */}
+                                        <div style={{ flexShrink: 0 }}>
+                                            {post.author?.avatar ? (
+                                                <img src={post.author.avatar} alt={post.author.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
+                                            ) : (
+                                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
+                                                    {post.author?.name?.charAt(0) || '?'}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.title}</h4>
-                                            <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
-                                                Started by {post.author?.name || 'Unknown'} • {new Date(post.createdAt).toLocaleDateString()}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                                <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 700, lineHeight: '1.4' }}>{post.title}</h4>
+                                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
+                                                    {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+
+                                            <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: '#64748b', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                {post.content}
+                                            </p>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #f8fafc' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.85rem' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: post.answersCount > 0 ? '#3b82f6' : '#94a3b8', fontWeight: 500 }}>
+                                                        <FiMessageSquare /> {post.answersCount || 0} Replies
+                                                    </div>
+                                                    <div style={{ color: '#94a3b8' }}>
+                                                        Posted by <span style={{ color: '#475569', fontWeight: 600 }}>{post.author?.name}</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    style={{
+                                                        padding: '8px 20px',
+                                                        fontSize: '0.85rem',
+                                                        background: 'white',
+                                                        color: '#3b82f6',
+                                                        border: '1px solid #dbeafe',
+                                                        borderRadius: '8px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s',
+                                                        display: 'flex', alignItems: 'center', gap: '6px'
+                                                    }}
+                                                    className="btn-reply-hover"
+                                                >
+                                                    View Thread <FiArrowRight size={14} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: '#64748b' }}>
-                                            <span><FiMessageSquare style={{ verticalAlign: 'middle', marginRight: '4px' }} /> {post.answersCount || 0} Replies</span>
-                                        </div>
-                                        <button
-                                            className="btn-glass-primary"
-                                            style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                                            onClick={() => handleViewPost(post.id)}
-                                        >
-                                            View & Reply
-                                        </button>
-                                    </div>
-                                </div>
+                                </motion.div>
                             );
                         })
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                            <FiMessageSquare size={40} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                            <p>No forum posts yet from students in your batches.</p>
+                        <div style={{ textAlign: 'center', padding: '80px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                            <div style={{ background: '#fff', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                <FiMessageSquare size={32} color="#94a3b8" />
+                            </div>
+                            <h3 style={{ margin: '0 0 8px 0', color: '#475569' }}>No discussions yet</h3>
+                            <p style={{ margin: 0, fontSize: '0.95rem' }}>When students ask questions, they will appear here.</p>
                         </div>
                     )}
                 </div>
