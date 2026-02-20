@@ -126,10 +126,10 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                 style={{
                                     background: 'rgba(239, 68, 68, 0.1)',
                                     color: '#ef4444',
-                                    padding: '12px',
+                                    padding: 'var(--space-20)',
                                     borderRadius: '12px',
                                     marginBottom: '20px',
-                                    fontSize: '0.9rem',
+                                    fontSize: 'var(--fs-body)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px'
@@ -155,7 +155,7 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                 >
                                     <FiUpload size={48} style={{ color: '#4a90e2', marginBottom: '16px' }} />
                                     <h3>Upload Excel or CSV</h3>
-                                    <p style={{ color: '#64748b', marginTop: '8px' }}>
+                                    <p style={{ color: 'var(--color-text-)', marginTop: '8px' }}>
                                         Excel must contain columns named <strong>'name'</strong> and <strong>'email'</strong>
                                     </p>
                                     <input
@@ -174,7 +174,7 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                 <div className="glass-form-group">
                                     <label className="glass-label">Found {previewData.length} users in file.</label>
                                     <div style={{ maxHeight: '150px', overflowY: 'auto', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', padding: '10px', marginBottom: '20px' }}>
-                                        <table style={{ width: '100%', fontSize: '0.85rem' }}>
+                                        <table style={{ width: '100%', fontSize: 'var(--fs-body)' }}>
                                             <thead>
                                                 <tr>
                                                     <th style={{ textAlign: 'left' }}>Name</th>
@@ -190,7 +190,7 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                                 ))}
                                                 {previewData.length > 5 && (
                                                     <tr>
-                                                        <td colSpan="2" style={{ textAlign: 'center', color: '#64748b' }}>... and {previewData.length - 5} more</td>
+                                                        <td colSpan="2" style={{ textAlign: 'center', color: 'var(--color-text-)' }}>... and {previewData.length - 5} more</td>
                                                     </tr>
                                                 )}
                                             </tbody>
@@ -211,7 +211,7 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                         />
                                         <FiLayers className="glass-input-icon" />
                                     </div>
-                                    <small style={{ color: '#64748b', display: 'block', marginTop: '8px' }}>
+                                    <small style={{ color: 'var(--color-text-)', display: 'block', marginTop: '8px' }}>
                                         If the batch doesn't exist, it will be created automatically.
                                     </small>
                                 </div>
@@ -253,16 +253,16 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
                                     <FiCheck size={32} />
                                 </div>
                                 <h2 style={{ color: '#10b981' }}>Success!</h2>
-                                <p style={{ color: '#64748b', margin: '16px 0 24px' }}>
+                                <p style={{ color: 'var(--color-text-)', margin: '16px 0 24px' }}>
                                     {successData?.message}
                                 </p>
 
                                 {successData?.errors?.length > 0 && (
-                                    <div style={{ textAlign: 'left', background: 'rgba(239, 68, 68, 0.05)', padding: '12px', borderRadius: '12px', marginBottom: '24px' }}>
-                                        <p style={{ color: '#ef4444', fontWeight: '600', fontSize: '0.9rem', marginBottom: '8px' }}>
+                                    <div style={{ textAlign: 'left', background: 'rgba(239, 68, 68, 0.05)', padding: 'var(--space-20)', borderRadius: '12px', marginBottom: '24px' }}>
+                                        <p style={{ color: '#ef4444', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', marginBottom: '8px' }}>
                                             Errors ({successData.errors.length}):
                                         </p>
-                                        <ul style={{ fontSize: '0.8rem', color: '#64748b', maxHeight: '100px', overflowY: 'auto' }}>
+                                        <ul style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', maxHeight: '100px', overflowY: 'auto' }}>
                                             {successData.errors.map((err, i) => (
                                                 <li key={i}>{err.email}: {err.error}</li>
                                             ))}

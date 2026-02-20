@@ -202,8 +202,8 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
 
                                         <div className="split-view" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', height: '300px' }}>
                                             {/* Current Members */}
-                                            <div className="current-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px' }}>
-                                                <h4 style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <div className="current-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--space-20)' }}>
+                                                <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', textTransform: 'uppercase' }}>
                                                     Current {activeTab} ({currentMembers[activeTab].length})
                                                 </h4>
                                                 {currentMembers[activeTab].map(user => (
@@ -211,8 +211,8 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                             <img src={user.avatar} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
                                                             <div>
-                                                                <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>{user.name}</div>
-                                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user.email}</div>
+                                                                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-medium)' }}>{user.name}</div>
+                                                                <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{user.email}</div>
                                                             </div>
                                                         </div>
                                                         <button onClick={() => handleRemoveMember(user.id, activeTab === 'students' ? 'student' : 'mentor')} style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}>
@@ -224,8 +224,8 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
                                             </div>
 
                                             {/* Available to Add */}
-                                            <div className="add-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
-                                                <h4 style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <div className="add-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--space-20)', background: '#f8fafc' }}>
+                                                <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', textTransform: 'uppercase' }}>
                                                     Available to Add
                                                 </h4>
                                                 {filterUsers(
@@ -236,12 +236,12 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                                                             <img src={user.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
                                                             <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
-                                                                <div style={{ fontSize: '0.85rem', fontWeight: '500' }}>{user.name}</div>
+                                                                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-medium)' }}>{user.name}</div>
                                                             </div>
                                                         </div>
                                                         <button
                                                             onClick={() => handleAddMember(user.id, activeTab === 'students' ? 'student' : 'mentor')}
-                                                            style={{ border: 'none', background: '#eff6ff', color: '#3b82f6', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600' }}
+                                                            style={{ border: 'none', background: '#eff6ff', color: '#3b82f6', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-semibold)' }}
                                                         >
                                                             Add +
                                                         </button>

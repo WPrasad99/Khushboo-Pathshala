@@ -114,11 +114,11 @@ const StudentAssignmentSection = () => {
         if (!quiz.submission) {
             const isOverdue = new Date(quiz.dueDate) < new Date();
             if (isOverdue) return { status: 'Overdue', color: '#dc2626', bg: '#fee2e2', icon: <FiAlertCircle /> };
-            return { status: 'Not Started', color: '#64748b', bg: '#f1f5f9', icon: <FiClock /> };
+            return { status: 'Not Started', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
         }
         if (quiz.submission.status === 'IN_PROGRESS') return { status: 'In Progress', color: '#d97706', bg: '#fef3c7', icon: <FiClock /> };
         if (quiz.submission.status === 'COMPLETED') return { status: `Score: ${quiz.submission.score}/${quiz.totalMarks}`, color: '#059669', bg: '#d1fae5', icon: <FiCheckCircle /> };
-        return { status: 'Unknown', color: '#64748b', bg: '#f1f5f9', icon: <FiClock /> };
+        return { status: 'Unknown', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
     };
 
     // --- Filtering Logic ---
@@ -344,10 +344,10 @@ const StudentAssignmentSection = () => {
                     borderBottom: '1px solid #cbd5e1',
                     flexShrink: 0
                 }}>
-                    <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 600 }}>
+                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-semibold)' }}>
                         Online Test - {quizData.title}
                     </h2>
-                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                    <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                         Attempt 1
                     </div>
                 </div>
@@ -358,12 +358,12 @@ const StudentAssignmentSection = () => {
                     {/* Left: Question Area */}
                     <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'white', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
-                            <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>
+                            <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b' }}>
                                 Question {currentQuestionIndex + 1}
                             </h3>
                         </div>
 
-                        <div style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#0f172a', marginBottom: '32px' }}>
+                        <div style={{ fontSize: 'var(--fs-h3)', lineHeight: '1.6', color: 'var(--color-text-)', marginBottom: '32px' }}>
                             {currentQuestion.question}
                         </div>
 
@@ -372,7 +372,7 @@ const StudentAssignmentSection = () => {
                                 <label
                                     key={idx}
                                     style={{
-                                        display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+                                        display: 'flex', alignItems: 'center', gap: '16px', padding: 'var(--space-24)',
                                         background: answers[currentQuestion.id] === idx ? '#eff6ff' : 'white',
                                         border: `1px solid ${answers[currentQuestion.id] === idx ? '#3b82f6' : '#cbd5e1'}`,
                                         borderRadius: '8px', cursor: 'pointer', transition: 'all 0.1s'
@@ -385,7 +385,7 @@ const StudentAssignmentSection = () => {
                                         onChange={() => handleAnswerSelect(currentQuestion.id, idx)}
                                         style={{ accentColor: '#3b82f6', width: '18px', height: '18px' }}
                                     />
-                                    <span style={{ fontSize: '1rem', color: '#334155' }}>{option}</span>
+                                    <span style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--color-text-)' }}>{option}</span>
                                 </label>
                             ))}
                         </div>
@@ -397,7 +397,7 @@ const StudentAssignmentSection = () => {
                                     onClick={toggleMarkForReview}
                                     style={{
                                         padding: '10px 20px', background: markedForReview.has(currentQuestion.id) ? '#7c3aed' : '#8b5cf6',
-                                        color: 'white', border: 'none', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                        color: 'white', border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     {markedForReview.has(currentQuestion.id) ? 'Unmark Review' : 'Mark for Review'}
@@ -406,7 +406,7 @@ const StudentAssignmentSection = () => {
                                     onClick={handleClearResponse}
                                     style={{
                                         padding: '10px 20px', background: 'transparent', color: '#ef4444',
-                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     Clear Response
@@ -419,7 +419,7 @@ const StudentAssignmentSection = () => {
                                     disabled={currentQuestionIndex === 0}
                                     style={{
                                         padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none',
-                                        borderRadius: '6px', fontWeight: 600, cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                                        borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
                                         opacity: currentQuestionIndex === 0 ? 0.5 : 1
                                     }}
                                 >
@@ -435,7 +435,7 @@ const StudentAssignmentSection = () => {
                                     }}
                                     style={{
                                         padding: '10px 24px', background: currentQuestionIndex === totalQuestions - 1 ? '#10b981' : '#3b82f6',
-                                        color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer'
+                                        color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     {currentQuestionIndex === totalQuestions - 1 ? 'Submit Test' : 'Next'}
@@ -444,7 +444,7 @@ const StudentAssignmentSection = () => {
                         </div>
 
                         {/* Legend */}
-                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem', color: '#64748b', justifyContent: 'center' }}>
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: 'var(--fs-small)', color: 'var(--color-text-)', justifyContent: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div> Current</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}></div> Answered</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}></div> Not Answered</div>
@@ -457,20 +457,20 @@ const StudentAssignmentSection = () => {
                     <div style={{ width: '320px', background: '#f8fafc', borderLeft: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column' }}>
                         {/* Timer Section */}
                         <div style={{ padding: '24px', background: '#e2e8f0', textAlign: 'center', borderBottom: '1px solid #cbd5e1' }}>
-                            <div style={{ marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Time Left</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? '#dc2626' : '#1e293b', fontFamily: 'monospace' }}>
+                            <div style={{ marginBottom: '8px', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', color: 'var(--color-text-)' }}>Time Left</div>
+                            <div style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-bold)', color: timeLeft < 60 ? '#dc2626' : '#1e293b', fontFamily: 'monospace' }}>
                                 {formatTime(timeLeft)}
                             </div>
                         </div>
 
                         {/* User Info (Placeholder) */}
-                        <div style={{ padding: '16px', background: '#e2e8f0', borderBottom: '1px solid #cbd5e1', marginBottom: '16px' }}>
-                            <div style={{ fontWeight: 700, color: '#1e293b' }}>Section: General</div>
+                        <div style={{ padding: 'var(--space-24)', background: '#e2e8f0', borderBottom: '1px solid #cbd5e1', marginBottom: '16px' }}>
+                            <div style={{ fontWeight: 'var(--fw-bold)', color: '#1e293b' }}>Section: General</div>
                         </div>
 
                         {/* Question Palette */}
                         <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
-                            <h4 style={{ margin: '0 0 16px', color: '#1e293b', fontSize: '1rem' }}>Question Palette</h4>
+                            <h4 style={{ margin: '0 0 16px', color: '#1e293b', fontSize: 'var(--fs-body-lg)' }}>Question Palette</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                                 {quizData.questions.map((q, idx) => (
                                     <button
@@ -482,8 +482,8 @@ const StudentAssignmentSection = () => {
                                             border: 'none',
                                             background: getQuestionStatusColor(idx),
                                             color: getQuestionStatusColor(idx) === '#cbd5e1' ? '#475569' : 'white',
-                                            fontWeight: 600,
-                                            fontSize: '1rem',
+                                            fontWeight: 'var(--fw-semibold)',
+                                            fontSize: 'var(--fs-body-lg)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -501,8 +501,8 @@ const StudentAssignmentSection = () => {
                             <button
                                 onClick={handleSubmitQuiz}
                                 style={{
-                                    width: '100%', padding: '12px', background: '#10b981', color: 'white',
-                                    border: 'none', borderRadius: '24px', fontWeight: 600, fontSize: '1rem',
+                                    width: '100%', padding: 'var(--space-20)', background: '#10b981', color: 'white',
+                                    border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body-lg)',
                                     cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                                 }}
                             >
@@ -529,10 +529,10 @@ const StudentAssignmentSection = () => {
                 >
                     <FiCheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px' }} />
                     <h2 style={{ margin: '0 0 16px', color: '#1e3a8a' }}>Quiz Submitted!</h2>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6', margin: '0 0 8px' }}>
+                    <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#3b82f6', margin: '0 0 8px' }}>
                         Your Score: {result.score}/{result.totalMarks}
                     </p>
-                    <p style={{ color: '#64748b' }}>Redirecting to list...</p>
+                    <p style={{ color: 'var(--color-text-)' }}>Redirecting to list...</p>
                 </motion.div>
             </div>
         );
@@ -540,73 +540,179 @@ const StudentAssignmentSection = () => {
 
     // 3. Default List Mode
     return (
-        <div style={{ padding: '24px' }}>
-            {/* Header */}
-            <div style={{ marginBottom: '16px' }}>
-                {/* Header Text Removed */}
+        <div className="student-assignments-wrapper">
+            <style>{`
+            .student-assignments-wrapper {
+                padding: var(--space-24) 0;
+            }
+            .sa-filter-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: var(--space-16);
+                margin-bottom: var(--space-24);
+                flex-wrap: wrap;
+            }
+            .sa-tabs {
+                display: flex;
+                gap: var(--space-8);
+                background: var(--color-bg);
+                padding: var(--space-4);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border);
+            }
+            .sa-tab {
+                padding: 6px 16px;
+                border: none;
+                background: transparent;
+                border-radius: var(--radius-md);
+                color: 'var(--color-text-)'
+                font-size: var(--fs-body);
+                font-weight: var(--fw-medium);
+                cursor: pointer;
+                transition: all var(--transition-fast);
+            }
+            .sa-tab.is-active {
+                background: var(--color-surface);
+                color: 'var(--color-)'
+                font-weight: var(--fw-semibold);
+                box-shadow: var(--shadow-sm);
+            }
+            .sa-search {
+                position: relative;
+                min-width: 280px;
+            }
+            .sa-search input {
+                padding-left: 36px;
+            }
+            .sa-search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: 'var(--color-text-)'
+            }
+            .sa-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: var(--space-24);
+            }
+            .sa-card {
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+                overflow: hidden;
+            }
+            .sa-card-header {
+                height: 120px;
+                padding: var(--space-20);
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                position: relative;
+            }
+            .sa-card-header.assignment { background: linear-gradient(135deg, var(--color-primary) 0%, #3730A3 100%); }
+            .sa-card-header.quiz { background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%); }
+            .sa-card-header-badge {
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(4px);
+                color: white;
+            }
+            .sa-card-icon-wrap {
+                background: var(--color-surface);
+                padding: 8px;
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sa-card-body {
+                padding: var(--space-20);
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            .sa-card-title {
+                font-size: var(--fs-h3);
+                margin-bottom: var(--space-8);
+            }
+            .sa-card-desc {
+                font-size: var(--fs-body);
+                color: 'var(--color-text-)'
+                margin-bottom: var(--space-16);
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .sa-meta {
+                display: flex;
+                gap: var(--space-8);
+                flex-wrap: wrap;
+                margin-top: auto;
+                margin-bottom: var(--space-16);
+            }
+            .sa-modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: var(--space-24);
+                backdrop-filter: blur(4px);
+            }
+            .sa-modal-card {
+                background: var(--color-surface);
+                border-radius: var(--radius-lg);
+                padding: var(--space-32);
+                width: 100%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: var(--shadow-premium);
+            }
+            `}</style>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {/* Top Bar: Tabs & Search */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                        {/* Tabs */}
-                        <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
-                            {[
-                                { id: 'all', label: 'All Items' },
-                                { id: 'assignments', label: 'Assignments' },
-                                { id: 'quizzes', label: 'Quizzes' }
-                            ].map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        padding: '8px 20px',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        background: activeTab === tab.id ? 'white' : 'transparent',
-                                        color: activeTab === tab.id ? '#3b82f6' : '#64748b',
-                                        fontWeight: activeTab === tab.id ? 700 : 500,
-                                        boxShadow: activeTab === tab.id ? '0 2px 4px -1px rgba(0,0,0,0.1)' : 'none',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
+            {/* Top Bar: Tabs & Search */}
+            <div className="sa-filter-bar">
+                <div className="sa-tabs">
+                    {[
+                        { id: 'all', label: 'All Items' },
+                        { id: 'assignments', label: 'Assignments' },
+                        { id: 'quizzes', label: 'Quizzes' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`sa-tab ${activeTab === tab.id ? 'is-active' : ''}`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
-                        {/* Search */}
-                        <div style={{ position: 'relative', minWidth: '300px' }}>
-                            <FiSearch style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                            <input
-                                type="text"
-                                placeholder="Search by title..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 10px 10px 40px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0',
-                                    fontSize: '0.9rem',
-                                    outline: 'none',
-                                    transition: 'border-color 0.2s'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                            />
-                        </div>
-                    </div>
+                <div className="sa-search">
+                    <FiSearch className="sa-search-icon" />
+                    <input
+                        type="text"
+                        className="input"
+                        placeholder="Search assignments..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
             </div>
 
             {/* Content Grid */}
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                    Loading content...
+                <div className="sa-grid">
+                    {[1, 2, 3].map(i => <div key={i} className="card skeleton" style={{ height: 260 }} />)}
                 </div>
             ) : filteredContent().length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                <div className="sa-grid">
                     {filteredContent().map((item, index) => {
                         const isAssignment = item.type === 'assignment';
                         const statusInfo = isAssignment ? getStatusInfo(item) : getQuizStatus(item);
@@ -615,182 +721,102 @@ const StudentAssignmentSection = () => {
                         return (
                             <motion.div
                                 key={`${item.type}-${item.id}`}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                style={{
-                                    background: 'white',
-                                    borderRadius: '16px',
-                                    border: '1px solid #e2e8f0',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                                    transition: 'transform 0.2s, box-shadow 0.2s',
-                                    cursor: 'pointer'
-                                }}
-                                whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                className="card sa-card"
                             >
-                                {/* Card Graphic Header */}
-                                <div style={{
-                                    height: '140px',
-                                    background: isAssignment ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    position: 'relative',
-                                    padding: '20px',
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justifyContent: 'space-between'
-                                }}>
-                                    <span style={{
-                                        background: 'rgba(255,255,255,0.2)',
-                                        backdropFilter: 'blur(4px)',
-                                        padding: '4px 12px',
-                                        borderRadius: '20px',
-                                        color: 'white',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 700
-                                    }}>
+                                <div className={`sa-card-header ${isAssignment ? 'assignment' : 'quiz'}`}>
+                                    <span className="badge sa-card-header-badge">
                                         {isAssignment ? 'ASSIGNMENT' : 'QUIZ'}
                                     </span>
-                                    <div style={{
-                                        background: 'white',
-                                        padding: '8px',
-                                        borderRadius: '12px',
-                                        color: isAssignment ? '#2563eb' : '#059669',
-                                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                                    }}>
-                                        {isAssignment ? <FiFileText size={24} /> : <FiCheckCircle size={24} />}
+                                    <div className="sa-card-icon-wrap" style={{ color: isAssignment ? 'var(--color-primary)' : 'var(--color-success)' }}>
+                                        {isAssignment ? <FiFileText size={20} /> : <FiCheckCircle size={20} />}
                                     </div>
                                 </div>
 
-                                {/* Card Body */}
-                                <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', lineHeight: '1.4' }}>
-                                            {item.title}
-                                        </h3>
-                                    </div>
+                                <div className="sa-card-body">
+                                    <h3 className="sa-card-title">{item.title}</h3>
+                                    <p className="sa-card-desc">{item.description}</p>
 
-                                    <p style={{
-                                        margin: '0 0 16px',
-                                        fontSize: '0.9rem',
-                                        color: '#64748b',
-                                        lineHeight: '1.5',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {item.description}
-                                    </p>
-
-                                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        {/* Meta Info */}
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                            {/* Status Badge */}
-                                            <span style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                padding: '4px 10px',
-                                                borderRadius: '6px',
-                                                background: statusInfo.bg,
-                                                color: statusInfo.color,
-                                                fontSize: '0.75rem',
-                                                fontWeight: 600
-                                            }}>
-                                                {statusInfo.icon} {statusInfo.status}
+                                    <div className="sa-meta">
+                                        <span className="badge" style={{ background: statusInfo.bg, color: statusInfo.color }}>
+                                            {statusInfo.status}
+                                        </span>
+                                        {item.dueDate && (
+                                            <span className="badge" style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>
+                                                Due: {new Date(item.dueDate).toLocaleDateString()}
                                             </span>
-
-                                            {/* Due Date Badge */}
-                                            {item.dueDate && (
-                                                <span style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '6px',
-                                                    background: '#f1f5f9',
-                                                    color: '#64748b',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 600
-                                                }}>
-                                                    <FiClock /> Due: {new Date(item.dueDate).toLocaleDateString()}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Action Button */}
-                                        {isAssignment ? (
-                                            !item.submissions?.[0] ? (
-                                                <button
-                                                    onClick={() => { setSelectedAssignment(item); setShowSubmitModal(true); }}
-                                                    style={{ width: '100%', padding: '10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                                >
-                                                    Submit Assignment <FiChevronRight />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => { if (item.submissions[0].status === 'REJECTED') { setSelectedAssignment(item); setShowSubmitModal(true); } }}
-                                                    disabled={item.submissions[0].status !== 'REJECTED'}
-                                                    style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: item.submissions[0].status === 'REJECTED' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: item.submissions[0].status === 'REJECTED' ? 1 : 0.7 }}
-                                                >
-                                                    {item.submissions[0].status === 'REJECTED' ? 'Resubmit' : 'View Details'}
-                                                </button>
-                                            )
-                                        ) : (
-                                            canStartQuiz ? (
-                                                <button
-                                                    onClick={() => handleStartQuiz(item)}
-                                                    style={{ width: '100%', padding: '10px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                                >
-                                                    Start Quiz <FiMaximize />
-                                                </button>
-                                            ) : (
-                                                <div style={{ width: '100%', padding: '10px', background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '8px', fontWeight: 600, textAlign: 'center', fontSize: '0.9rem' }}>
-                                                    Completed
-                                                </div>
-                                            )
                                         )}
                                     </div>
+
+                                    {/* Actions */}
+                                    {isAssignment ? (
+                                        !item.submissions?.[0] ? (
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ width: '100%' }}
+                                                onClick={() => { setSelectedAssignment(item); setShowSubmitModal(true); }}
+                                            >
+                                                Submit Assignment
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className={`btn ${item.submissions[0].status === 'REJECTED' ? 'btn-primary' : 'btn-secondary'}`}
+                                                style={{ width: '100%' }}
+                                                disabled={item.submissions[0].status !== 'REJECTED'}
+                                                onClick={() => { if (item.submissions[0].status === 'REJECTED') { setSelectedAssignment(item); setShowSubmitModal(true); } }}
+                                            >
+                                                {item.submissions[0].status === 'REJECTED' ? 'Resubmit' : 'Submitted'}
+                                            </button>
+                                        )
+                                    ) : (
+                                        canStartQuiz ? (
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ width: '100%', background: 'var(--color-success)' }}
+                                                onClick={() => handleStartQuiz(item)}
+                                            >
+                                                Start Quiz
+                                            </button>
+                                        ) : (
+                                            <button className="btn btn-secondary" style={{ width: '100%' }} disabled>
+                                                Completed
+                                            </button>
+                                        )
+                                    )}
                                 </div>
                             </motion.div>
                         );
                     })}
                 </div>
             ) : (
-                <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                    <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
-                    <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No content found</h3>
-                    <p style={{ color: '#64748b', margin: 0 }}>Try adjusting your filters or search query.</p>
+                <div className="card" style={{ padding: '64px', textAlign: 'center', background: 'var(--color-bg)', borderStyle: 'dashed' }}>
+                    <FiFileText size={48} style={{ marginBottom: '16px', color: 'var(--color-text-muted)' }} />
+                    <h4>No assignments found</h4>
+                    <p>Try adjusting your search criteria.</p>
                 </div>
             )}
 
-            {/* Submit Assignment Modal */}
+            {/* Submit Modal */}
             <AnimatePresence>
                 {showSubmitModal && selectedAssignment && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}
-                        onClick={() => setShowSubmitModal(false)}
-                    >
+                    <div className="sa-modal-overlay" onClick={() => setShowSubmitModal(false)}>
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ background: 'white', borderRadius: '24px', padding: '32px', maxWidth: '600px', width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                            className="sa-modal-card"
                         >
-                            <h2 style={{ margin: '0 0 8px', fontSize: '1.5rem', color: '#1e293b' }}>{selectedAssignment.title}</h2>
-                            <p style={{ margin: '0 0 24px', color: '#64748b', lineHeight: '1.6' }}>{selectedAssignment.description}</p>
+                            <h2 style={{ marginBottom: '8px' }}>{selectedAssignment.title}</h2>
+                            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>{selectedAssignment.description}</p>
 
                             <form onSubmit={handleSubmitAssignment}>
-                                <div style={{ marginBottom: '24px' }}>
-                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: '#334155' }}>File Submission</label>
+                                <div className="input-group">
+                                    <label>File Submission</label>
                                     <div
-                                        style={{ border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '32px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' }}
+                                        style={{ border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-md)', padding: '32px', textAlign: 'center', cursor: 'pointer', background: 'var(--color-bg)' }}
                                         onClick={() => document.getElementById('file-upload').click()}
                                     >
                                         <input
@@ -800,35 +826,33 @@ const StudentAssignmentSection = () => {
                                             style={{ display: 'none' }}
                                             accept=".pdf,.doc,.docx,.ppt,.pptx"
                                         />
-                                        <FiUpload size={32} style={{ color: '#94a3b8', marginBottom: '12px' }} />
-                                        <div style={{ color: '#334155', fontWeight: 500, marginBottom: '4px' }}>
+                                        <FiUpload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }} />
+                                        <div style={{ fontWeight: 'var(--fw-semibold)' }}>
                                             {selectedFile ? selectedFile.name : 'Click to upload your work'}
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            PDF, Word, or PowerPoint
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style={{ marginBottom: '32px' }}>
-                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: '#334155' }}>Comments (Optional)</label>
+                                <div className="input-group" style={{ marginBottom: '24px' }}>
+                                    <label>Comments (Optional)</label>
                                     <textarea
-                                        style={{ width: '100%', minHeight: '120px', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', resize: 'vertical' }}
+                                        className="textarea"
+                                        style={{ minHeight: '120px', resize: 'vertical' }}
                                         value={submissionContent}
                                         onChange={(e) => setSubmissionContent(e.target.value)}
-                                        placeholder="Add any notes for your mentor..."
+                                        placeholder="Add notes for your mentor..."
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '16px' }}>
-                                    <button type="button" onClick={() => setShowSubmitModal(false)} style={{ flex: 1, padding: '14px', background: 'white', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                                    <button type="submit" style={{ flex: 1, padding: '14px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={!selectedFile && !submissionContent}>
-                                        <FiSend /> Submit Assignment
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowSubmitModal(false)}>Cancel</button>
+                                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={!selectedFile && !submissionContent}>
+                                        <FiSend /> Submit
                                     </button>
                                 </div>
                             </form>
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>

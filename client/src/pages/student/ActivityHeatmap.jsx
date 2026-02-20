@@ -1,102 +1,196 @@
-import React, { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { FiClock } from 'react-icons/fi';
 import './ActivityHeatmap.css';
 
+const RANGE_OPTIONS = [
+    { label: '3M', value: 3 },
+    { label: '6M', value: 6 },
+    { label: '12M', value: 12 }
+];
+
+const levelFromCount = (count) => {
+    if (count <= 0) return 0;
+    if (count === 1) return 1;
+    if (count === 2) return 2;
+    if (count === 3) return 3;
+    return 4;
+};
+
+const normalizeDate = (input) => {
+    const d = new Date(input);
+    return d.toISOString().slice(0, 10);
+};
+
 const ActivityHeatmap = ({ loginDates = [] }) => {
-    // Generate dates for the last 365 days
-    const heatmapData = useMemo(() => {
-        const data = [];
-        const today = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(today.getFullYear() - 1);
+    const [rangeInMonths, setRangeInMonths] = useState(12);
+    const [hovered, setHovered] = useState(null);
 
-        // Create a Set of login date strings for quick lookup
-        const loginDateSet = new Set(loginDates);
+    const loginCountByDate = useMemo(() => {
+        const counts = new Map();
 
-        for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
-            const isToday = d.toDateString() === today.toDateString();
-            const hasLogin = loginDateSet.has(dateStr);
+        loginDates.forEach((date) => {
+            const key = normalizeDate(date);
+            counts.set(key, (counts.get(key) || 0) + 1);
+        });
 
-            // Set intensity based on login status
-            let intensity = 0;
-            if (hasLogin) {
-                intensity = 4; // Logged in = green
-            } else if (isToday && loginDates.length === 0) {
-                // Today but no login data yet, show as just logged in
-                intensity = 4;
-            }
-
-            data.push({
-                date: new Date(d),
-                intensity,
-                dateStr
-            });
-        }
-        return data;
+        return counts;
     }, [loginDates]);
 
-    // Group by months for labels
-    const months = useMemo(() => {
-        const monthLabels = [];
-        let currentMonth = -1;
+    const { cells, monthLabels, totalActiveDays, totalSessions } = useMemo(() => {
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), today.getMonth() - rangeInMonths + 1, 1);
 
-        heatmapData.forEach((day, index) => {
-            const m = day.date.getMonth();
-            if (m !== currentMonth) {
-                monthLabels.push({
-                    name: day.date.toLocaleString('default', { month: 'short' }),
-                    index: Math.floor(index / 7)
-                });
-                currentMonth = m;
+        const paddedCells = [];
+        const mondayOffset = (startDate.getDay() + 6) % 7;
+
+        for (let index = 0; index < mondayOffset; index += 1) {
+            paddedCells.push(null);
+        }
+
+        const monthLabelList = [];
+        let previousMonth = -1;
+        let activeDays = 0;
+        let sessions = 0;
+
+        for (let day = new Date(startDate); day <= today; day.setDate(day.getDate() + 1)) {
+            const date = new Date(day);
+            const key = normalizeDate(date);
+            const sessionCount = loginCountByDate.get(key) || 0;
+            const level = levelFromCount(sessionCount);
+
+            if (sessionCount > 0) {
+                activeDays += 1;
+                sessions += sessionCount;
             }
-        });
-        return monthLabels;
-    }, [heatmapData]);
 
-    // Count total active days
-    const totalActiveDays = heatmapData.filter(d => d.intensity > 0).length;
+            const gridColumn = Math.floor(paddedCells.length / 7);
+            const month = date.getMonth();
+
+            if (month !== previousMonth) {
+                monthLabelList.push({
+                    name: date.toLocaleString('default', { month: 'short' }),
+                    column: gridColumn
+                });
+                previousMonth = month;
+            }
+
+            paddedCells.push({
+                key,
+                date,
+                level,
+                sessionCount,
+                timeSpent: sessionCount * 35
+            });
+        }
+
+        return {
+            cells: paddedCells,
+            monthLabels: monthLabelList,
+            totalActiveDays: activeDays,
+            totalSessions: sessions
+        };
+    }, [loginCountByDate, rangeInMonths]);
 
     return (
-        <div className="activity-heatmap-card">
-            <div className="heatmap-header">
-                <h3>Activity Log</h3>
-                <span className="heatmap-subtitle">{totalActiveDays} active days in the last year</span>
-            </div>
-
-            <div className="heatmap-container">
-                <div className="heatmap-grid">
-                    <div className="heatmap-weekdays">
-                        <span>Mon</span>
-                        <span>Wed</span>
-                        <span>Fri</span>
-                    </div>
-
-                    <div className="heatmap-calendar">
-                        <div className="heatmap-months">
-                            {months.map((m, i) => (
-                                <span key={i} style={{ left: `${(m.index / 52) * 100}%` }}>{m.name}</span>
-                            ))}
-                        </div>
-
-                        <div className="heatmap-cells">
-                            {heatmapData.map((day, i) => (
-                                <div
-                                    key={i}
-                                    className={`heatmap-cell level-${day.intensity}`}
-                                    title={`${day.date.toDateString()}: ${day.intensity > 0 ? 'Active' : 'No activity'}`}
-                                ></div>
-                            ))}
-                        </div>
-                    </div>
+        <div className="activity-heatmap-v2">
+            <header className="activity-heatmap-v2-header">
+                <div>
+                    <h3>Contribution Heatmap</h3>
+                    <p>
+                        {totalActiveDays} active day{totalActiveDays === 1 ? '' : 's'} · {totalSessions} session{totalSessions === 1 ? '' : 's'} viewed
+                    </p>
                 </div>
 
-                <div className="heatmap-legend">
-                    <span>Less</span>
-                    <div className="legend-cell level-0"></div>
-                    <div className="legend-cell level-4"></div>
-                    <span>More</span>
+                <div className="activity-heatmap-controls">
+                    <div className="activity-range-switcher">
+                        {RANGE_OPTIONS.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={rangeInMonths === option.value ? 'is-active' : ''}
+                                onClick={() => setRangeInMonths(option.value)}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="activity-legend">
+                        <span>Less</span>
+                        {[0, 1, 2, 3, 4].map((level) => (
+                            <span key={level} className={`activity-legend-cell level-${level}`} />
+                        ))}
+                        <span>More</span>
+                    </div>
+                </div>
+            </header>
+
+            <div className="activity-heatmap-grid-wrap">
+                <div className="activity-week-axis">
+                    <span>Mon</span>
+                    <span>Wed</span>
+                    <span>Fri</span>
+                </div>
+
+                <div className="activity-calendar-wrap">
+                    <div className="activity-month-axis">
+                        {monthLabels.map((month) => (
+                            <span key={`${month.name}-${month.column}`} style={{ left: `${(month.column / Math.max(1, Math.floor(cells.length / 7))) * 100}%` }}>
+                                {month.name}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div className="activity-cells-grid">
+                        {cells.map((cell, index) => {
+                            if (!cell) {
+                                return <span key={`empty-${index}`} className="activity-cell is-empty" />;
+                            }
+
+                            return (
+                                <button
+                                    key={cell.key}
+                                    type="button"
+                                    className={`activity-cell level-${cell.level}`}
+                                    onMouseEnter={(event) => {
+                                        const rect = event.currentTarget.getBoundingClientRect();
+                                        setHovered({
+                                            x: rect.left + rect.width / 2,
+                                            y: rect.top,
+                                            ...cell
+                                        });
+                                    }}
+                                    onMouseLeave={() => setHovered(null)}
+                                    style={{ animationDelay: `${(index % 35) * 7}ms` }}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
+
+            <AnimateTooltip hovered={hovered} />
+        </div>
+    );
+};
+
+const AnimateTooltip = ({ hovered }) => {
+    if (!hovered) return null;
+
+    return (
+        <div
+            className="activity-tooltip"
+            style={{
+                left: hovered.x,
+                top: hovered.y - 12
+            }}
+        >
+            <strong>{hovered.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</strong>
+            <p>
+                <FiClock />
+                {hovered.timeSpent} min learning time
+            </p>
+            <p>{hovered.sessionCount} session{hovered.sessionCount === 1 ? '' : 's'} watched</p>
         </div>
     );
 };

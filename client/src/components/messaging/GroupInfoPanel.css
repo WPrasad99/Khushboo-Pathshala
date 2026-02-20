@@ -16,22 +16,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: var(--space-24);
     border-bottom: 1px solid #e2e8f0;
 }
 
 .group-info-header h2 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--fs-h3);
     color: #1e293b;
 }
 
 .close-panel-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: var(--fs-h2);
     cursor: pointer;
-    color: #64748b;
+    color: var(--color-text-secondary);
     padding: 4px;
     display: flex;
     align-items: center;
@@ -48,7 +48,7 @@
 .group-info-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: var(--space-24);
 }
 
 .group-details h3 {
@@ -58,7 +58,7 @@
 }
 
 .group-details p {
-    color: #64748b;
+    color: var(--color-text-secondary);
     font-size: 0.875rem;
     margin-bottom: 16px;
 }
@@ -95,7 +95,7 @@
     flex-direction: column;
     gap: 6px;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     color: #1e293b;
 }
 
@@ -128,7 +128,7 @@
     border: none;
     cursor: pointer;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     transition: all 0.2s;
 }
 
@@ -143,7 +143,7 @@
 
 .cancel-btn {
     background: #f1f5f9;
-    color: #64748b;
+    color: var(--color-text-secondary);
 }
 
 .cancel-btn:hover {
@@ -163,7 +163,7 @@
 
 .members-header h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--fs-body-lg);
     color: #1e293b;
 }
 
@@ -202,7 +202,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: var(--space-24);
     background: #f8fafc;
     border-radius: 8px;
 }
@@ -216,8 +216,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-body-lg);
 }
 
 .member-info {
@@ -225,14 +225,14 @@
 }
 
 .member-name {
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     color: #1e293b;
     font-size: 0.875rem;
 }
 
 .member-role {
-    color: #64748b;
-    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-small);
     text-transform: capitalize;
 }
 
@@ -255,11 +255,11 @@
     background: #fee2e2;
     color: #dc2626;
     border: none;
-    padding: 12px;
+    padding: var(--space-24);
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -285,7 +285,7 @@
     }
 
     .group-info-header {
-        padding: 16px;
+        padding: var(--space-24);
         position: sticky;
         top: 0;
         background: #ffffff;
@@ -311,19 +311,19 @@
     }
 
     .group-info-header h2 {
-        font-size: 1.1rem;
+        font-size: var(--fs-h3);
     }
 
     .group-info-content {
-        padding: 16px;
+        padding: var(--space-24);
     }
 
     .group-details h3 {
-        font-size: 1rem;
+        font-size: var(--fs-body-lg);
     }
 
     .group-details p {
-        font-size: 0.8rem;
+        font-size: var(--fs-small);
     }
 
     .member-item {
@@ -333,20 +333,20 @@
     .member-avatar {
         width: 36px;
         height: 36px;
-        font-size: 0.9rem;
+        font-size: var(--fs-body);
     }
 
     .member-name {
-        font-size: 0.8rem;
+        font-size: var(--fs-small);
     }
 
     .member-role {
-        font-size: 0.7rem;
+        font-size: var(--fs-small);
     }
 
     .edit-group-form input,
     .edit-group-form textarea {
-        font-size: 0.8rem;
+        font-size: var(--fs-small);
         padding: 8px 10px;
     }
 
@@ -356,6 +356,6 @@
 
     .available-user {
         padding: 8px 10px;
-        font-size: 0.85rem;
+        font-size: var(--fs-body);
     }
 }

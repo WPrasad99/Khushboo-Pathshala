@@ -387,17 +387,17 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                                                                 {file.type === 'image' || (file.url && file.url.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
                                                                     <div
                                                                         className="attachment-image-container"
-                                                                        onClick={() => window.open(`http://localhost:5000${file.url}`, '_blank')}
+                                                                        onClick={() => window.open(`http://localhost:5001${file.url}`, '_blank')}
                                                                     >
                                                                         <img
-                                                                            src={`http://localhost:5000${file.url}`}
+                                                                            src={`http://localhost:5001${file.url}`}
                                                                             alt={file.name}
                                                                             className="attachment-image-preview"
                                                                         />
                                                                     </div>
                                                                 ) : (
                                                                     <a
-                                                                        href={`http://localhost:5000${file.url}`}
+                                                                        href={`http://localhost:5001${file.url}`}
                                                                         download={file.name}
                                                                         className="attachment-file-card"
                                                                         target="_blank"

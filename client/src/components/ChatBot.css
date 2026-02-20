@@ -31,8 +31,8 @@
     background: #FF3B30;
     /* iOS Red */
     color: white;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
     padding: 2px 6px;
     border-radius: 10px;
     border: 2px solid white;
@@ -109,18 +109,18 @@
 
 .chatbot-header h3 {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #000;
+    font-size: var(--fs-body-lg);
+    font-weight: var(--fw-semibold);
+    color: var(--color-text-primary);
     letter-spacing: -0.02em;
 }
 
 .chatbot-header p {
     margin: 2px 0 0;
-    font-size: 0.7rem;
+    font-size: var(--fs-small);
     color: #8E8E93;
     /* iOS Gray */
-    font-weight: 500;
+    font-weight: var(--fw-medium);
 }
 
 .chatbot-header-actions {
@@ -203,8 +203,8 @@
 .message-content {
     padding: 12px 16px;
     border-radius: 20px;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    font-size: var(--fs-body);
+    line-height: var(--lh-small);
     word-wrap: break-word;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     position: relative;
@@ -220,7 +220,7 @@
 .bot-message .message-content {
     background: #E9E9EB;
     /* iMessage Gray */
-    color: #000;
+    color: var(--color-text-primary);
     border-bottom-left-radius: 4px;
 }
 
@@ -230,11 +230,11 @@
 }
 
 .message-time {
-    font-size: 0.65rem;
+    font-size: var(--fs-small);
     color: #8E8E93;
     margin-top: 4px;
     padding: 0 4px;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
 }
 
 .user-message .message-time {
@@ -245,7 +245,7 @@
 .chat-link {
     color: #007AFF;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
 }
 
 .user-message .chat-link {
@@ -273,10 +273,10 @@
     background: #F2F2F7;
     /* iOS Input Background */
     border-radius: 20px;
-    font-size: 0.95rem;
+    font-size: var(--fs-body);
     outline: none;
     transition: all 0.2s;
-    color: #000;
+    color: var(--color-text-primary);
 }
 
 .chatbot-input:focus {

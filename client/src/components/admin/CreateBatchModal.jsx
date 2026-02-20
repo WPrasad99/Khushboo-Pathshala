@@ -134,8 +134,8 @@ const CreateBatchModal = ({ onClose, onSuccess }) => {
                                         style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                                     />
                                     <div style={{ flex: 1, overflow: 'hidden' }}>
-                                        <div style={{ fontWeight: '600', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{student.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{student.email}</div>
+                                        <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{student.name}</div>
+                                        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{student.email}</div>
                                     </div>
                                     <div className="selection-check">
                                         {formData.studentIds.includes(student.id) && <FiCheck />}
@@ -143,10 +143,10 @@ const CreateBatchModal = ({ onClose, onSuccess }) => {
                                 </div>
                             ))}
                             {filterUsers(availableStudents).length === 0 && (
-                                <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8', padding: '20px' }}>No students found.</p>
+                                <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-text-)', padding: '20px' }}>No students found.</p>
                             )}
                         </div>
-                        <p style={{ marginTop: '12px', color: '#64748b', fontSize: '0.9rem', textAlign: 'right' }}>
+                        <p style={{ marginTop: '12px', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', textAlign: 'right' }}>
                             {formData.studentIds.length} students selected
                         </p>
                     </motion.div>
@@ -182,8 +182,8 @@ const CreateBatchModal = ({ onClose, onSuccess }) => {
                                         style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                                     />
                                     <div style={{ flex: 1, overflow: 'hidden' }}>
-                                        <div style={{ fontWeight: '600', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mentor.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{mentor.email}</div>
+                                        <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mentor.name}</div>
+                                        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{mentor.email}</div>
                                     </div>
                                     <div className="selection-check">
                                         {formData.mentorIds.includes(mentor.id) && <FiCheck />}
@@ -191,7 +191,7 @@ const CreateBatchModal = ({ onClose, onSuccess }) => {
                                 </div>
                             ))}
                         </div>
-                        <p style={{ marginTop: '12px', color: '#64748b', fontSize: '0.9rem', textAlign: 'right' }}>
+                        <p style={{ marginTop: '12px', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', textAlign: 'right' }}>
                             {formData.mentorIds.length} mentors selected
                         </p>
                     </motion.div>

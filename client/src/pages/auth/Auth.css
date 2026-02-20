@@ -68,7 +68,7 @@ body {
 }
 
 .static-login-form h1 {
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     margin-bottom: 30px;
     /* Increased spacing */
     color: var(--text-primary);
@@ -81,14 +81,14 @@ body {
 .static-login-form .form-field input {
     padding: 14px 18px;
     /* Increased padding */
-    font-size: 16px;
+    font-size: var(--fs-body-lg);
     /* Increased from 14px */
 }
 
 .static-login-form .auth-submit-btn {
-    padding: 16px;
+    padding: var(--space-24);
     /* Increased padding */
-    font-size: 16px;
+    font-size: var(--fs-body-lg);
     /* Increased from 14px */
     margin-top: 15px;
 }
@@ -96,12 +96,12 @@ body {
 .static-login-form .google-login-btn {
     padding: 14px;
     /* Increased padding */
-    font-size: 15px;
+    font-size: var(--fs-body);
     /* Increased from 14px */
 }
 
 .static-login-form .form-field label {
-    font-size: 1rem;
+    font-size: var(--fs-body-lg);
     /* Increased from 0.875rem */
     margin-bottom: 8px;
 }
@@ -149,10 +149,10 @@ body {
 }
 
 .slider-form h1 {
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     margin-bottom: 10px;
     color: var(--text-primary);
-    font-size: 2rem;
+    font-size: var(--fs-h1);
     align-self: center;
     /* keep headings centered if needed, or remove for left align */
 }
@@ -169,9 +169,9 @@ body {
     margin: 20px 0;
     color: #9CA3AF;
     /* gray-400 */
-    font-size: 0.75rem;
+    font-size: var(--fs-small);
     letter-spacing: 1px;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     text-transform: uppercase;
 }
 
@@ -199,7 +199,7 @@ body {
     display: block;
     font-size: 0.875rem;
     /* 14px */
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: #111827;
     /* gray-900 */
     margin-bottom: 6px;
@@ -213,7 +213,7 @@ body {
     margin: 0;
     width: 100%;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: var(--fs-body);
     outline: none;
     transition: all 0.2s;
     color: #1F2937;
@@ -271,7 +271,7 @@ body {
     gap: 5px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 12px;
+    font-size: var(--fs-small);
     color: var(--text-secondary);
 }
 
@@ -305,7 +305,7 @@ body {
     color: #C026D3;
     /* fuchsia-600 matching reference approx */
     text-decoration: none;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     font-size: 0.875rem;
 }
 
@@ -322,8 +322,8 @@ body {
     background-color: #4F46E5;
     /* Indigo-600 main action color */
     color: #FFFFFF;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
     padding: 14px;
     letter-spacing: 0.5px;
     text-transform: none;
@@ -354,13 +354,13 @@ body {
     gap: 12px;
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
-    padding: 12px;
+    padding: var(--space-24);
     border-radius: 6px;
     margin-top: 0;
     margin-bottom: 10px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
     color: #1F2937;
     transition: background 0.2s;
 }
@@ -374,7 +374,7 @@ body {
     display: block;
     /* Visible on desktop now */
     margin-top: 24px;
-    font-size: 14px;
+    font-size: var(--fs-body);
     color: #6B7280;
     /* gray-500 */
     text-align: center;
@@ -384,7 +384,7 @@ body {
 .auth-toggle-text span {
     color: #C026D3;
     /* fuchsia-600 */
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     cursor: pointer;
     margin-left: 5px;
 }
@@ -431,7 +431,7 @@ body {
 
 .info-header h2 {
     font-size: 2.2rem;
-    font-weight: 800;
+    font-weight: var(--fw-bold);
     color: var(--text-primary);
     margin-bottom: 16px;
     letter-spacing: -0.5px;
@@ -445,8 +445,8 @@ body {
 
 .info-header p {
     color: var(--text-secondary);
-    line-height: 1.7;
-    font-size: 1.1rem;
+    line-height: var(--lh-body);
+    font-size: var(--fs-h3);
 }
 
 
@@ -465,11 +465,11 @@ body {
 }
 
 .info-form label {
-    font-size: 13px;
+    font-size: var(--fs-small);
     text-transform: uppercase;
     letter-spacing: 0.8px;
     margin-bottom: 8px;
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--text-secondary);
 }
 
@@ -479,7 +479,7 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 12px;
     padding: 14px 18px;
-    font-size: 15px;
+    font-size: var(--fs-body);
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
@@ -534,12 +534,12 @@ body {
     margin-top: auto;
     /* Push to bottom if flex container allows */
     padding-top: 30px;
-    font-size: 11px;
+    font-size: var(--fs-small);
     color: #9CA3AF;
     /* Light gray */
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     text-align: center;
     width: 100%;
 }

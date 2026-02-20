@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 const AuthContext = createContext(null);
 
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     // Initialize Socket.IO
     useEffect(() => {
         if (user?.id && !socket) {
-            const newSocket = io('http://localhost:5000', {
+            const newSocket = io('http://localhost:5001', {
                 transports: ['websocket'],
                 reconnection: true,
             });

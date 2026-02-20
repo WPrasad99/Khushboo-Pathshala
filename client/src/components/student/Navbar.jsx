@@ -1,114 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import {
-    FiBell, FiLogOut, FiHome, FiBook,
-    FiCalendar, FiMessageSquare, FiMessageCircle, FiUsers, FiFileText, FiMoreVertical, FiFolder, FiX, FiMenu
+    FiBell,
+    FiChevronDown,
+    FiChevronRight,
+    FiLogOut,
+    FiMenu,
+    FiMessageCircle,
+    FiMoon,
+    FiSearch,
+    FiSettings,
+    FiSun,
+    FiTrash2,
+    FiUser
 } from 'react-icons/fi';
-
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import './Navbar.css';
 
-const StudentNavbar = () => {
+const routeTitleMap = {
+    '/student': 'Overview',
+    '/student/courses': 'Learning',
+    '/student/assignments': 'Assignments',
+    '/student/mentor': 'Mentorship',
+    '/student/forum': 'Forum',
+    '/student/messages': 'Messages',
+    '/settings': 'Profile'
+};
+
+const quickSearchRoutes = [
+    { keywords: ['dashboard', 'overview', 'home'], path: '/student' },
+    { keywords: ['learning', 'course', 'session', 'video'], path: '/student/courses' },
+    { keywords: ['assignment', 'quiz', 'submission'], path: '/student/assignments' },
+    { keywords: ['mentor', 'mentorship', 'meeting'], path: '/student/mentor' },
+    { keywords: ['forum', 'discussion', 'question'], path: '/student/forum' },
+    { keywords: ['message', 'chat'], path: '/student/messages' },
+    { keywords: ['profile', 'setting', 'account'], path: '/settings' }
+];
+
+const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
     const { user, logout, socket } = useAuth();
     const navigate = useNavigate();
-    const dropdownRef = React.useRef(null); // Ref for click outside
+    const location = useLocation();
+
+    const [searchQuery, setSearchQuery] = useState('');
     const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [unreadMessages, setUnreadMessages] = useState(0);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [theme, setTheme] = useState('light');
 
-    // Fetch initial unread count
+    const notifRef = useRef(null);
+    const profileRef = useRef(null);
+
     useEffect(() => {
-        const fetchUnreadCount = async () => {
+        const storedTheme = localStorage.getItem('kp-theme');
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const resolvedTheme = storedTheme || systemTheme;
+
+        setTheme(resolvedTheme);
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
+    }, []);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
             try {
                 const res = await api.get('/notifications/unread-count');
-                setUnreadNotifications(res.data.count);
-                // For messages, we might need an endpoint or just start at 0
+                setUnreadNotifications(res.data.count || 0);
             } catch (error) {
                 console.error('Failed to fetch unread count', error);
             }
         };
-        fetchUnreadCount();
 
-        // Click outside handler
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setShowNotifications(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        fetchUnread();
     }, []);
 
     useEffect(() => {
-        if (socket) {
-            // Generic notification (e.g. from db creation)
-            socket.on('notification', () => {
-                setUnreadNotifications(prev => prev + 1);
-            });
+        if (!socket) return;
 
-            // Specific events
-            socket.on('new_announcement', () => setUnreadNotifications(prev => prev + 1));
-            socket.on('new_assignment', () => setUnreadNotifications(prev => prev + 1));
-            socket.on('new_quiz', () => setUnreadNotifications(prev => prev + 1));
-            socket.on('new_resource', () => setUnreadNotifications(prev => prev + 1));
-            socket.on('new_meeting', () => setUnreadNotifications(prev => prev + 1));
+        const handleNotification = () => setUnreadNotifications((value) => value + 1);
+        const handleMessage = () => setUnreadMessages((value) => value + 1);
 
-            // Chat messages
-            socket.on('new_message_notification', () => {
-                setUnreadMessages(prev => prev + 1);
-            });
+        socket.on('notification', handleNotification);
+        socket.on('new_announcement', handleNotification);
+        socket.on('new_assignment', handleNotification);
+        socket.on('new_quiz', handleNotification);
+        socket.on('new_resource', handleNotification);
+        socket.on('new_meeting', handleNotification);
+        socket.on('new_message_notification', handleMessage);
 
-            return () => {
-                socket.off('notification');
-                socket.off('new_announcement');
-                socket.off('new_assignment');
-                socket.off('new_quiz');
-                socket.off('new_resource');
-                socket.off('new_meeting');
-                socket.off('new_message_notification');
-            };
-        }
+        return () => {
+            socket.off('notification', handleNotification);
+            socket.off('new_announcement', handleNotification);
+            socket.off('new_assignment', handleNotification);
+            socket.off('new_quiz', handleNotification);
+            socket.off('new_resource', handleNotification);
+            socket.off('new_meeting', handleNotification);
+            socket.off('new_message_notification', handleMessage);
+        };
     }, [socket]);
 
-    const handleToggleNotifications = async () => {
-        if (!showNotifications) {
-            // Opening: Fetch notifications and mark as read
-            try {
-                const res = await api.get('/notifications');
-                setNotifications(res.data);
-
-                // Mark as read in backend
-                await api.put('/notifications/read');
-                setUnreadNotifications(0);
-            } catch (error) {
-                console.error('Failed to fetch notifications', error);
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setShowNotifications(false);
             }
-        }
-        setShowNotifications(!showNotifications);
-    };
 
-    const formatTime = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setShowProfileMenu(false);
+            }
+        };
 
-    const handleDeleteNotification = async (e, id) => {
-        e.stopPropagation();
-        try {
-            await api.delete(`/notifications/${id}`);
-            setNotifications(prev => prev.filter(n => n.id !== id));
-        } catch (error) {
-            console.error('Failed to delete notification', error);
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
+
+    const breadcrumbs = useMemo(() => {
+        const pathParts = location.pathname.split('/').filter(Boolean);
+
+        if (pathParts.length === 0) {
+            return [{ label: 'Overview', path: '/student' }];
         }
+
+        if (location.pathname === '/settings') {
+            return [
+                { label: 'Student', path: '/student' },
+                { label: 'Profile', path: '/settings' }
+            ];
+        }
+
+        const fullPath = `/${pathParts.slice(0, 2).join('/')}`;
+        const currentLabel = routeTitleMap[fullPath] || routeTitleMap[location.pathname] || 'Overview';
+
+        return [
+            { label: 'Student', path: '/student' },
+            { label: currentLabel, path: location.pathname }
+        ];
+    }, [location.pathname]);
+
+    const toggleTheme = () => {
+        const nextTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+        localStorage.setItem('kp-theme', nextTheme);
+        document.documentElement.setAttribute('data-theme', nextTheme);
     };
 
     const handleLogout = () => {
@@ -116,176 +152,213 @@ const StudentNavbar = () => {
         navigate('/login');
     };
 
-    const navLinks = [
-        { path: '/student', icon: <FiHome />, label: 'Dashboard' },
-        { path: '/student/courses', icon: <FiBook />, label: 'Learning' },
+    const handleSearch = (event) => {
+        event.preventDefault();
 
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+        if (!normalizedQuery) return;
 
-        { path: '/student/assignments', icon: <FiFileText />, label: 'Assignments' },
-        { path: '/student/forum', icon: <FiMessageSquare />, label: 'Forum' },
-        {
-            path: '/student/messages',
-            icon: <div style={{ position: 'relative' }}>
-                <FiMessageCircle />
-                {unreadMessages > 0 && <span className="notification-dot" style={{ top: '-5px', right: '-5px' }}></span>}
-            </div>,
-            label: 'Messages'
-        },
-        { path: '/student/mentor', icon: <FiUsers />, label: 'Mentorship' },
-    ];
+        const targetRoute = quickSearchRoutes.find((route) => route.keywords.some((keyword) => normalizedQuery.includes(keyword)));
+        navigate(targetRoute ? targetRoute.path : '/student/courses');
+        setSearchQuery('');
+    };
+
+    const loadNotifications = async () => {
+        try {
+            const res = await api.get('/notifications');
+            setNotifications(res.data || []);
+            await api.put('/notifications/read');
+            setUnreadNotifications(0);
+        } catch (error) {
+            console.error('Failed to load notifications', error);
+        }
+    };
+
+    const handleToggleNotifications = async () => {
+        if (!showNotifications) {
+            await loadNotifications();
+        }
+
+        setShowNotifications((state) => !state);
+    };
+
+    const handleDeleteNotification = async (event, id) => {
+        event.stopPropagation();
+
+        try {
+            await api.delete(`/notifications/${id}`);
+            setNotifications((current) => current.filter((item) => item.id !== id));
+        } catch (error) {
+            console.error('Failed to delete notification', error);
+        }
+    };
+
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = Date.now();
+        const minutesDiff = Math.floor((now - date.getTime()) / (1000 * 60));
+
+        if (minutesDiff < 1) return 'Just now';
+        if (minutesDiff < 60) return `${minutesDiff}m ago`;
+
+        const hoursDiff = Math.floor(minutesDiff / 60);
+        if (hoursDiff < 24) return `${hoursDiff}h ago`;
+
+        return `${Math.floor(hoursDiff / 24)}d ago`;
+    };
 
     return (
-        <>
-            <nav className="navbar student-navbar">
-                <div className="navbar-brand-mentor">
-                    <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
-                    <span className="mentor-logo-text">Khushboo Pathshala</span>
-                </div>
-
-                {/* Hamburger Menu for Mobile */}
-                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                    {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+        <header className="kp-topbar">
+            <div className="kp-topbar-left">
+                <button className="kp-icon-btn kp-mobile-only" onClick={onOpenMobileNav} aria-label="Open navigation menu">
+                    <FiMenu />
                 </button>
 
-                <div className="navbar-actions-mentor">
-                    <div className="mentor-tabs-container">
-                        <div className="mentor-tabs nav-links-desktop">
-                            {navLinks.map((link) => (
-                                <NavLink
-                                    key={link.path}
-                                    to={link.path}
-                                    end={link.path === '/student'}
-                                    className={({ isActive }) => `mentor-tab ${isActive ? 'active' : ''}`}
-                                >
-                                    {link.icon} {link.label}
-                                </NavLink>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="navbar-right-actions" ref={dropdownRef}>
-                        <button
-                            className="icon-btn"
-                            style={{ position: 'relative' }}
-                            onClick={handleToggleNotifications}
-                        >
-                            <FiBell />
-                            {unreadNotifications > 0 && <span className="notification-dot"></span>}
-                        </button>
-
-                        {/* Notification Dropdown */}
-                        <AnimatePresence>
-                            {showNotifications && (
-                                <motion.div
-                                    className="notification-dropdown"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
-                                >
-                                    <div className="notification-header">
-                                        <h3>Notifications</h3>
-                                        <button className="mark-read-btn" onClick={() => setUnreadNotifications(0)}>
-                                            Mark all read
-                                        </button>
-                                    </div>
-                                    <div className="notification-list">
-                                        {notifications.length > 0 ? (
-                                            notifications.map((note) => (
-                                                <div key={note.id} className={`notification-item ${!note.read ? 'unread' : ''}`}>
-                                                    <div className="notification-icon">
-                                                        <FiBell size={16} />
-                                                    </div>
-                                                    <div className="notification-content">
-                                                        <div className="notification-title">{note.title}</div>
-                                                        <div className="notification-message">{note.message}</div>
-                                                        <div className="notification-time">{formatTime(note.createdAt)}</div>
-                                                    </div>
-                                                    <button
-                                                        className="delete-notif-btn"
-                                                        onClick={(e) => handleDeleteNotification(e, note.id)}
-                                                        title="Delete"
-                                                    >
-                                                        <FiX size={14} />
-                                                    </button>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="empty-notifications">
-                                                No notifications
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <div className="user-info-pill" onClick={() => navigate('/settings')}>
-                            <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky'} alt={user?.name} className="avatar-sm" />
-                            <span>{user?.name?.split(' ')[0]}</span>
-                        </div>
-                        <button className="icon-btn" onClick={handleLogout} title="Logout">
-                            <FiLogOut />
-                        </button>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Mobile Menu - Rendered OUTSIDE nav using Portal so it's not clipped */}
-            {ReactDOM.createPortal(
-                <AnimatePresence>
-                    {isMobileMenuOpen && (
-                        <motion.div
-                            className="mobile-menu-overlay"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            <motion.div
-                                className="mobile-menu"
-                                initial={{ x: '100%' }}
-                                animate={{ x: 0 }}
-                                exit={{ x: '100%' }}
-                                transition={{ type: 'tween', duration: 0.3 }}
-                                onClick={(e) => e.stopPropagation()}
+                <nav className="kp-breadcrumbs" aria-label="Breadcrumb">
+                    {breadcrumbs.map((crumb, index) => (
+                        <span key={crumb.path} className="kp-breadcrumb-item">
+                            {index > 0 && <FiChevronRight className="kp-breadcrumb-separator" />}
+                            <button
+                                type="button"
+                                className={`kp-breadcrumb-link ${index === breadcrumbs.length - 1 ? 'is-active' : ''}`}
+                                onClick={() => navigate(crumb.path)}
                             >
-                                <div className="mobile-menu-header">
-                                    <h3>Menu</h3>
-                                    <button onClick={() => setIsMobileMenuOpen(false)}>
-                                        <FiX size={24} />
-                                    </button>
+                                {crumb.label}
+                            </button>
+                        </span>
+                    ))}
+                </nav>
+            </div>
+
+            <form className="kp-global-search" onSubmit={handleSearch}>
+                <FiSearch className="kp-search-icon" />
+                <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Search learning, assignments, mentorship..."
+                    aria-label="Global search"
+                />
+            </form>
+
+            <div className="kp-topbar-actions">
+                <button
+                    type="button"
+                    className="kp-icon-btn"
+                    onClick={() => navigate('/student/messages')}
+                    aria-label="Messages"
+                    title="Messages"
+                >
+                    <FiMessageCircle />
+                    {unreadMessages > 0 && <span className="kp-dot">{unreadMessages > 9 ? '9+' : unreadMessages}</span>}
+                </button>
+
+                <div className="kp-dropdown-anchor" ref={notifRef}>
+                    <button
+                        type="button"
+                        className="kp-icon-btn"
+                        onClick={handleToggleNotifications}
+                        aria-label="Notifications"
+                        title="Notifications"
+                    >
+                        <FiBell />
+                        {unreadNotifications > 0 && <span className="kp-dot">{unreadNotifications > 9 ? '9+' : unreadNotifications}</span>}
+                    </button>
+
+                    <AnimatePresence>
+                        {showNotifications && (
+                            <motion.div
+                                className="kp-dropdown-menu kp-notification-menu"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 8 }}
+                                transition={{ duration: 0.18 }}
+                            >
+                                <div className="kp-dropdown-header">
+                                    <h4>Notifications</h4>
+                                    <button type="button" onClick={loadNotifications}>Refresh</button>
                                 </div>
-                                <div className="mobile-menu-links">
-                                    {navLinks.map((link) => (
-                                        <NavLink
-                                            key={link.path}
-                                            to={link.path}
-                                            end={link.path === '/student'}
-                                            className={({ isActive }) => `mobile-menu-link ${isActive ? 'active' : ''}`}
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                        >
-                                            {link.icon}
-                                            <span>{link.label}</span>
-                                        </NavLink>
-                                    ))}
-                                </div>
-                                <div className="mobile-menu-footer">
-                                    <button className="mobile-settings-btn" onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }}>
-                                        <FiUsers />
-                                        <span>Settings</span>
-                                    </button>
-                                    <button className="mobile-logout-btn" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>
-                                        <FiLogOut />
-                                        <span>Logout</span>
-                                    </button>
+
+                                <div className="kp-notification-list">
+                                    {notifications.length > 0 ? (
+                                        notifications.map((note) => (
+                                            <div key={note.id} className={`kp-notification-item ${!note.read ? 'is-unread' : ''}`}>
+                                                <div className="kp-notification-body">
+                                                    <h5>{note.title}</h5>
+                                                    <p>{note.message}</p>
+                                                    <span>{formatTime(note.createdAt)}</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={(event) => handleDeleteNotification(event, note.id)}
+                                                    className="kp-notification-delete"
+                                                    aria-label="Delete notification"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="kp-empty-dropdown">
+                                            <p>All caught up. No notifications right now.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>,
-                document.body
-            )}
-        </>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <button type="button" className="kp-icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+                    {theme === 'dark' ? <FiSun /> : <FiMoon />}
+                </button>
+
+                <div className="kp-dropdown-anchor" ref={profileRef}>
+                    <button
+                        type="button"
+                        className="kp-profile-chip"
+                        onClick={() => setShowProfileMenu((state) => !state)}
+                        aria-label="Open profile menu"
+                    >
+                        <img
+                            src={user?.avatar || 'https://api.dicebear.com/7.x/initials/svg?seed=student'}
+                            alt={user?.name || 'User'}
+                        />
+                        <span>{user?.name?.split(' ')[0] || 'Student'}</span>
+                        <FiChevronDown />
+                    </button>
+
+                    <AnimatePresence>
+                        {showProfileMenu && (
+                            <motion.div
+                                className="kp-dropdown-menu kp-profile-menu"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 8 }}
+                                transition={{ duration: 0.18 }}
+                            >
+                                <button type="button" onClick={() => navigate('/settings')}>
+                                    <FiUser />
+                                    Profile
+                                </button>
+                                <button type="button" onClick={() => navigate('/settings')}>
+                                    <FiSettings />
+                                    Settings
+                                </button>
+                                <button type="button" onClick={handleLogout} className="is-danger">
+                                    <FiLogOut />
+                                    Logout
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <button type="button" className="kp-icon-btn kp-collapse-btn" onClick={onToggleSidebar} aria-label="Collapse sidebar">
+                    <FiMenu />
+                </button>
+            </div>
+        </header>
     );
 };
 

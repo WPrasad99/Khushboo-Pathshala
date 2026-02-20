@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -270,12 +270,12 @@ const MentorDashboard = () => {
                         {activeTab === 'overview' && (
                             <div className="dashboard-header-modern" style={{ marginBottom: '30px' }}>
                                 <div>
-                                    <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                                    <h1 style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>
                                         {activeTab === 'overview'
                                             ? `Welcome back, ${user?.name?.split(' ')[0]}! 👋`
                                             : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                                     </h1>
-                                    <p style={{ color: '#64748b', marginTop: '4px', fontWeight: 500 }}>{formatDate(new Date())}</p>
+                                    <p style={{ color: 'var(--color-text-)', marginTop: '4px', fontWeight: 'var(--fw-medium)' }}>{formatDate(new Date())}</p>
                                 </div>
                             </div>
                         )}
@@ -287,6 +287,7 @@ const MentorDashboard = () => {
                                 setTab={setActiveTab}
                                 announcements={announcements}
                                 meetingLogs={meetingLogs}
+                                batches={batches}
                             />
                         )}
                         {activeTab === 'batches' && <BatchesSection batches={batches} />}
@@ -314,67 +315,245 @@ const MentorDashboard = () => {
     );
 };
 
-const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLogs }) => (
-    <div className="overview-container">
-        <div className="mentor-stats-grid-5">
-            {[
-                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#10B981', bgColor: '#ECFDF5' },
-                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3B82F6', bgColor: '#EFF6FF' },
-                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#F59E0B', bgColor: '#FFFBEB' },
-                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#8B5CF6', bgColor: '#F5F3FF' },
-                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#6366F1', bgColor: '#EEF2FF' }
-            ].map((stat, idx) => (
-                <div key={idx} className="stat-card-refined read-only" style={{ background: 'white', border: '1px solid #edf2f7' }}>
-                    <div className="stat-icon-refined" style={{ background: stat.bgColor, color: stat.color, boxShadow: 'none' }}>
-                        {stat.icon}
-                    </div>
-                    <span className="stat-value-bold" style={{ color: '#1e293b', fontSize: '1.4rem' }}>{stat.value}</span>
-                    <span className="stat-label-muted" style={{ color: '#64748b', fontWeight: 600 }}>{stat.label}</span>
-                </div>
-            ))}
-        </div>
+const OverviewSection = ({ data, studentsCount, announcements, meetingLogs, batches = [] }) => {
+    const attendanceSeries = useMemo(() => {
+        const bucket = new Map();
+        const today = new Date();
 
-        <div className="mentor-grid">
-            <div className="glass-card" style={{ padding: '20px', background: 'white', border: '1px solid #edf2f7' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: '#1e293b', fontSize: '1.1rem' }}>
-                        <FiClock color="#3b82f6" /> Recent Updates
-                    </h3>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{announcements?.length || 0} Total</span>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px', maxHeight: '300px' }}>
-                    {announcements && announcements.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {announcements.map((ann, idx) => (
-                                <div key={idx} style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                        <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#334155' }}>{ann.title}</h4>
-                                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-                                            {formatDate(new Date(ann.createdAt))}
-                                        </span>
+        meetingLogs.forEach((meeting) => {
+            const key = new Date(meeting.meetingDate).toISOString().slice(0, 10);
+            bucket.set(key, (bucket.get(key) || 0) + 1);
+        });
+
+        return Array.from({ length: 7 }).map((_, offset) => {
+            const date = new Date(today);
+            date.setDate(today.getDate() - (6 - offset));
+            const key = date.toISOString().slice(0, 10);
+
+            return {
+                label: date.toLocaleDateString(undefined, { weekday: 'short' }),
+                value: bucket.get(key) || 0
+            };
+        });
+    }, [meetingLogs]);
+
+    const attendanceMax = Math.max(...attendanceSeries.map((item) => item.value), 1);
+    const attendancePoints = attendanceSeries
+        .map((item, index) => {
+            const x = (index / Math.max(1, attendanceSeries.length - 1)) * 300;
+            const y = 110 - (item.value / attendanceMax) * 100;
+            return `${x},${y}`;
+        })
+        .join(' ');
+
+    const submissionBars = useMemo(() => {
+        if (!batches || batches.length === 0) {
+            return [
+                { label: 'Batch A', value: 68 },
+                { label: 'Batch B', value: 74 },
+                { label: 'Batch C', value: 58 }
+            ];
+        }
+
+        return batches.slice(0, 5).map((batch) => ({
+            label: batch.name.length > 10 ? `${batch.name.slice(0, 10)}...` : batch.name,
+            value: Math.min(96, 50 + (batch.studentsCount || 0) * 4)
+        }));
+    }, [batches]);
+
+    const donutSegments = useMemo(() => {
+        if (!batches || batches.length === 0) {
+            return [
+                { label: 'Batch A', value: 20, color: '#3b82f6' },
+                { label: 'Batch B', value: 14, color: '#14b8a6' },
+                { label: 'Batch C', value: 10, color: '#f59e0b' }
+            ];
+        }
+
+        const palette = ['#3b82f6', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444'];
+        return batches.slice(0, 5).map((batch, index) => ({
+            label: batch.name,
+            value: batch.studentsCount || 0,
+            color: palette[index % palette.length]
+        }));
+    }, [batches]);
+
+    const donutTotal = Math.max(
+        donutSegments.reduce((sum, segment) => sum + segment.value, 0),
+        1
+    );
+    const donutCircumference = 2 * Math.PI * 46;
+    let cumulativeFraction = 0;
+
+    const upcomingMeetings = useMemo(
+        () =>
+            [...meetingLogs]
+                .filter((meeting) => new Date(meeting.meetingDate).getTime() >= Date.now())
+                .sort((a, b) => new Date(a.meetingDate) - new Date(b.meetingDate))
+                .slice(0, 4),
+        [meetingLogs]
+    );
+
+    const kpiItems = [
+        { label: 'Assigned Students', value: studentsCount, icon: <FiUsers /> },
+        { label: 'Uploaded Resources', value: data?.uploadedResources || 0, icon: <FiBookOpen /> },
+        { label: 'Recent Meetings', value: meetingLogs.length, icon: <FiCalendar /> },
+        { label: 'Announcements', value: announcements?.length || 0, icon: <FiBell /> }
+    ];
+
+    return (
+        <div className="mentor-overview-v2">
+            <section className="mentor-kpi-grid">
+                {kpiItems.map((item) => (
+                    <article key={item.label} className="mentor-kpi-card">
+                        <span className="mentor-kpi-icon">{item.icon}</span>
+                        <strong>{item.value}</strong>
+                        <small>{item.label}</small>
+                    </article>
+                ))}
+            </section>
+
+            <section className="mentor-analytics-grid">
+                <article className="mentor-analytics-card">
+                    <header>
+                        <h3>Attendance Trend</h3>
+                        <span>Last 7 days</span>
+                    </header>
+
+                    <svg viewBox="0 0 300 120" role="img" aria-label="Attendance trend line chart">
+                        <polyline className="mentor-line-area" points={`0,110 ${attendancePoints} 300,110`} />
+                        <polyline className="mentor-line-path" points={attendancePoints} />
+                        {attendanceSeries.map((item, index) => {
+                            const x = (index / Math.max(1, attendanceSeries.length - 1)) * 300;
+                            const y = 110 - (item.value / attendanceMax) * 100;
+                            return <circle key={item.label} cx={x} cy={y} r="3" className="mentor-line-point" />;
+                        })}
+                    </svg>
+
+                    <div className="mentor-line-axis">
+                        {attendanceSeries.map((item) => (
+                            <span key={item.label}>{item.label}</span>
+                        ))}
+                    </div>
+                </article>
+
+                <article className="mentor-analytics-card">
+                    <header>
+                        <h3>Submission Rate</h3>
+                        <span>Estimated by batch</span>
+                    </header>
+
+                    <div className="mentor-bar-chart">
+                        {submissionBars.map((bar) => (
+                            <div key={bar.label} className="mentor-bar-item">
+                                <div className="mentor-bar-track">
+                                    <div className="mentor-bar-fill" style={{ height: `${bar.value}%` }} />
+                                </div>
+                                <small>{bar.label}</small>
+                                <strong>{bar.value}%</strong>
+                            </div>
+                        ))}
+                    </div>
+                </article>
+
+                <article className="mentor-analytics-card">
+                    <header>
+                        <h3>Batch Comparison</h3>
+                        <span>Student distribution</span>
+                    </header>
+
+                    <div className="mentor-donut-layout">
+                        <svg viewBox="0 0 120 120" className="mentor-donut-chart" role="img" aria-label="Batch distribution donut chart">
+                            <circle cx="60" cy="60" r="46" className="mentor-donut-base" />
+                            {donutSegments.map((segment) => {
+                                const fraction = segment.value / donutTotal;
+                                const dash = fraction * donutCircumference;
+                                const offset = -cumulativeFraction * donutCircumference;
+                                cumulativeFraction += fraction;
+
+                                return (
+                                    <circle
+                                        key={segment.label}
+                                        cx="60"
+                                        cy="60"
+                                        r="46"
+                                        className="mentor-donut-segment"
+                                        style={{
+                                            stroke: segment.color,
+                                            strokeDasharray: `${dash} ${donutCircumference - dash}`,
+                                            strokeDashoffset: offset
+                                        }}
+                                    />
+                                );
+                            })}
+                        </svg>
+
+                        <div className="mentor-donut-center">
+                            <strong>{donutTotal}</strong>
+                            <small>Students</small>
+                        </div>
+                    </div>
+
+                    <div className="mentor-donut-legend">
+                        {donutSegments.map((segment) => (
+                            <div key={segment.label} className="mentor-donut-legend-row">
+                                <span className="mentor-dot" style={{ background: segment.color }} />
+                                <span>{segment.label}</span>
+                                <strong>{segment.value}</strong>
+                            </div>
+                        ))}
+                    </div>
+                </article>
+            </section>
+
+            <section className="mentor-insights-grid">
+                <article className="mentor-insight-card">
+                    <header>
+                        <h3>Recent Updates</h3>
+                        <span>{announcements?.length || 0}</span>
+                    </header>
+
+                    <div className="mentor-insight-list">
+                        {announcements && announcements.length > 0 ? (
+                            announcements.slice(0, 4).map((announcement) => (
+                                <div key={announcement.id} className="mentor-insight-item">
+                                    <strong>{announcement.title}</strong>
+                                    <p>{announcement.content}</p>
+                                    <small>{new Date(announcement.createdAt).toLocaleDateString()}</small>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="mentor-empty-state">No announcements yet.</div>
+                        )}
+                    </div>
+                </article>
+
+                <article className="mentor-insight-card">
+                    <header>
+                        <h3>Upcoming Meetings</h3>
+                        <span>{upcomingMeetings.length}</span>
+                    </header>
+
+                    {upcomingMeetings.length > 0 ? (
+                        <div className="mentor-insight-list">
+                            {upcomingMeetings.map((meeting) => (
+                                <div key={meeting.id} className="mentor-meeting-item">
+                                    <div>
+                                        <strong>{new Date(meeting.meetingDate).toLocaleDateString()}</strong>
+                                        <p>{new Date(meeting.meetingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>{ann.content}</p>
+                                    <span>{meeting.duration} min</span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
-                            <div style={{ background: '#f0f7ff', padding: '12px', borderRadius: '50%' }}>
-                                <FiBell size={20} color="#3b82f6" />
-                            </div>
-                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>No new announcements from admin.</p>
-                        </div>
+                        <CalendarWidget meetings={meetingLogs} />
                     )}
-                </div>
-            </div>
-
-            {/* Calendar Widget Replacement for Meeting Logs */}
-            <div style={{ minHeight: '350px', height: 'auto', marginTop: '0px' }}>
-                <CalendarWidget meetings={meetingLogs} />
-            </div>
+                </article>
+            </section>
         </div>
-    </div>
-);
+    );
+};
 
 const BatchesSection = ({ batches }) => {
     const [selectedBatch, setSelectedBatch] = useState(null);
@@ -412,10 +591,10 @@ const BatchesSection = ({ batches }) => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#1e293b' }}>{selectedBatch.name}</h2>
-                                    <p style={{ margin: '4px 0 0', color: '#64748b' }}>{selectedBatch.studentsCount} Students • {selectedBatch.status}</p>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedBatch.name}</h2>
+                                    <p style={{ margin: '4px 0 0', color: 'var(--color-text-)' }}>{selectedBatch.studentsCount} Students • {selectedBatch.status}</p>
                                 </div>
-                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
+                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-)' }}>
                                     <FiX size={20} />
                                 </button>
                             </div>
@@ -424,28 +603,28 @@ const BatchesSection = ({ batches }) => {
                                 <table className="student-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Student</th>
-                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Joined Date</th>
-                                            <th style={{ padding: '16px', textAlign: 'right', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Actions</th>
+                                            <th style={{ padding: 'var(--space-24)', textAlign: 'left', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)' }}>Student</th>
+                                            <th style={{ padding: 'var(--space-24)', textAlign: 'left', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)' }}>Joined Date</th>
+                                            <th style={{ padding: 'var(--space-24)', textAlign: 'right', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)' }}>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {selectedBatch.students?.map(s => (
                                             <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                <td style={{ padding: '16px' }}>
+                                                <td style={{ padding: 'var(--space-24)' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <img src={s.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</div>
-                                                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{s.email}</div>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>{s.name}</div>
+                                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{s.email}</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '16px', color: '#64748b' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
-                                                <td style={{ padding: '16px', textAlign: 'right' }}>
+                                                <td style={{ padding: 'var(--space-24)', color: 'var(--color-text-)' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
+                                                <td style={{ padding: 'var(--space-24)', textAlign: 'right' }}>
                                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.5 }}>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiUser size={14} /></button>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiUser size={14} /></button>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -458,7 +637,7 @@ const BatchesSection = ({ batches }) => {
                 )}
             </AnimatePresence>
 
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginBottom: '24px' }}>Your Batches</h2>
+            <h2 style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#1e293b', marginBottom: '24px' }}>Your Batches</h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                 {batches && batches.length > 0 ? (
@@ -489,7 +668,7 @@ const BatchesSection = ({ batches }) => {
                                     position: 'absolute', top: '20px', right: '20px',
                                     background: '#dbeafe', color: '#1e40af',
                                     padding: '4px 12px', borderRadius: '20px',
-                                    fontSize: '0.75rem', fontWeight: 700
+                                    fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)'
                                 }}>
                                     {batch.status}
                                 </div>
@@ -501,19 +680,19 @@ const BatchesSection = ({ batches }) => {
                                 }}>
                                     <FiLayers size={24} color="#3b82f6" />
                                 </div>
-                                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>{batch.name}</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>Batch ID: #{batch.id.substring(0, 8)}</p>
+                                <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: 'var(--color-text-)' }}>{batch.name}</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>Batch ID: #{batch.id.substring(0, 8)}</p>
                             </div>
 
                             {/* Body */}
                             <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Students</div>
-                                        <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#334155' }}>{batch.studentsCount}</div>
+                                        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', fontWeight: 'var(--fw-semibold)', textTransform: 'uppercase', marginBottom: '4px' }}>Students</div>
+                                        <div style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--color-text-)' }}>{batch.studentsCount}</div>
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', textAlign: 'right' }}>Mentors</div>
+                                        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', fontWeight: 'var(--fw-semibold)', textTransform: 'uppercase', marginBottom: '4px', textAlign: 'right' }}>Mentors</div>
                                         <div style={{ display: 'flex', justifyContent: 'flex-end', paddingLeft: '8px' }}>
                                             {batch.assignedMentors?.map((m, i) => (
                                                 <img
@@ -537,12 +716,12 @@ const BatchesSection = ({ batches }) => {
                                         onClick={() => setSelectedBatch(batch)}
                                         style={{
                                             width: '100%',
-                                            padding: '12px',
+                                            padding: 'var(--space-20)',
                                             background: '#f8fafc',
                                             border: '1px solid #e2e8f0',
                                             borderRadius: '12px',
                                             color: '#3b82f6',
-                                            fontWeight: 600,
+                                            fontWeight: 'var(--fw-semibold)',
                                             cursor: 'pointer',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                                             transition: 'all 0.2s'
@@ -557,7 +736,7 @@ const BatchesSection = ({ batches }) => {
                         </motion.div>
                     ))
                 ) : (
-                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--color-text-)' }}>
                         <div style={{ background: '#f1f5f9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                             <FiLayers size={32} opacity={0.5} />
                         </div>
@@ -683,7 +862,7 @@ const SessionsSection = ({ batches }) => {
                     >
                         <FiUpload size={32} color="#3b82f6" />
                         <h4 style={{ marginTop: '12px' }}>Upload Session Video</h4>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>MP4, WebM or YouTube link</p>
+                        <p style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>MP4, WebM or YouTube link</p>
                     </div>
                     <div
                         className="compact-upload-zone"
@@ -692,18 +871,18 @@ const SessionsSection = ({ batches }) => {
                     >
                         <FiFileText size={32} color="#10b981" />
                         <h4 style={{ marginTop: '12px' }}>Upload Notes / Resources</h4>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>PDF, PPTX or External Links</p>
+                        <p style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>PDF, PPTX or External Links</p>
                     </div>
                 </div>
 
                 <div style={{ marginTop: '40px' }}>
                     <h4>Your Uploaded Content</h4>
                     {loading ? (
-                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Loading...</p>
+                        <p style={{ color: 'var(--color-text-)', textAlign: 'center', padding: '40px' }}>Loading...</p>
                     ) : uploads.length > 0 ? (
                         <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
                             {uploads.map(upload => (
-                                <div key={upload.id} className="glass-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div key={upload.id} className="glass-card" style={{ padding: 'var(--space-24)', background: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                                         <div style={{
                                             width: '80px',
@@ -714,14 +893,14 @@ const SessionsSection = ({ batches }) => {
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: upload.type === 'SESSION' ? '#1e40af' : '#065f46',
-                                            fontWeight: '700',
-                                            fontSize: '0.75rem'
+                                            fontWeight: 'var(--fw-bold)',
+                                            fontSize: 'var(--fs-small)'
                                         }}>
                                             {upload.type}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{upload.title}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                            <div style={{ fontWeight: 'var(--fw-semibold)', marginBottom: '4px' }}>{upload.title}</div>
+                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>
                                                 Batch: {upload.batch?.name || 'N/A'} • {upload.duration} mins • {upload.studentCount || 0} students
                                             </div>
                                         </div>
@@ -729,7 +908,7 @@ const SessionsSection = ({ batches }) => {
                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                         {upload.avgCompletion > 0 && (
                                             <div style={{ textAlign: 'right', marginRight: '12px' }}>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)' }}>
                                                     {Math.round(upload.avgCompletion)}% Avg
                                                 </div>
                                                 <div style={{ width: '100px', height: '6px', background: '#e2e8f0', borderRadius: '3px', marginTop: '4px' }}>
@@ -749,7 +928,7 @@ const SessionsSection = ({ batches }) => {
                             ))}
                         </div>
                     ) : (
-                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>
+                        <p style={{ color: 'var(--color-text-)', textAlign: 'center', padding: '40px' }}>
                             No uploads yet. Click above to upload your first session or resource!
                         </p>
                     )}
@@ -842,7 +1021,7 @@ const SessionsSection = ({ batches }) => {
                                                 required
                                                 style={{ padding: '10px' }}
                                             />
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', marginTop: '4px' }}>
                                                 Accepted formats: PDF, Word, PowerPoint, Excel
                                             </div>
                                         </div>
@@ -883,7 +1062,7 @@ const SessionsSection = ({ batches }) => {
                                         onClick={() => setShowModal(false)}
                                         style={{
                                             flex: 1,
-                                            padding: '12px',
+                                            padding: 'var(--space-20)',
                                             border: '1px solid #e2e8f0',
                                             background: 'white',
                                             borderRadius: '8px',
@@ -897,12 +1076,12 @@ const SessionsSection = ({ batches }) => {
                                         disabled={isSubmitting}
                                         style={{
                                             flex: 1,
-                                            padding: '12px',
+                                            padding: 'var(--space-20)',
                                             background: '#3b82f6',
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '8px',
-                                            fontWeight: 600,
+                                            fontWeight: 'var(--fw-semibold)',
                                             cursor: isSubmitting ? 'not-allowed' : 'pointer',
                                             opacity: isSubmitting ? 0.6 : 1
                                         }}
@@ -1114,7 +1293,7 @@ const UploadAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
                     <div className="glass-form-group">
                         <label className="glass-label">CSV File</label>
                         <input type="file" accept=".csv" className="glass-input" onChange={handleFileChange} required />
-                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>Format: Email, Status (Present/Absent)</p>
+                        <p style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', marginTop: '4px' }}>Format: Email, Status (Present/Absent)</p>
                     </div>
                     <button type="submit" disabled={isUploading} className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>
                         {isUploading ? 'Uploading...' : 'Upload'}
@@ -1129,7 +1308,7 @@ const UploadAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                    }} style={{ display: 'block', textAlign: 'center', marginTop: '12px', fontSize: '0.85rem', color: '#3b82f6' }}>
+                    }} style={{ display: 'block', textAlign: 'center', marginTop: '12px', fontSize: 'var(--fs-body)', color: '#3b82f6' }}>
                         Download Template
                     </a>
                 </form>
@@ -1188,16 +1367,16 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                     {/* Search & Filter Bar */}
-                    <div className="glass-card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #edf2f7' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>My Mentees <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 400 }}>({filteredStudents.length})</span></h3>
+                    <div className="glass-card" style={{ padding: 'var(--space-24)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #edf2f7' }}>
+                        <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)' }}>My Mentees <span style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', fontWeight: 'var(--fw-regular)' }}>({filteredStudents.length})</span></h3>
                         <div className="search-box-refined" style={{ width: '300px', display: 'flex', alignItems: 'center', background: '#f8fafc', borderRadius: '12px', padding: '8px 16px', border: '1px solid #e2e8f0' }}>
-                            <FiSearch style={{ color: '#94a3b8', marginRight: '10px' }} />
+                            <FiSearch style={{ color: 'var(--color-text-)', marginRight: '10px' }} />
                             <input
                                 type="text"
                                 placeholder="Search by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem', color: '#1e293b' }}
+                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: 'var(--fs-body)', color: '#1e293b' }}
                             />
                         </div>
                     </div>
@@ -1213,17 +1392,17 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                                             <div className="status-indicator online" style={{ width: '12px', height: '12px', border: '2px solid white' }}></div>
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
-                                            <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>{s.batchName}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{s.email}</div>
+                                            <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-h3)', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
+                                            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', marginTop: '4px' }}>{s.batchName}</div>
+                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', marginTop: '2px' }}>{s.email}</div>
                                         </div>
                                     </div>
 
                                     {/* Mock Progress - can be real if data available */}
                                     <div style={{ marginBottom: '16px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '6px', color: '#64748b' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fs-small)', marginBottom: '6px', color: 'var(--color-text-)' }}>
                                             <span>Course Progress</span>
-                                            <span style={{ fontWeight: 600, color: '#3b82f6' }}>75%</span>
+                                            <span style={{ fontWeight: 'var(--fw-semibold)', color: '#3b82f6' }}>75%</span>
                                         </div>
                                         <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
                                             <div style={{ width: '75%', height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
@@ -1233,13 +1412,13 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                                     <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #f8fafc' }}>
                                         <button
                                             onClick={() => onStartChat(s)}
-                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#eff6ff', color: '#3b82f6', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#eff6ff', color: '#3b82f6', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)' }}
                                         >
                                             <FiMessageCircle size={16} /> Message
                                         </button>
                                         <button
                                             onClick={() => { setIsScheduling(true); /* Ideally pre-fill form with this student */ }}
-                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#f0fdf4', color: '#16a34a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', background: '#f0fdf4', color: '#16a34a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)' }}
                                         >
                                             <FiCalendar size={16} /> Schedule
                                         </button>
@@ -1247,9 +1426,9 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                                 </div>
                             ))
                         ) : (
-                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#94a3b8', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
+                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--color-text-)', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
                                 <FiUsers size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                                <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>No students found matching "{searchTerm}"</p>
+                                <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-medium)' }}>No students found matching "{searchTerm}"</p>
                             </div>
                         )}
                     </div>
@@ -1260,13 +1439,13 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
 
                     {/* Quick Actions Card - White Glassy */}
                     <div className="glass-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)' }}>
-                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '10px', color: '#1e293b' }}>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: 'var(--fs-h3)', display: 'flex', alignItems: 'center', gap: '10px', color: '#1e293b' }}>
                             <FiZap style={{ color: '#f59e0b' }} /> Quick Actions
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <button
                                 onClick={() => setIsScheduling(true)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: 'var(--space-20)', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 'var(--fw-semibold)', transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
@@ -1275,7 +1454,7 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                             </button>
                             <button
                                 onClick={() => setIsUploadingAttendance(true)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: 'var(--space-20)', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 'var(--fw-semibold)', transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
@@ -1287,15 +1466,15 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
 
                     {/* Insights Card */}
                     <div className="glass-card" style={{ padding: '24px', border: '1px solid #edf2f7' }}>
-                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1rem', color: '#1e293b' }}>Insights</h3>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: 'var(--fs-h3)', color: '#1e293b' }}>Insights</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3b82f6' }}>{students?.length || 0}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Total Mentees</div>
+                            <div style={{ padding: 'var(--space-24)', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
+                                <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#3b82f6' }}>{students?.length || 0}</div>
+                                <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', fontWeight: 'var(--fw-semibold)' }}>Total Mentees</div>
                             </div>
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>{batches?.length || 0}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Active Batches</div>
+                            <div style={{ padding: 'var(--space-24)', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
+                                <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#10b981' }}>{batches?.length || 0}</div>
+                                <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', fontWeight: 'var(--fw-semibold)' }}>Active Batches</div>
                             </div>
                         </div>
                     </div>
@@ -1303,20 +1482,20 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                     {/* Upcoming Sessions Preview (Mini) */}
                     <div className="glass-card" style={{ padding: '20px', border: '1px solid #edf2f7' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Upcoming</h3>
-                            <span style={{ fontSize: '0.8rem', color: '#3b82f6', cursor: 'pointer' }}>View All</span>
+                            <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b' }}>Upcoming</h3>
+                            <span style={{ fontSize: 'var(--fs-small)', color: '#3b82f6', cursor: 'pointer' }}>View All</span>
                         </div>
 
                         {/* Mock Mini List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px', background: '#fff', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px', background: '#eff6ff', borderRadius: '8px', minWidth: '50px' }}>
-                                    <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 700 }}>FEB</span>
-                                    <span style={{ fontSize: '1.1rem', color: '#1e293b', fontWeight: 800 }}>20</span>
+                                    <span style={{ fontSize: 'var(--fs-small)', color: '#3b82f6', fontWeight: 'var(--fw-bold)' }}>FEB</span>
+                                    <span style={{ fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)' }}>20</span>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1e293b' }}>Resume Review</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>10:00 AM • Online</div>
+                                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>Resume Review</div>
+                                    <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>10:00 AM • Online</div>
                                 </div>
                             </div>
                         </div>
@@ -1395,8 +1574,8 @@ const ForumSection = ({ batches }) => {
             <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: 'linear-gradient(to bottom, #ffffff, #f8fafc)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                     <div>
-                        <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#1e293b' }}>Q&A / Discussion Forum</h3>
-                        <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Engage with your students and solve their queries</p>
+                        <h3 style={{ fontSize: 'var(--fs-h2)', margin: 0, color: '#1e293b' }}>Q&A / Discussion Forum</h3>
+                        <p style={{ margin: '4px 0 0', color: 'var(--color-text-)', fontSize: 'var(--fs-body)' }}>Engage with your students and solve their queries</p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <div style={{ position: 'relative' }}>
@@ -1408,8 +1587,8 @@ const ForumSection = ({ batches }) => {
                                     borderRadius: '12px',
                                     border: '1px solid #e2e8f0',
                                     background: 'white',
-                                    color: '#475569',
-                                    fontWeight: 500,
+                                    color: 'var(--color-text-)',
+                                    fontWeight: 'var(--fw-medium)',
                                     cursor: 'pointer',
                                     appearance: 'none'
                                 }}
@@ -1421,14 +1600,14 @@ const ForumSection = ({ batches }) => {
                                     <option key={b.id} value={b.id}>{b.name}</option>
                                 ))}
                             </select>
-                            <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                            <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-)', pointerEvents: 'none' }} />
                         </div>
                     </div>
                 </div>
 
                 <div className="forum-threads" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--color-text-)' }}>
                             <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
                             <p>Loading discussions...</p>
                         </div>
@@ -1457,7 +1636,7 @@ const ForumSection = ({ batches }) => {
                                             {post.author?.avatar ? (
                                                 <img src={post.author.avatar} alt={post.author.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
                                             ) : (
-                                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
+                                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-h3)' }}>
                                                     {post.author?.name?.charAt(0) || '?'}
                                                 </div>
                                             )}
@@ -1465,35 +1644,35 @@ const ForumSection = ({ batches }) => {
 
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                                <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 700, lineHeight: '1.4' }}>{post.title}</h4>
-                                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
+                                                <h4 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)', lineHeight: '1.4' }}>{post.title}</h4>
+                                                <span style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
                                                     {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                 </span>
                                             </div>
 
-                                            <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: '#64748b', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            <p style={{ margin: '0 0 16px 0', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {post.content}
                                             </p>
 
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #f8fafc' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.85rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: post.answersCount > 0 ? '#3b82f6' : '#94a3b8', fontWeight: 500 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: 'var(--fs-body)' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: post.answersCount > 0 ? '#3b82f6' : '#94a3b8', fontWeight: 'var(--fw-medium)' }}>
                                                         <FiMessageSquare /> {post.answersCount || 0} Replies
                                                     </div>
-                                                    <div style={{ color: '#94a3b8' }}>
-                                                        Posted by <span style={{ color: '#475569', fontWeight: 600 }}>{post.author?.name}</span>
+                                                    <div style={{ color: 'var(--color-text-)' }}>
+                                                        Posted by <span style={{ color: 'var(--color-text-)', fontWeight: 'var(--fw-semibold)' }}>{post.author?.name}</span>
                                                     </div>
                                                 </div>
 
                                                 <button
                                                     style={{
                                                         padding: '8px 20px',
-                                                        fontSize: '0.85rem',
+                                                        fontSize: 'var(--fs-body)',
                                                         background: 'white',
                                                         color: '#3b82f6',
                                                         border: '1px solid #dbeafe',
                                                         borderRadius: '8px',
-                                                        fontWeight: 600,
+                                                        fontWeight: 'var(--fw-semibold)',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.2s',
                                                         display: 'flex', alignItems: 'center', gap: '6px'
@@ -1509,12 +1688,12 @@ const ForumSection = ({ batches }) => {
                             );
                         })
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '80px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                        <div style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--color-text-)', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
                             <div style={{ background: '#fff', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                 <FiMessageSquare size={32} color="#94a3b8" />
                             </div>
-                            <h3 style={{ margin: '0 0 8px 0', color: '#475569' }}>No discussions yet</h3>
-                            <p style={{ margin: 0, fontSize: '0.95rem' }}>When students ask questions, they will appear here.</p>
+                            <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-text-)' }}>No discussions yet</h3>
+                            <p style={{ margin: 0, fontSize: 'var(--fs-body)' }}>When students ask questions, they will appear here.</p>
                         </div>
                     )}
                 </div>
@@ -1560,8 +1739,8 @@ const ForumSection = ({ batches }) => {
                             {/* Post Header */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#1e293b' }}>{selectedPost.title}</h2>
-                                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '0.85rem', color: '#64748b' }}>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedPost.title}</h2>
+                                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                         <span>By {selectedPost.author?.name}</span>
                                         <span>•</span>
                                         <span>{new Date(selectedPost.createdAt).toLocaleString()}</span>
@@ -1569,7 +1748,7 @@ const ForumSection = ({ batches }) => {
                                 </div>
                                 <button
                                     onClick={() => setShowModal(false)}
-                                    style={{ background: 'none', border: 'none', fontSize: '24px', color: '#94a3b8', cursor: 'pointer' }}
+                                    style={{ background: 'none', border: 'none', fontSize: 'var(--fs-h2)', color: 'var(--color-text-)', cursor: 'pointer' }}
                                 >
                                     ×
                                 </button>
@@ -1588,7 +1767,7 @@ const ForumSection = ({ batches }) => {
 
                             {/* Answers Section */}
                             <div style={{ marginBottom: '24px' }}>
-                                <h3 style={{ fontSize: '1.1rem', color: '#1e293b', marginBottom: '16px' }}>
+                                <h3 style={{ fontSize: 'var(--fs-h3)', color: '#1e293b', marginBottom: '16px' }}>
                                     {selectedPost.answers?.length || 0} Answer{selectedPost.answers?.length !== 1 ? 's' : ''}
                                 </h3>
 
@@ -1596,7 +1775,7 @@ const ForumSection = ({ batches }) => {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                         {selectedPost.answers.map(answer => (
                                             <div key={answer.id} style={{
-                                                padding: '16px',
+                                                padding: 'var(--space-24)',
                                                 background: answer.author?.role === 'MENTOR' ? '#f0f9ff' : '#f8fafc',
                                                 borderRadius: '12px',
                                                 border: answer.author?.role === 'MENTOR' ? '1px solid #bfdbfe' : '1px solid #e2e8f0'
@@ -1609,12 +1788,12 @@ const ForumSection = ({ batches }) => {
                                                             style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                                                         />
                                                         <div>
-                                                            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', color: '#1e293b' }}>
                                                                 {answer.author?.name}
                                                                 {answer.author?.role === 'MENTOR' && (
                                                                     <span style={{
                                                                         marginLeft: '8px',
-                                                                        fontSize: '0.75rem',
+                                                                        fontSize: 'var(--fs-small)',
                                                                         background: '#3b82f6',
                                                                         color: 'white',
                                                                         padding: '2px 8px',
@@ -1624,7 +1803,7 @@ const ForumSection = ({ batches }) => {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>
                                                                 {new Date(answer.createdAt).toLocaleString()}
                                                             </div>
                                                         </div>
@@ -1635,19 +1814,19 @@ const ForumSection = ({ batches }) => {
                                         ))}
                                     </div>
                                 ) : (
-                                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No answers yet. Be the first to reply!</p>
+                                    <p style={{ color: 'var(--color-text-)', textAlign: 'center', padding: '20px' }}>No answers yet. Be the first to reply!</p>
                                 )}
                             </div>
 
                             {/* Reply Form */}
                             <form onSubmit={handleSubmitReply}>
-                                <h4 style={{ fontSize: '1rem', color: '#1e293b', marginBottom: '12px' }}>Your Answer</h4>
+                                <h4 style={{ fontSize: 'var(--fs-body-lg)', color: '#1e293b', marginBottom: '12px' }}>Your Answer</h4>
                                 <textarea
                                     className="glass-input"
                                     style={{
                                         width: '100%',
                                         minHeight: '100px',
-                                        padding: '12px',
+                                        padding: 'var(--space-20)',
                                         resize: 'vertical',
                                         fontFamily: 'inherit'
                                     }}
@@ -1663,10 +1842,10 @@ const ForumSection = ({ batches }) => {
                                         style={{
                                             padding: '10px 20px',
                                             background: '#f1f5f9',
-                                            color: '#64748b',
+                                            color: 'var(--color-text-)',
                                             border: 'none',
                                             borderRadius: '8px',
-                                            fontWeight: 600,
+                                            fontWeight: 'var(--fw-semibold)',
                                             cursor: 'pointer'
                                         }}
                                     >
@@ -1681,7 +1860,7 @@ const ForumSection = ({ batches }) => {
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '8px',
-                                            fontWeight: 600,
+                                            fontWeight: 'var(--fw-semibold)',
                                             cursor: 'pointer',
                                             opacity: (isSubmitting || !replyContent.trim()) ? 0.6 : 1
                                         }}
@@ -2008,7 +2187,7 @@ const AssignmentsSection = ({ batches }) => {
                                         />
                                     </div>
                                 </div>
-                                <button type="submit" style={{ width: '100%', background: '#3b82f6', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 600, marginTop: '16px', cursor: 'pointer' }}>
+                                <button type="submit" style={{ width: '100%', background: '#3b82f6', color: 'white', padding: 'var(--space-20)', borderRadius: '8px', border: 'none', fontWeight: 'var(--fw-semibold)', marginTop: '16px', cursor: 'pointer' }}>
                                     Create Assignment
                                 </button>
                             </form>
@@ -2064,7 +2243,7 @@ const AssignmentsSection = ({ batches }) => {
                     {/* Content Grid */}
                     {activeTab === 'assignments' && (
                         loading ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading assignments...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--color-text-)' }}>Loading assignments...</div>
                         ) : assignments.length > 0 ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                                 {assignments.map(assignment => {
@@ -2096,7 +2275,7 @@ const AssignmentsSection = ({ batches }) => {
                                                 justifyContent: 'space-between',
                                                 alignItems: 'flex-start'
                                             }}>
-                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)' }}>
                                                     {assignment.batch?.name || 'General'}
                                                 </div>
                                                 <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
@@ -2105,24 +2284,24 @@ const AssignmentsSection = ({ batches }) => {
                                             </div>
 
                                             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1e293b' }}>
                                                     {assignment.title}
                                                 </h4>
-                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
                                                     {assignment.description}
                                                 </p>
 
                                                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
                                                         <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
-                                                        <span style={{ fontWeight: 600, color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
+                                                        <span style={{ fontWeight: 'var(--fw-semibold)', color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
                                                             {submissionsCount} Subs {pendingCount > 0 && `(${pendingCount} new)`}
                                                         </span>
                                                     </div>
 
                                                     <button
                                                         onClick={() => handleViewSubmissions(assignment.id)}
-                                                        style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                        style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                                     >
                                                         View Submissions
                                                     </button>
@@ -2134,16 +2313,16 @@ const AssignmentsSection = ({ batches }) => {
                             </div>
                         ) : (
                             <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                                <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                                <FiFileText size={48} style={{ marginBottom: '16px', color: 'var(--color-text-)' }} />
                                 <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No assignments yet</h3>
-                                <p style={{ color: '#64748b', margin: 0 }}>Create your first assignment to get started.</p>
+                                <p style={{ color: 'var(--color-text-)', margin: 0 }}>Create your first assignment to get started.</p>
                             </div>
                         )
                     )}
 
                     {activeTab === 'quizzes' && (
                         loading ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading quizzes...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--color-text-)' }}>Loading quizzes...</div>
                         ) : quizzes.length > 0 ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                                 {quizzes.map(quiz => {
@@ -2174,7 +2353,7 @@ const AssignmentsSection = ({ batches }) => {
                                                 justifyContent: 'space-between',
                                                 alignItems: 'flex-start'
                                             }}>
-                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)' }}>
                                                     {quiz.questions?.length || 0} Questions
                                                 </div>
                                                 <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#059669' }}>
@@ -2183,15 +2362,15 @@ const AssignmentsSection = ({ batches }) => {
                                             </div>
 
                                             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1e293b' }}>
                                                     {quiz.title}
                                                 </h4>
-                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
                                                     {quiz.description || 'No description provided.'}
                                                 </p>
 
                                                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
                                                         <span>⏱ {quiz.duration} mins</span>
                                                         <span>🎯 {quiz.totalMarks} Marks</span>
                                                         <span>👥 {submissionsCount} Attempts</span>
@@ -2204,9 +2383,9 @@ const AssignmentsSection = ({ batches }) => {
                             </div>
                         ) : (
                             <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                                <FiCheckCircle size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                                <FiCheckCircle size={48} style={{ marginBottom: '16px', color: 'var(--color-text-)' }} />
                                 <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No quizzes yet</h3>
-                                <p style={{ color: '#64748b', margin: 0 }}>Create a quiz to assess your students.</p>
+                                <p style={{ color: 'var(--color-text-)', margin: 0 }}>Create a quiz to assess your students.</p>
                             </div>
                         )
                     )}
@@ -2230,7 +2409,7 @@ const AssignmentsSection = ({ batches }) => {
                             onClick={(e) => e.stopPropagation()}
                             style={{ background: 'white', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
                         >
-                            <h2 style={{ margin: '0 0 24px', fontSize: '1.5rem', color: '#1e293b' }}>Create New Quiz</h2>
+                            <h2 style={{ margin: '0 0 24px', fontSize: 'var(--fs-h2)', color: '#1e293b' }}>Create New Quiz</h2>
                             <form onSubmit={handleCreateQuiz}>
                                 <div className="glass-form-group">
                                     <label className="glass-label">Title</label>
@@ -2313,7 +2492,7 @@ const AssignmentsSection = ({ batches }) => {
                                                     borderRadius: '20px',
                                                     cursor: 'pointer',
                                                     border: '1px solid transparent',
-                                                    fontSize: '0.9rem'
+                                                    fontSize: 'var(--fs-body)'
                                                 }}
                                             >
                                                 {b.name}
@@ -2323,8 +2502,8 @@ const AssignmentsSection = ({ batches }) => {
                                 </div>
                                 <div className="glass-form-group">
                                     <label className="glass-label">Questions (Manual or CSV)</label>
-                                    <div style={{ marginBottom: '16px', padding: '16px', background: '#f8faff', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
-                                        <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: '#64748b' }}>
+                                    <div style={{ marginBottom: '16px', padding: 'var(--space-24)', background: '#f8faff', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                                        <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                             Upload a CSV file with format: <code>question, option1, option2, option3, option4, correctOptionIndex</code>
                                         </p>
                                         <input
@@ -2334,7 +2513,7 @@ const AssignmentsSection = ({ batches }) => {
                                             style={{ display: 'block', width: '100%' }}
                                         />
                                     </div>
-                                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                    <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                         {quizFormData.questions.length} questions added
                                     </div>
                                 </div>
@@ -2342,13 +2521,13 @@ const AssignmentsSection = ({ batches }) => {
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateQuiz(false)}
-                                        style={{ flex: 1, padding: '12px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#f1f5f9', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        style={{ flex: 1, padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Create Quiz
                                     </button>
@@ -2372,9 +2551,9 @@ const AssignmentsSection = ({ batches }) => {
                             <h3 style={{ margin: '0 0 16px' }}>CSV Preview ({csvPreview.length} questions)</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {csvPreview.map((q, i) => (
-                                    <div key={i} style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                        <p style={{ fontWeight: 600, margin: '0 0 8px' }}>{i + 1}. {q.question}</p>
-                                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: '#64748b' }}>
+                                    <div key={i} style={{ padding: 'var(--space-20)', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                        <p style={{ fontWeight: 'var(--fw-semibold)', margin: '0 0 8px' }}>{i + 1}. {q.question}</p>
+                                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                             {q.options.map((opt, optIdx) => (
                                                 <li key={optIdx} style={{ color: optIdx === q.correctOption ? '#16a34a' : 'inherit', fontWeight: optIdx === q.correctOption ? 600 : 400 }}>
                                                     {opt} {optIdx === q.correctOption && '(Correct)'}
@@ -2422,10 +2601,10 @@ const AssignmentsSection = ({ batches }) => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#1e293b' }}>{selectedAssignment.title}</h2>
-                                    <p style={{ margin: '8px 0 0', color: '#64748b' }}>{selectedAssignment.submissions?.length || 0} Submissions</p>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedAssignment.title}</h2>
+                                    <p style={{ margin: '8px 0 0', color: 'var(--color-text-)' }}>{selectedAssignment.submissions?.length || 0} Submissions</p>
                                 </div>
-                                <button onClick={() => setShowSubmissionsModal(false)} style={{ background: 'none', border: 'none', fontSize: '24px', color: '#94a3b8', cursor: 'pointer' }}>×</button>
+                                <button onClick={() => setShowSubmissionsModal(false)} style={{ background: 'none', border: 'none', fontSize: 'var(--fs-h2)', color: 'var(--color-text-)', cursor: 'pointer' }}>×</button>
                             </div>
 
                             {selectedAssignment.submissions && selectedAssignment.submissions.length > 0 ? (
@@ -2433,26 +2612,26 @@ const AssignmentsSection = ({ batches }) => {
                                     {selectedAssignment.submissions.map(submission => {
                                         const statusStyle = getStatusBadge(submission.status);
                                         return (
-                                            <div key={submission.id} style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                            <div key={submission.id} style={{ padding: 'var(--space-24)', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <img src={submission.student?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'} alt={submission.student?.name} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{submission.student?.name}</div>
-                                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Submitted: {new Date(submission.submittedAt).toLocaleString()}</div>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>{submission.student?.name}</div>
+                                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>Submitted: {new Date(submission.submittedAt).toLocaleString()}</div>
                                                         </div>
                                                     </div>
-                                                    <span style={{ padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: statusStyle.bg, color: statusStyle.text }}>
+                                                    <span style={{ padding: '4px 12px', borderRadius: '12px', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-semibold)', background: statusStyle.bg, color: statusStyle.text }}>
                                                         {submission.status}
                                                     </span>
                                                 </div>
-                                                <p style={{ margin: '12px 0', color: '#1e293b', lineHeight: '1.6', background: 'white', padding: '12px', borderRadius: '8px' }}>
+                                                <p style={{ margin: '12px 0', color: '#1e293b', lineHeight: '1.6', background: 'white', padding: 'var(--space-20)', borderRadius: '8px' }}>
                                                     {submission.content.startsWith('/uploads') ? (
                                                         <a
-                                                            href={`http://localhost:5000${submission.content}`}
+                                                            href={`http://localhost:5001${submission.content}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#2563eb', textDecoration: 'none', fontWeight: 500 }}
+                                                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#2563eb', textDecoration: 'none', fontWeight: 'var(--fw-medium)' }}
                                                         >
                                                             <FiFileText /> View Submission File
                                                             <FiArrowRight size={14} />
@@ -2462,16 +2641,16 @@ const AssignmentsSection = ({ batches }) => {
                                                     )}
                                                 </p>
                                                 {submission.feedback && (
-                                                    <div style={{ marginTop: '12px', padding: '12px', background: '#fff7ed', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#92400e', marginBottom: '4px' }}>Feedback:</div>
-                                                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#78350f' }}>{submission.feedback}</p>
-                                                        {submission.marks !== null && <div style={{ marginTop: '8px', fontWeight: 600, color: '#92400e' }}>Marks: {submission.marks}/{selectedAssignment.maxMarks}</div>}
+                                                    <div style={{ marginTop: '12px', padding: 'var(--space-20)', background: '#fff7ed', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
+                                                        <div style={{ fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-semibold)', color: '#92400e', marginBottom: '4px' }}>Feedback:</div>
+                                                        <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: '#78350f' }}>{submission.feedback}</p>
+                                                        {submission.marks !== null && <div style={{ marginTop: '8px', fontWeight: 'var(--fw-semibold)', color: '#92400e' }}>Marks: {submission.marks}/{selectedAssignment.maxMarks}</div>}
                                                     </div>
                                                 )}
                                                 {submission.status === 'PENDING' && (
                                                     <button
                                                         onClick={() => setReviewingSubmission(submission)}
-                                                        style={{ marginTop: '12px', padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                                        style={{ marginTop: '12px', padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                                     >
                                                         Review Submission
                                                     </button>
@@ -2481,7 +2660,7 @@ const AssignmentsSection = ({ batches }) => {
                                     })}
                                 </div>
                             ) : (
-                                <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>No submissions yet</div>
+                                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-)' }}>No submissions yet</div>
                             )}
                         </motion.div>
                     </motion.div>
@@ -2545,13 +2724,13 @@ const AssignmentsSection = ({ batches }) => {
                                     <button
                                         type="button"
                                         onClick={() => setReviewingSubmission(null)}
-                                        style={{ flex: 1, padding: '12px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#f1f5f9', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        style={{ flex: 1, padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Submit Review
                                     </button>

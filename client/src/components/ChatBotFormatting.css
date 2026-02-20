@@ -16,21 +16,21 @@
 }
 
 .code-language {
-    color: #94a3b8;
-    font-size: 0.75rem;
-    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .code-block {
     margin: 0;
-    padding: 12px;
+    padding: var(--space-24);
     background: #1e293b;
     overflow-x: auto;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
 }
 
 .code-block code {
@@ -60,7 +60,7 @@
     border-radius: 4px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9em;
-    font-weight: 500;
+    font-weight: var(--fw-medium);
 }
 
 .user-message .inline-code {
@@ -71,27 +71,27 @@
 /* Paragraphs and text formatting */
 .chat-paragraph {
     margin: 4px 0;
-    line-height: 1.6;
+    line-height: var(--lh-body);
 }
 
 /* Bullet points */
 .chat-bullet {
     margin: 4px 0;
     padding-left: 8px;
-    line-height: 1.6;
+    line-height: var(--lh-body);
 }
 
 /* Numbered lists */
 .chat-numbered {
     margin: 4px 0;
     padding-left: 8px;
-    line-height: 1.6;
+    line-height: var(--lh-body);
 }
 
 /* Bold text */
 .message-content strong {
-    font-weight: 700;
-    color: #0f172a;
+    font-weight: var(--fw-bold);
+    color: var(--color-text-primary);
 }
 
 .user-message strong {
