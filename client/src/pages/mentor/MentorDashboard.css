@@ -112,7 +112,7 @@
 }
 
 .mentor-tab svg {
-    font-size: 1rem;
+    font-size: var(--fs-body-lg);
 }
 
 /* Overview Section - 5 Columns */
@@ -126,7 +126,7 @@
 .stat-card-refined {
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: var(--space-24);
     border-radius: 20px;
     background-color: var(--admin-surface);
     /* Layer 2 */
@@ -151,7 +151,7 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 12px;
-    font-size: 1.25rem;
+    font-size: var(--fs-h3);
 }
 
 .stat-value-bold {
@@ -181,7 +181,7 @@
 }
 
 .batch-accordion-header {
-    padding: 20px;
+    padding: var(--space-24);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -205,7 +205,7 @@
 }
 
 .student-table th {
-    padding: 12px;
+    padding: var(--space-24);
     text-align: left;
     color: var(--admin-text-muted);
     font-size: 0.85rem;
@@ -316,8 +316,8 @@
     gap: 6px;
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
 }
 
 .status-open {
@@ -420,7 +420,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #475569;
+    color: var(--color-text-secondary);
     padding: 8px;
     border-radius: 8px;
     transition: background 0.2s;
@@ -463,7 +463,7 @@
     width: 100%;
     text-align: left;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: var(--fs-body-lg);
 }
 
 .mobile-nav-item.active {
@@ -623,7 +623,7 @@
 
 .mobile-menu-links {
     flex: 1;
-    padding: 20px;
+    padding: var(--space-24);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -679,8 +679,8 @@
     padding: 14px 16px;
     border: none;
     border-radius: 14px;
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-body);
     cursor: pointer;
     transition: var(--admin-transition);
     width: 100%;

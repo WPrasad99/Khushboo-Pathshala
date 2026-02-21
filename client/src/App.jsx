@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import Loading from './components/Loading';
 import MessagingPage from './pages/MessagingPage';
 import MessagingLayout from './components/layout/MessagingLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 // Protected Route Component
@@ -136,7 +137,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
+        <ErrorBoundary>
+          <AppRoutes />
+        </ErrorBoundary>
       </AuthProvider>
     </Router>
   );

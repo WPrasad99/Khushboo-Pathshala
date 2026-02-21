@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { userAPI } from '../api';
-import { FiFileText, FiDownload, FiFile } from 'react-icons/fi';
+import { FiFileText, FiDownload, FiFile, FiFolder } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
 const StudentResourcesSection = () => {
@@ -23,74 +23,74 @@ const StudentResourcesSection = () => {
     }, []);
 
     const getFileIcon = (url) => {
-        if (!url) return <FiFile size={24} />;
+        if (!url) return <FiFile />;
         const ext = url.split('.').pop().toLowerCase();
-        if (['pdf'].includes(ext)) return <FiFileText size={24} color="#ef4444" />;
-        if (['doc', 'docx'].includes(ext)) return <FiFileText size={24} color="#3b82f6" />;
-        if (['ppt', 'pptx'].includes(ext)) return <FiFileText size={24} color="#f59e0b" />;
-        if (['xls', 'xlsx'].includes(ext)) return <FiFileText size={24} color="#10b981" />;
-        return <FiFile size={24} color="#64748b" />;
+        if (['pdf'].includes(ext)) return <FiFileText style={{ color: '#EF4444' }} />;
+        if (['doc', 'docx'].includes(ext)) return <FiFileText style={{ color: '#3B82F6' }} />;
+        if (['ppt', 'pptx'].includes(ext)) return <FiFileText style={{ color: '#F59E0B' }} />;
+        if (['xls', 'xlsx'].includes(ext)) return <FiFileText style={{ color: '#10B981' }} />;
+        return <FiFile />;
     };
 
     const getResourceLink = (url) => {
         if (!url) return '#';
         if (url.startsWith('http')) return url;
-        return `http://localhost:5000${url}`;
+        return `http://localhost:5001${url}`;
     };
 
     if (loading) {
-        return <div className="loading-spinner"></div>;
+        return (
+            <div className="stat-card-grid">
+                {[1, 2, 3].map(i => <div key={i} className="card skeleton" style={{ height: 200 }} />)}
+            </div>
+        );
     }
 
     return (
         <div className="resources-section">
-            <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#1e293b' }}>Course Resources & Notes</h2>
+            <header style={{ marginBottom: 'var(--space-24)' }}>
+                <h3>Course Resources & Notes</h3>
+                <p>Access all materials provided for your batch.</p>
+            </header>
 
             {resources.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-24)' }}>
                     {resources.map((resource, index) => (
                         <motion.div
                             key={resource.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="glass-card"
-                            style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                            transition={{ delay: index * 0.08 }}
+                            className="card"
+                            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}
                         >
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                    <div style={{ padding: '10px', background: '#f1f5f9', borderRadius: '10px' }}>
-                                        {getFileIcon(resource.videoUrl)}
-                                    </div>
-                                    <span style={{ fontSize: '0.75rem', padding: '4px 8px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontWeight: '600' }}>
-                                        {resource.batch?.name || 'General'}
-                                    </span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div className="stat-icon-wrapper" style={{ background: 'var(--color-bg)', fontSize: 'var(--fs-h2)' }}>
+                                    {getFileIcon(resource.videoUrl)}
                                 </div>
+                                <span className="badge badge-primary">
+                                    {resource.batch?.name || 'General'}
+                                </span>
+                            </div>
 
-                                <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#1e293b' }}>{resource.title}</h3>
-                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.5' }}>
+                            <div>
+                                <h4 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px' }}>{resource.title}</h4>
+                                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                     {resource.description || 'No description provided.'}
                                 </p>
                             </div>
 
-                            <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ marginTop: 'auto', paddingTop: 'var(--space-16)', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <img src={resource.uploadedBy?.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
-                                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{resource.uploadedBy?.name}</span>
+                                    <img src={resource.uploadedBy?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${resource.uploadedBy?.name}`} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--color-border)' }} />
+                                    <span style={{ fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-medium)' }}>{resource.uploadedBy?.name}</span>
                                 </div>
                                 <a
                                     href={getResourceLink(resource.videoUrl)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn-primary"
-                                    style={{
-                                        padding: '8px 16px',
-                                        fontSize: '0.85rem',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        textDecoration: 'none'
-                                    }}
+                                    className="btn btn-primary"
+                                    style={{ padding: '8px 14px', fontSize: 'var(--fs-small)' }}
                                 >
                                     <FiDownload /> Download
                                 </a>
@@ -99,9 +99,10 @@ const StudentResourcesSection = () => {
                     ))}
                 </div>
             ) : (
-                <div className="glass-card" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                    <FiFile size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                    <p>No resources uploaded for your batch yet.</p>
+                <div className="card" style={{ padding: '64px', textAlign: 'center', background: 'var(--color-bg)', borderStyle: 'dashed' }}>
+                    <FiFolder size={48} style={{ marginBottom: '16px', color: 'var(--color-text-muted)' }} />
+                    <h4>No resources found</h4>
+                    <p>Materials for your batch will appear here once uploaded by your mentor.</p>
                 </div>
             )}
         </div>

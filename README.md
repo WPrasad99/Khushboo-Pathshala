@@ -24,31 +24,43 @@ Khushboo Pathshala is a comprehensive digital platform designed for the **Cybage
 ---
 
 ## ✨ **Key Highlights**
-
-<table>
-<tr>
-<td width="33%" align="center">
-
-### 🎯 **Smart Tracking**
-Real-time video progress monitoring with automatic attendance marking at 80% completion
-
-</td>
-<td width="33%" align="center">
-
-### 🤝 **Mentorship Hub**
-Seamless mentor-student collaboration with meeting scheduling and batch management
-
-</td>
-<td width="33%" align="center">
-
-### 📊 **Analytics Dashboard**
-Comprehensive insights with activity heatmaps, engagement metrics, and progress tracking
-
-</td>
-</tr>
-</table>
-
----
+ 
+ <table>
+ <tr>
+ <td width="33%" align="center">
+ 
+ ### 🎯 **Smart Tracking**
+ Real-time video progress monitoring with automatic attendance marking at 80% completion
+ 
+ </td>
+ <td width="33%" align="center">
+ 
+ ### 🤝 **Mentorship Hub**
+ Seamless mentor-student collaboration with meeting scheduling and batch management
+ 
+ </td>
+ <td width="33%" align="center">
+ 
+ ### 📊 **Advanced Analytics**
+ Comprehensive insights with animated charts (Donut, Line, Bar), activity heatmaps, and batch tracking
+ 
+ </td>
+ </tr>
+ </table>
+ 
+ ---
+ 
+ ## 🚀 **Recent Frontend Updates (V4 Dashboard)**
+ 
+ The platform's frontend has undergone a massive modernization effort, introducing enterprise-grade aesthetics and advanced interactivity:
+ 
+ - **🌗 Global Theme Toggling**: Seamless switching between Light mode and a sleek Dark Purple theme, fully persisted via `localStorage`.
+ - **📈 Animated Data Visualizations**: Integration of custom SVG-based animated charts (Line graphs for engagement, Donut charts for batch demographics, and progress bars) providing real-time operational insights.
+ - **📱 Responsive Mobile Experience**: Fluid Framer Motion-powered sidebar navigation for mobile devices, ensuring full accessibility to all tabs.
+ - **🤖 AI Chatbot Integration**: A dedicated Chatbot UI component capable of interacting with students and providing formatted learning assistance.
+ - **✨ Premium Aesthetics**: Widespread use of Glassmorphism, tailored HSL color palettes, subtle micro-animations (CountUp mechanics on metrics), and a standardized typography system (Outfit/Inter).
+ 
+ ---
 
 ## 🎨 **Dashboard Features**
 
@@ -264,6 +276,19 @@ Comprehensive insights with activity heatmaps, engagement metrics, and progress 
 - **Audit Logs** - Track all admin actions
 
 </details>
+
+---
+
+## ⚠️ **Missing Backend Integrations**
+
+While the frontend has been thoroughly modernized, several advanced UI components currently lack complete backend support or rely on mocked data logic:
+
+1. **Dashboard Analytics & Visualizations**: The Admin and Mentor dashboards feature complex charts (Attendance Trend SVG lines, Batch Comparison donuts). However, `/api/admin/reports` does not currently aggregate these specific time-series or demographic distributions natively.
+2. **Advanced Course Progression**: The Student "Courses" tab expects structured modules, but the backend primarily handles basic `ResourceUsage`. Progression mapping for complex multi-video courses relies on partial tracking endpoints.
+3. **Login Heatmap Tracking**: The student Activity Heatmap expects continuous `loginDates`. Following the `LoginLog` schema removal, this data feed is not fully persisted.
+4. **Notification Clearing**: The UI allows clearing all notifications from the dropdown, but a persistent `PUT /api/notifications/read-all` endpoint is not fully implemented on the server.
+5. **Detailed Assignment Grading**: The UI anticipates a rich rubric feedback mechanism for Mentors beyond the basic submission file drop.
+*(For a comprehensive list, please see the `Backend missing.md` file in the root directory)*
 
 ---
 

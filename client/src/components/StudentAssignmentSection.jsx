@@ -114,11 +114,11 @@ const StudentAssignmentSection = () => {
         if (!quiz.submission) {
             const isOverdue = new Date(quiz.dueDate) < new Date();
             if (isOverdue) return { status: 'Overdue', color: '#dc2626', bg: '#fee2e2', icon: <FiAlertCircle /> };
-            return { status: 'Not Started', color: '#64748b', bg: '#f1f5f9', icon: <FiClock /> };
+            return { status: 'Not Started', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
         }
         if (quiz.submission.status === 'IN_PROGRESS') return { status: 'In Progress', color: '#d97706', bg: '#fef3c7', icon: <FiClock /> };
         if (quiz.submission.status === 'COMPLETED') return { status: `Score: ${quiz.submission.score}/${quiz.totalMarks}`, color: '#059669', bg: '#d1fae5', icon: <FiCheckCircle /> };
-        return { status: 'Unknown', color: '#64748b', bg: '#f1f5f9', icon: <FiClock /> };
+        return { status: 'Unknown', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
     };
 
     // --- Filtering Logic ---
@@ -344,10 +344,10 @@ const StudentAssignmentSection = () => {
                     borderBottom: '1px solid var(--border-subtle)',
                     flexShrink: 0
                 }}>
-                    <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 600 }}>
+                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-semibold)' }}>
                         Online Test - {quizData.title}
                     </h2>
-                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                    <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                         Attempt 1
                     </div>
                 </div>
@@ -385,7 +385,7 @@ const StudentAssignmentSection = () => {
                                         onChange={() => handleAnswerSelect(currentQuestion.id, idx)}
                                         style={{ accentColor: '#3b82f6', width: '18px', height: '18px' }}
                                     />
-                                    <span style={{ fontSize: '1rem', color: '#334155' }}>{option}</span>
+                                    <span style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--color-text-)' }}>{option}</span>
                                 </label>
                             ))}
                         </div>
@@ -397,7 +397,7 @@ const StudentAssignmentSection = () => {
                                     onClick={toggleMarkForReview}
                                     style={{
                                         padding: '10px 20px', background: markedForReview.has(currentQuestion.id) ? '#7c3aed' : '#8b5cf6',
-                                        color: 'white', border: 'none', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                        color: 'white', border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     {markedForReview.has(currentQuestion.id) ? 'Unmark Review' : 'Mark for Review'}
@@ -406,7 +406,7 @@ const StudentAssignmentSection = () => {
                                     onClick={handleClearResponse}
                                     style={{
                                         padding: '10px 20px', background: 'transparent', color: '#ef4444',
-                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 600, cursor: 'pointer'
+                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     Clear Response
@@ -419,7 +419,7 @@ const StudentAssignmentSection = () => {
                                     disabled={currentQuestionIndex === 0}
                                     style={{
                                         padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none',
-                                        borderRadius: '6px', fontWeight: 600, cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                                        borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
                                         opacity: currentQuestionIndex === 0 ? 0.5 : 1
                                     }}
                                 >
@@ -435,7 +435,7 @@ const StudentAssignmentSection = () => {
                                     }}
                                     style={{
                                         padding: '10px 24px', background: currentQuestionIndex === totalQuestions - 1 ? '#10b981' : '#3b82f6',
-                                        color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer'
+                                        color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     {currentQuestionIndex === totalQuestions - 1 ? 'Submit Test' : 'Next'}
@@ -444,7 +444,7 @@ const StudentAssignmentSection = () => {
                         </div>
 
                         {/* Legend */}
-                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem', color: '#64748b', justifyContent: 'center' }}>
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: 'var(--fs-small)', color: 'var(--color-text-)', justifyContent: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div> Current</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}></div> Answered</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}></div> Not Answered</div>
@@ -482,8 +482,8 @@ const StudentAssignmentSection = () => {
                                             border: 'none',
                                             background: getQuestionStatusColor(idx),
                                             color: getQuestionStatusColor(idx) === '#cbd5e1' ? '#475569' : 'white',
-                                            fontWeight: 600,
-                                            fontSize: '1rem',
+                                            fontWeight: 'var(--fw-semibold)',
+                                            fontSize: 'var(--fs-body-lg)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -501,8 +501,8 @@ const StudentAssignmentSection = () => {
                             <button
                                 onClick={handleSubmitQuiz}
                                 style={{
-                                    width: '100%', padding: '12px', background: '#10b981', color: 'white',
-                                    border: 'none', borderRadius: '24px', fontWeight: 600, fontSize: '1rem',
+                                    width: '100%', padding: 'var(--space-20)', background: '#10b981', color: 'white',
+                                    border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body-lg)',
                                     cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                                 }}
                             >
@@ -529,10 +529,10 @@ const StudentAssignmentSection = () => {
                 >
                     <FiCheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px' }} />
                     <h2 style={{ margin: '0 0 16px', color: '#1e3a8a' }}>Quiz Submitted!</h2>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6', margin: '0 0 8px' }}>
+                    <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#3b82f6', margin: '0 0 8px' }}>
                         Your Score: {result.score}/{result.totalMarks}
                     </p>
-                    <p style={{ color: '#64748b' }}>Redirecting to list...</p>
+                    <p style={{ color: 'var(--color-text-)' }}>Redirecting to list...</p>
                 </motion.div>
             </div>
         );
@@ -540,64 +540,194 @@ const StudentAssignmentSection = () => {
 
     // 3. Default List Mode
     return (
-        <div style={{ padding: '24px' }}>
-            {/* Header */}
-            <div style={{ marginBottom: '16px' }}>
-                {/* Header Text Removed */}
+        <div className="student-assignments-wrapper">
+            <style>{`
+            .student-assignments-wrapper {
+                padding: var(--space-24) 0;
+            }
+            .sa-filter-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: var(--space-16);
+                margin-bottom: var(--space-24);
+                flex-wrap: wrap;
+            }
+            .sa-tabs {
+                display: flex;
+                gap: var(--space-8);
+                background: var(--color-bg);
+                padding: var(--space-4);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border);
+            }
+            .sa-tab {
+                padding: 6px 16px;
+                border: none;
+                background: transparent;
+                border-radius: var(--radius-md);
+                color: 'var(--color-text-)'
+                font-size: var(--fs-body);
+                font-weight: var(--fw-medium);
+                cursor: pointer;
+                transition: all var(--transition-fast);
+            }
+            .sa-tab.is-active {
+                background: var(--color-surface);
+                color: 'var(--color-)'
+                font-weight: var(--fw-semibold);
+                box-shadow: var(--shadow-sm);
+            }
+            .sa-search {
+                position: relative;
+                min-width: 280px;
+            }
+            .sa-search input {
+                padding-left: 36px;
+            }
+            .sa-search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: 'var(--color-text-)'
+            }
+            .sa-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: var(--space-24);
+            }
+            .sa-card {
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+                overflow: hidden;
+            }
+            .sa-card-header {
+                height: 120px;
+                padding: var(--space-20);
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                position: relative;
+            }
+            .sa-card-header.assignment { background: linear-gradient(135deg, var(--color-primary) 0%, #3730A3 100%); }
+            .sa-card-header.quiz { background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%); }
+            .sa-card-header-badge {
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(4px);
+                color: white;
+            }
+            .sa-card-icon-wrap {
+                background: var(--color-surface);
+                padding: 8px;
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sa-card-body {
+                padding: var(--space-20);
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            .sa-card-title {
+                font-size: var(--fs-h3);
+                margin-bottom: var(--space-8);
+            }
+            .sa-card-desc {
+                font-size: var(--fs-body);
+                color: 'var(--color-text-)'
+                margin-bottom: var(--space-16);
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .sa-meta {
+                display: flex;
+                gap: var(--space-8);
+                flex-wrap: wrap;
+                margin-top: auto;
+                margin-bottom: var(--space-16);
+            }
+            .sa-modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: var(--space-24);
+                backdrop-filter: blur(4px);
+            }
+            .sa-modal-card {
+                background: var(--color-surface);
+                border-radius: var(--radius-lg);
+                padding: var(--space-32);
+                width: 100%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: var(--shadow-premium);
+            }
+            `}</style>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {/* Top Bar: Tabs & Search */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                        {/* Tabs */}
-                        <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                            {[
-                                { id: 'all', label: 'All Items' },
-                                { id: 'assignments', label: 'Assignments' },
-                                { id: 'quizzes', label: 'Quizzes' }
-                            ].map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        padding: '8px 20px',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
-                                        color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
-                                        fontWeight: activeTab === tab.id ? 700 : 500,
-                                        boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Top Bar: Tabs & Search */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    {/* Tabs */}
+                    <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                        {[
+                            { id: 'all', label: 'All Items' },
+                            { id: 'assignments', label: 'Assignments' },
+                            { id: 'quizzes', label: 'Quizzes' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                style={{
+                                    padding: '8px 20px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
+                                    color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
+                                    fontWeight: activeTab === tab.id ? 700 : 500,
+                                    boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
 
-                        {/* Search */}
-                        <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
-                            <FiSearch style={{ color: 'var(--text-muted)' }} />
-                            <input
-                                type="text"
-                                className="search-input-student"
-                                placeholder="Search by title..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
-                            />
-                        </div>
+                    {/* Search */}
+                    <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
+                        <FiSearch style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            type="text"
+                            className="search-input-student"
+                            placeholder="Search by title..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Content Grid */}
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                    Loading content...
+                <div className="sa-grid">
+                    {[1, 2, 3].map(i => <div key={i} className="card skeleton" style={{ height: 260 }} />)}
                 </div>
             ) : filteredContent().length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                <div className="sa-grid">
                     {filteredContent().map((item, index) => {
                         const isAssignment = item.type === 'assignment';
                         const statusInfo = isAssignment ? getStatusInfo(item) : getQuizStatus(item);
@@ -606,7 +736,7 @@ const StudentAssignmentSection = () => {
                         return (
                             <motion.div
                                 key={`${item.type}-${item.id}`}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 style={{
@@ -622,128 +752,65 @@ const StudentAssignmentSection = () => {
                                 }}
                                 whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                             >
-                                {/* Card Graphic Header */}
-                                <div style={{
-                                    height: '140px',
-                                    background: isAssignment ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    position: 'relative',
-                                    padding: '20px',
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justifyContent: 'space-between'
-                                }}>
-                                    <span style={{
-                                        background: 'rgba(255,255,255,0.2)',
-                                        backdropFilter: 'blur(4px)',
-                                        padding: '4px 12px',
-                                        borderRadius: '20px',
-                                        color: 'white',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 700
-                                    }}>
+                                <div className={`sa-card-header ${isAssignment ? 'assignment' : 'quiz'}`}>
+                                    <span className="badge sa-card-header-badge">
                                         {isAssignment ? 'ASSIGNMENT' : 'QUIZ'}
                                     </span>
-                                    <div style={{
-                                        background: 'white',
-                                        padding: '8px',
-                                        borderRadius: '12px',
-                                        color: isAssignment ? '#2563eb' : '#059669',
-                                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                                    }}>
-                                        {isAssignment ? <FiFileText size={24} /> : <FiCheckCircle size={24} />}
+                                    <div className="sa-card-icon-wrap" style={{ color: isAssignment ? 'var(--color-primary)' : 'var(--color-success)' }}>
+                                        {isAssignment ? <FiFileText size={20} /> : <FiCheckCircle size={20} />}
                                     </div>
                                 </div>
 
-                                {/* Card Body */}
-                                <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', lineHeight: '1.4' }}>
-                                            {item.title}
-                                        </h3>
-                                    </div>
+                                <div className="sa-card-body">
+                                    <h3 className="sa-card-title">{item.title}</h3>
+                                    <p className="sa-card-desc">{item.description}</p>
 
-                                    <p style={{
-                                        margin: '0 0 16px',
-                                        fontSize: '0.9rem',
-                                        color: '#64748b',
-                                        lineHeight: '1.5',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {item.description}
-                                    </p>
-
-                                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        {/* Meta Info */}
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                            {/* Status Badge */}
-                                            <span style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                padding: '4px 10px',
-                                                borderRadius: '6px',
-                                                background: statusInfo.bg,
-                                                color: statusInfo.color,
-                                                fontSize: '0.75rem',
-                                                fontWeight: 600
-                                            }}>
-                                                {statusInfo.icon} {statusInfo.status}
+                                    <div className="sa-meta">
+                                        <span className="badge" style={{ background: statusInfo.bg, color: statusInfo.color }}>
+                                            {statusInfo.status}
+                                        </span>
+                                        {item.dueDate && (
+                                            <span className="badge" style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>
+                                                Due: {new Date(item.dueDate).toLocaleDateString()}
                                             </span>
-
-                                            {/* Due Date Badge */}
-                                            {item.dueDate && (
-                                                <span style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '6px',
-                                                    background: '#f1f5f9',
-                                                    color: '#64748b',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 600
-                                                }}>
-                                                    <FiClock /> Due: {new Date(item.dueDate).toLocaleDateString()}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Action Button */}
-                                        {isAssignment ? (
-                                            !item.submissions?.[0] ? (
-                                                <button
-                                                    onClick={() => { setSelectedAssignment(item); setShowSubmitModal(true); }}
-                                                    style={{ width: '100%', padding: '10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                                >
-                                                    Submit Assignment <FiChevronRight />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => { if (item.submissions[0].status === 'REJECTED') { setSelectedAssignment(item); setShowSubmitModal(true); } }}
-                                                    disabled={item.submissions[0].status !== 'REJECTED'}
-                                                    style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: item.submissions[0].status === 'REJECTED' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: item.submissions[0].status === 'REJECTED' ? 1 : 0.7 }}
-                                                >
-                                                    {item.submissions[0].status === 'REJECTED' ? 'Resubmit' : 'View Details'}
-                                                </button>
-                                            )
-                                        ) : (
-                                            canStartQuiz ? (
-                                                <button
-                                                    onClick={() => handleStartQuiz(item)}
-                                                    style={{ width: '100%', padding: '10px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                                >
-                                                    Start Quiz <FiMaximize />
-                                                </button>
-                                            ) : (
-                                                <div style={{ width: '100%', padding: '10px', background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '8px', fontWeight: 600, textAlign: 'center', fontSize: '0.9rem' }}>
-                                                    Completed
-                                                </div>
-                                            )
                                         )}
                                     </div>
+
+                                    {/* Actions */}
+                                    {isAssignment ? (
+                                        !item.submissions?.[0] ? (
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ width: '100%' }}
+                                                onClick={() => { setSelectedAssignment(item); setShowSubmitModal(true); }}
+                                            >
+                                                Submit Assignment
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className={`btn ${item.submissions[0].status === 'REJECTED' ? 'btn-primary' : 'btn-secondary'}`}
+                                                style={{ width: '100%' }}
+                                                disabled={item.submissions[0].status !== 'REJECTED'}
+                                                onClick={() => { if (item.submissions[0].status === 'REJECTED') { setSelectedAssignment(item); setShowSubmitModal(true); } }}
+                                            >
+                                                {item.submissions[0].status === 'REJECTED' ? 'Resubmit' : 'Submitted'}
+                                            </button>
+                                        )
+                                    ) : (
+                                        canStartQuiz ? (
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ width: '100%', background: 'var(--color-success)' }}
+                                                onClick={() => handleStartQuiz(item)}
+                                            >
+                                                Start Quiz
+                                            </button>
+                                        ) : (
+                                            <button className="btn btn-secondary" style={{ width: '100%' }} disabled>
+                                                Completed
+                                            </button>
+                                        )
+                                    )}
                                 </div>
                             </motion.div>
                         );
@@ -757,7 +824,7 @@ const StudentAssignmentSection = () => {
                 </div>
             )}
 
-            {/* Submit Assignment Modal */}
+            {/* Submit Modal */}
             <AnimatePresence>
                 {showSubmitModal && selectedAssignment && (
                     <motion.div
@@ -768,9 +835,9 @@ const StudentAssignmentSection = () => {
                         onClick={() => setShowSubmitModal(false)}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                             style={{ background: 'var(--bg-secondary)', borderRadius: '24px', padding: '32px', maxWidth: '600px', width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: 'var(--admin-shadow-xl)', border: '1px solid var(--border-subtle)' }}
                         >
@@ -795,9 +862,6 @@ const StudentAssignmentSection = () => {
                                         <div style={{ color: 'var(--text-primary)', fontWeight: 500, marginBottom: '4px' }}>
                                             {selectedFile ? selectedFile.name : 'Click to upload your work'}
                                         </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            PDF, Word, or PowerPoint
-                                        </div>
                                     </div>
                                 </div>
 
@@ -807,7 +871,7 @@ const StudentAssignmentSection = () => {
                                         style={{ width: '100%', minHeight: '120px', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', fontSize: '1rem', resize: 'vertical' }}
                                         value={submissionContent}
                                         onChange={(e) => setSubmissionContent(e.target.value)}
-                                        placeholder="Add any notes for your mentor..."
+                                        placeholder="Add notes for your mentor..."
                                     />
                                 </div>
 

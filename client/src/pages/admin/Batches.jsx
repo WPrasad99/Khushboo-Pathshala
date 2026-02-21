@@ -160,7 +160,7 @@ const Batches = () => {
                             gap: '1rem'
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '600' }}>{batch.name}</h3>
+                                <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-semibold)' }}>{batch.name}</h3>
                                 <div className="action-buttons">
                                     <button className="btn-icon" onClick={() => openEditModal(batch)} title="Edit">
                                         <FiEdit2 />
@@ -174,15 +174,15 @@ const Batches = () => {
                             <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
                                     <FiUserPlus size={16} />
-                                    <span style={{ fontSize: '0.9rem' }}>Mentor:</span>
-                                    <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                                    <span style={{ fontSize: 'var(--fs-body)' }}>Mentor:</span>
+                                    <span style={{ fontWeight: 'var(--fw-medium)', color: 'var(--text-primary)' }}>
                                         {batch.mentor ? batch.mentor.name : 'Unassigned'}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
                                     <FiUsers size={16} />
-                                    <span style={{ fontSize: '0.9rem' }}>Students:</span>
-                                    <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                                    <span style={{ fontSize: 'var(--fs-body)' }}>Students:</span>
+                                    <span style={{ fontWeight: 'var(--fw-medium)', color: 'var(--text-primary)' }}>
                                         {batch.students ? batch.students.length : 0}
                                     </span>
                                 </div>
@@ -206,8 +206,8 @@ const Batches = () => {
                                         <div style={{
                                             width: '28px', height: '28px', borderRadius: '50%',
                                             border: '2px solid white', marginLeft: '-8px',
-                                            background: '#f3f4f6', fontSize: '10px', display: 'flex',
-                                            alignItems: 'center', justifyContent: 'center', fontWeight: '600'
+                                            background: '#f3f4f6', fontSize: 'var(--fs-small)', display: 'flex',
+                                            alignItems: 'center', justifyContent: 'center', fontWeight: 'var(--fw-semibold)'
                                         }}>
                                             +{batch.students.length - 5}
                                         </div>
@@ -287,8 +287,8 @@ const Batches = () => {
                                                         style={{ width: 'auto' }}
                                                     />
                                                     <img src={s.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
-                                                    <span style={{ fontSize: '0.9rem' }}>{s.name}</span>
-                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{s.email}</span>
+                                                    <span style={{ fontSize: 'var(--fs-body)' }}>{s.name}</span>
+                                                    <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)' }}>{s.email}</span>
                                                 </div>
                                             ))
                                         )}

@@ -14,7 +14,7 @@ const MessageSearch = ({ groupId, onSelectMessage, onClose }) => {
         setLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:5000/api/chat/groups/${groupId}/messages/search?q=${encodeURIComponent(query)}`,
+                `http://localhost:5001/api/chat/groups/${groupId}/messages/search?q=${encodeURIComponent(query)}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`

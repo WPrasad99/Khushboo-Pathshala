@@ -63,10 +63,10 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
                                     style={{
                                         background: 'rgba(239, 68, 68, 0.1)',
                                         color: '#ef4444',
-                                        padding: '12px',
+                                        padding: 'var(--space-20)',
                                         borderRadius: '12px',
                                         marginBottom: '20px',
-                                        fontSize: '0.9rem',
+                                        fontSize: 'var(--fs-body)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '8px'
@@ -147,7 +147,7 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
                                     />
                                     <FiLock className="glass-input-icon" />
                                 </div>
-                                <small style={{ display: 'block', marginTop: '6px', color: '#64748b', fontSize: '0.8rem' }}>
+                                <small style={{ display: 'block', marginTop: '6px', color: 'var(--color-text-)', fontSize: 'var(--fs-small)' }}>
                                     Password will be securely hashed.
                                 </small>
                             </div>

@@ -33,7 +33,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const fetchAvailableUsers = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/chat/users', {
+            const response = await fetch('http://localhost:5001/api/chat/users', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const users = await response.json();
@@ -46,7 +46,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const handleUpdateGroup = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/chat/groups/${group.id}`, {
+            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const handleAddMember = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/chat/groups/${group.id}/members`, {
+            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/members`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
         if (!confirm('Remove this member from the group?')) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/chat/groups/${group.id}/members/${userId}`, {
+            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/members/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -109,7 +109,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
         if (!confirm('Are you sure you want to leave this group?')) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/chat/groups/${group.id}/leave`, {
+            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/leave`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -199,7 +199,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
                                     marginBottom: '15px',
                                     border: '1px solid #e2e8f0',
                                     borderRadius: '8px',
-                                    fontSize: '14px'
+                                    fontSize: 'var(--fs-body)'
                                 }}
                             />
                             {availableUsers
@@ -211,8 +211,8 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
                                 .map(user => (
                                     <div key={user.id} className="available-user" onClick={() => handleAddMember(user.id)}>
                                         <div>
-                                            <div style={{ fontWeight: '500' }}>{user.name}</div>
-                                            <div style={{ fontSize: '12px', color: '#64748b' }}>{user.email}</div>
+                                            <div style={{ fontWeight: 'var(--fw-medium)' }}>{user.name}</div>
+                                            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{user.email}</div>
                                         </div>
                                         <FiUserPlus />
                                     </div>
@@ -223,7 +223,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
                                 return user.name.toLowerCase().includes(query) ||
                                     user.email.toLowerCase().includes(query);
                             }).length === 0 && (
-                                    <p style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
+                                    <p style={{ textAlign: 'center', color: 'var(--color-text-)', padding: '20px' }}>
                                         No users found
                                     </p>
                                 )}

@@ -1,322 +1,370 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { resourceAPI } from '../../api';
-import { FiArrowLeft, FiPlay, FiCheckCircle, FiClock, FiBook, FiLock } from 'react-icons/fi';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+    FiArrowLeft,
+    FiBook,
+    FiCheckCircle,
+    FiClock,
+    FiDownload,
+    FiExternalLink,
+    FiLock,
+    FiPlay,
+    FiSave
+} from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { resourceAPI } from '../../api';
 import './CoursePlayer.css';
 
 const CoursePlayer = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
+
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
     const [completedVideos, setCompletedVideos] = useState(new Set());
-    const [videoProgress, setVideoProgress] = useState({});
+    const [notes, setNotes] = useState('');
 
     useEffect(() => {
+        const fetchCourse = async () => {
+            try {
+                setLoading(true);
+                const response = await resourceAPI.getOne(courseId);
+                const payload = response.data;
+                setCourse(payload);
+
+                if (payload.userProgress) {
+                    const lessonCount = (payload.lessons && payload.lessons.length) || payload.lessonsCount || 1;
+                    const completedCount = Math.floor((payload.userProgress.completionPercentage / 100) * lessonCount);
+                    const completed = new Set();
+
+                    for (let index = 0; index < completedCount; index += 1) {
+                        completed.add(index);
+                    }
+
+                    setCompletedVideos(completed);
+                    setCurrentVideoIndex(Math.min(completedCount, lessonCount - 1));
+                }
+            } catch (error) {
+                console.error('Failed to fetch course:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchCourse();
     }, [courseId]);
 
-    const fetchCourse = async () => {
-        try {
-            setLoading(true);
-            const response = await resourceAPI.getOne(courseId);
-            setCourse(response.data);
+    useEffect(() => {
+        const storedNotes = localStorage.getItem(`course-notes-${courseId}`) || '';
+        setNotes(storedNotes);
+    }, [courseId]);
 
-            // Load completed videos from user progress
-            if (response.data.userProgress) {
-                const progress = response.data.userProgress;
-                const completedCount = Math.floor((progress.completionPercentage / 100) * (response.data.lessonsCount || 1));
-                const completed = new Set();
-                for (let i = 0; i < completedCount; i++) {
-                    completed.add(i);
-                }
-                setCompletedVideos(completed);
-                setCurrentVideoIndex(Math.min(completedCount, (response.data.lessonsCount || 1) - 1));
-            }
-        } catch (error) {
-            console.error('Failed to fetch course:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        localStorage.setItem(`course-notes-${courseId}`, notes);
+    }, [courseId, notes]);
 
-    // Generate video list from playlist
     const getVideoList = () => {
         if (!course) return [];
 
-        // Use real lessons if available
         if (course.lessons && Array.isArray(course.lessons) && course.lessons.length > 0) {
-            return course.lessons.map((lesson, i) => ({
-                index: i,
+            return course.lessons.map((lesson, index) => ({
+                index,
                 title: lesson.title,
                 videoId: lesson.videoId,
                 duration: lesson.durationStr,
-                completed: completedVideos.has(i),
-                locked: i > 0 && !completedVideos.has(i - 1)
+                completed: completedVideos.has(index),
+                locked: index > 0 && !completedVideos.has(index - 1)
             }));
         }
 
-        // Fallback for courses without lesson details
         const count = course.lessonsCount || 1;
-        const videos = [];
-        for (let i = 0; i < count; i++) {
-            videos.push({
-                index: i,
-                title: `Lesson ${i + 1}`,
-                completed: completedVideos.has(i),
-                locked: i > 0 && !completedVideos.has(i - 1)
-            });
-        }
-        return videos;
+        return Array.from({ length: count }).map((_, index) => ({
+            index,
+            title: `Lesson ${index + 1}`,
+            completed: completedVideos.has(index),
+            locked: index > 0 && !completedVideos.has(index - 1)
+        }));
     };
 
-    // Handle video completion (when user finishes watching)
-    const handleVideoComplete = async () => {
-        const newCompleted = new Set(completedVideos);
-        newCompleted.add(currentVideoIndex);
-        setCompletedVideos(newCompleted);
+    const videos = getVideoList();
 
-        // Update progress on backend
-        const count = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
+    const canPlayVideo = (index) => index === 0 || completedVideos.has(index - 1);
+
+    const selectVideo = (index) => {
+        if (!canPlayVideo(index)) return;
+        setCurrentVideoIndex(index);
+    };
+
+    const courseProgress = useMemo(() => {
+        if (!course) return 0;
+
+        const lessonCount = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
+        return Math.round((completedVideos.size / lessonCount) * 100);
+    }, [completedVideos.size, course]);
+
+    const handleVideoComplete = async () => {
+        const updated = new Set(completedVideos);
+        updated.add(currentVideoIndex);
+        setCompletedVideos(updated);
+
+        const lessonCount = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
+
         try {
             await resourceAPI.trackProgress(courseId, {
-                watchDuration: newCompleted.size * 600, // Approximate
-                totalDuration: count * 600,
-                dropOffPoint: newCompleted.size * 600
+                watchDuration: updated.size * 600,
+                totalDuration: lessonCount * 600,
+                dropOffPoint: updated.size * 600
             });
         } catch (error) {
             console.error('Failed to update progress:', error);
         }
 
-        // Auto-advance to next video if available
-        if (currentVideoIndex < count - 1) {
+        if (currentVideoIndex < lessonCount - 1) {
             setCurrentVideoIndex(currentVideoIndex + 1);
         }
     };
 
-    const canPlayVideo = (index) => {
-        if (index === 0) return true;
-        return completedVideos.has(index - 1);
-    };
+    const getYouTubeInfo = (url) => {
+        if (!url) return { type: null, id: null };
 
-    const selectVideo = (index) => {
-        if (canPlayVideo(index)) {
-            setCurrentVideoIndex(index);
+        try {
+            if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return { type: 'video', id: url };
+            if (/^PL[a-zA-Z0-9_-]{20,}$/.test(url)) return { type: 'playlist', id: url };
+
+            const parsed = new URL(url);
+
+            if (parsed.hostname === 'youtu.be') {
+                return { type: 'video', id: parsed.pathname.slice(1) };
+            }
+
+            if (parsed.pathname === '/playlist') {
+                return { type: 'playlist', id: parsed.searchParams.get('list') };
+            }
+
+            if (parsed.pathname.startsWith('/embed/')) {
+                const id = parsed.pathname.split('/')[2];
+                if (id === 'videoseries') {
+                    return { type: 'playlist', id: parsed.searchParams.get('list') };
+                }
+
+                return { type: 'video', id };
+            }
+
+            if (parsed.pathname === '/watch') {
+                if (parsed.searchParams.has('list')) {
+                    return {
+                        type: 'playlist',
+                        id: parsed.searchParams.get('list'),
+                        videoId: parsed.searchParams.get('v')
+                    };
+                }
+
+                return { type: 'video', id: parsed.searchParams.get('v') };
+            }
+        } catch (error) {
+            console.error('Invalid video URL', url, error);
         }
+
+        return { type: 'unknown', id: url };
     };
 
-    const courseProgress = () => {
-        if (!course) return 0;
-        const count = (course.lessons && course.lessons.length) || course.lessonsCount || 1;
-        return (completedVideos.size / count) * 100;
-    };
+    const currentVideo = videos[currentVideoIndex];
+
+    let videoSrc = '';
+    if (currentVideo?.videoId) {
+        videoSrc = `https://www.youtube.com/embed/${currentVideo.videoId}`;
+    } else {
+        const info = getYouTubeInfo(course?.videoUrl);
+        if (info.type === 'playlist') {
+            videoSrc = `https://www.youtube.com/embed?listType=playlist&list=${info.id}&index=${currentVideoIndex}`;
+        } else if (info.type === 'video') {
+            videoSrc = `https://www.youtube.com/embed/${info.id}`;
+        } else {
+            videoSrc = course?.videoUrl?.includes('embed') ? course.videoUrl : `https://www.youtube.com/embed/${course?.videoUrl}`;
+        }
+    }
+
+    const attachments = [
+        {
+            id: 'main',
+            label: 'Course Material',
+            href: course?.videoUrl,
+            isExternal: true
+        }
+    ].filter(Boolean);
+
+    const relatedSessions = videos
+        .filter((video) => video.index !== currentVideoIndex)
+        .slice(0, 6);
 
     if (loading) {
         return (
-            <div className="course-player-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading course...</p>
+            <div className="course-player-loading-v2">
+                <div className="loading-spinner" />
+                <p>Loading learning workspace...</p>
             </div>
         );
     }
 
     if (!course) {
         return (
-            <div className="course-not-found">
+            <div className="course-player-loading-v2">
                 <h2>Course not found</h2>
-                <button onClick={() => navigate('/student/courses')}>Back to Courses</button>
+                <button type="button" className="btn btn-primary" onClick={() => navigate('/student/courses')}>
+                    Back to Learning
+                </button>
             </div>
         );
     }
 
-    // Helper: Parse YouTube URL to get ID and Type
-    const getYouTubeInfo = (url) => {
-        if (!url) return { type: null, id: null };
-        try {
-            // Check if it's already just an ID (e.g. from legacy data)
-            if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return { type: 'video', id: url };
-            if (/^PL[a-zA-Z0-9_-]{32,}$/.test(url)) return { type: 'playlist', id: url };
-
-            const urlObj = new URL(url);
-
-            // Handle known YouTube domains
-            if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-                // Short URL: youtu.be/VIDEO_ID
-                if (urlObj.hostname === 'youtu.be') {
-                    return { type: 'video', id: urlObj.pathname.slice(1) };
-                }
-
-                // Playlist: youtube.com/playlist?list=ID
-                if (urlObj.pathname === '/playlist') {
-                    return { type: 'playlist', id: urlObj.searchParams.get('list') };
-                }
-
-                // Embed: youtube.com/embed/VIDEO_ID
-                if (urlObj.pathname.startsWith('/embed/')) {
-                    const id = urlObj.pathname.split('/')[2];
-                    // Check if it's videoseries (playlist)
-                    if (id === 'videoseries') {
-                        return { type: 'playlist', id: urlObj.searchParams.get('list') };
-                    }
-                    return { type: 'video', id: id };
-                }
-
-                // Standard: youtube.com/watch?v=VIDEO_ID
-                if (urlObj.pathname === '/watch') {
-                    // It might be a video part of a playlist
-                    if (urlObj.searchParams.has('list')) {
-                        return {
-                            type: 'playlist',
-                            id: urlObj.searchParams.get('list'),
-                            videoId: urlObj.searchParams.get('v') // Keep video ID if needed
-                        };
-                    }
-                    return { type: 'video', id: urlObj.searchParams.get('v') };
-                }
-            }
-        } catch (e) {
-            console.error('Invalid URL:', url);
-        }
-        return { type: 'unknown', id: url };
-    };
-
-    const videos = getVideoList();
-    const currentVideo = videos[currentVideoIndex];
-
-    // Determine the correct source for the iframe
-    let videoSrc = '';
-
-    if (currentVideo?.videoId) {
-        // If the lesson has a specific video ID, use it
-        videoSrc = `https://www.youtube.com/embed/${currentVideo.videoId}`;
-    } else {
-        // Otherwise derive from the main course URL
-        const ytInfo = getYouTubeInfo(course.videoUrl);
-
-        if (ytInfo.type === 'playlist') {
-            // Use query param format which is often more reliable for index switching
-            videoSrc = `https://www.youtube.com/embed?listType=playlist&list=${ytInfo.id}&index=${currentVideoIndex}`;
-        } else if (ytInfo.type === 'video') {
-            // It's a single video - just play it (ignore index if standard video)
-            videoSrc = `https://www.youtube.com/embed/${ytInfo.id}`;
-        } else {
-            // Fallback for raw embed URLs or unknowns
-            videoSrc = course.videoUrl?.includes('embed')
-                ? course.videoUrl
-                : `https://www.youtube.com/embed/${course.videoUrl}`; // Hope it's an ID
-        }
-    }
-
     return (
-        <div className="course-player-page">
-            {/* Header */}
-            <div className="player-header">
-                <button className="back-btn" onClick={() => navigate('/student/courses')}>
-                    <FiArrowLeft />
-                    <span>Back to Courses</span>
+        <div className="course-player-v2">
+            <header className="course-player-header-v2">
+                <button type="button" className="btn btn-secondary" onClick={() => navigate('/student/courses')}>
+                    <FiArrowLeft /> Back to Learning
                 </button>
-                <div className="header-progress">
-                    <span className="progress-text">{completedVideos.size}/{videos.length} Videos</span>
-                    <div className="header-progress-bar">
-                        <div
-                            className="header-progress-fill"
-                            style={{ width: `${courseProgress()}%` }}
-                        />
-                    </div>
-                    <span className="progress-percent">{Math.round(courseProgress())}%</span>
-                </div>
-            </div>
 
-            <div className="player-layout">
-                {/* Top Section: Video & Playlist */}
-                <div className="player-top-section">
-                    <div className="video-section">
-                        <motion.div
-                            className="video-wrapper"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            key={currentVideoIndex}
-                        >
+                <div className="course-player-header-stats">
+                    <div>
+                        <small>Completion</small>
+                        <strong>{courseProgress}%</strong>
+                    </div>
+                    <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${courseProgress}%` }} />
+                    </div>
+                    {courseProgress >= 80 && (
+                        <span className="badge badge-success">
+                            <FiCheckCircle /> Completion Badge Unlocked
+                        </span>
+                    )}
+                </div>
+            </header>
+
+            <div className="course-player-layout-v2">
+                <section className="course-video-column">
+                    <div className="course-video-sticky">
+                        <motion.div className="course-video-shell" key={currentVideoIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             <iframe
                                 src={videoSrc}
-                                title={`${course.title} - ${currentVideo?.title || 'Video'}`}
+                                title={`${course.title} - ${currentVideo?.title || 'Lesson'}`}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                                 frameBorder="0"
                             />
                         </motion.div>
+
+                        <article className="course-video-progress-card card">
+                            <div>
+                                <h3>{currentVideo?.title || course.title}</h3>
+                                <p>{completedVideos.size}/{videos.length} lessons completed</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={`btn ${completedVideos.has(currentVideoIndex) ? 'btn-secondary' : 'btn-primary'}`}
+                                onClick={handleVideoComplete}
+                                disabled={completedVideos.has(currentVideoIndex)}
+                            >
+                                {completedVideos.has(currentVideoIndex) ? <FiCheckCircle /> : <FiPlay />}
+                                {completedVideos.has(currentVideoIndex) ? 'Completed' : 'Mark Lesson Complete'}
+                            </button>
+                        </article>
                     </div>
 
-                    {/* Video List Sidebar */}
-                    <div className="video-list-sidebar">
-                        <h3>Course Content</h3>
-                        <div className="video-list">
+                    <article className="course-lesson-list-card card">
+                        <header>
+                            <h3>Lesson Navigator</h3>
+                            <span>{videos.length} lessons</span>
+                        </header>
+
+                        <div className="course-lesson-list">
                             {videos.map((video) => (
-                                <div
+                                <button
                                     key={video.index}
-                                    className={`video-item ${currentVideoIndex === video.index ? 'active' : ''} ${video.completed ? 'completed' : ''} ${video.locked ? 'locked' : ''}`}
+                                    type="button"
+                                    className={`course-lesson-item ${video.index === currentVideoIndex ? 'is-active' : ''} ${video.completed ? 'is-complete' : ''}`}
                                     onClick={() => selectVideo(video.index)}
+                                    disabled={video.locked}
                                 >
-                                    <div className="video-item-icon">
-                                        {video.locked ? (
-                                            <FiLock />
-                                        ) : video.completed ? (
-                                            <FiCheckCircle />
-                                        ) : (
-                                            <FiPlay />
-                                        )}
-                                    </div>
-                                    <div className="video-item-info">
-                                        <span className="video-item-title">{video.title}</span>
-                                        {video.duration && <span className="video-item-duration">{video.duration}</span>}
-                                        {video.locked && <span className="video-item-status">Complete previous</span>}
-                                        {video.completed && <span className="video-item-status completed">Completed</span>}
-                                    </div>
-                                </div>
+                                    <span className="course-lesson-icon">
+                                        {video.locked ? <FiLock /> : video.completed ? <FiCheckCircle /> : <FiPlay />}
+                                    </span>
+
+                                    <span className="course-lesson-content">
+                                        <strong>{video.title}</strong>
+                                        <small>
+                                            {video.locked
+                                                ? 'Complete previous lesson'
+                                                : video.completed
+                                                    ? 'Completed'
+                                                    : video.duration || 'Ready to watch'}
+                                        </small>
+                                    </span>
+                                </button>
                             ))}
                         </div>
-                    </div>
-                </div>
+                    </article>
+                </section>
 
-                {/* Course Info - Full Width Below */}
-                <div className="course-info-panel">
-                    <h1>{currentVideo?.title || course.title}</h1>
-                    <p className="course-desc">{course.description}</p>
-
-                    <div className="course-stats">
-                        <div className="stat-item">
-                            <FiBook />
-                            <span>{videos.length} Videos</span>
+                <aside className="course-detail-column">
+                    <article className="course-detail-card card">
+                        <h3>Description</h3>
+                        <p>{course.description || 'No description provided for this module.'}</p>
+                        <div className="course-detail-meta">
+                            <span><FiBook /> {videos.length} Lessons</span>
+                            <span><FiClock /> {currentVideo?.duration || `${course.duration || 0} min`}</span>
                         </div>
-                        <div className="stat-item">
-                            <FiClock />
-                            <span>{currentVideo?.duration || '10:00'}</span>
-                        </div>
-                        <div className="stat-item">
-                            <FiCheckCircle />
-                            <span>{completedVideos.size} Completed</span>
-                        </div>
-                    </div>
+                    </article>
 
-                    {/* Mark Complete Button */}
-                    <button
-                        className={`mark-complete-btn ${completedVideos.has(currentVideoIndex) ? 'completed' : ''}`}
-                        onClick={handleVideoComplete}
-                        disabled={completedVideos.has(currentVideoIndex)}
-                    >
-                        {completedVideos.has(currentVideoIndex)
-                            ? '✓ Video Completed'
-                            : 'Mark Video as Complete'}
-                    </button>
+                    <article className="course-detail-card card">
+                        <h3>Attachments</h3>
+                        <div className="course-attachment-list">
+                            {attachments.map((item) => (
+                                <a
+                                    key={item.id}
+                                    href={item.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="course-attachment-item"
+                                >
+                                    <span>{item.label}</span>
+                                    {item.isExternal ? <FiExternalLink /> : <FiDownload />}
+                                </a>
+                            ))}
+                        </div>
+                    </article>
 
-                    {/* Notice */}
-                    <div className="notice-box">
-                        <strong>Note:</strong> You must complete each video fully before unlocking the next one.
-                        Completed videos: {completedVideos.size}/{videos.length}
-                    </div>
-                </div>
+                    <article className="course-detail-card card">
+                        <h3>Related Sessions</h3>
+                        <div className="course-related-list">
+                            {relatedSessions.length > 0 ? (
+                                relatedSessions.map((video) => (
+                                    <button key={video.index} type="button" onClick={() => selectVideo(video.index)}>
+                                        <span>{video.title}</span>
+                                        <FiPlay />
+                                    </button>
+                                ))
+                            ) : (
+                                <p className="course-muted">No related sessions available.</p>
+                            )}
+                        </div>
+                    </article>
+
+                    <article className="course-detail-card card">
+                        <h3>Your Notes</h3>
+                        <textarea
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                            placeholder="Write your revision notes, key points, and follow-up questions..."
+                            rows={7}
+                        />
+                        <div className="course-notes-footer">
+                            <span>Autosaved locally</span>
+                            <span><FiSave /> Saved</span>
+                        </div>
+                    </article>
+                </aside>
             </div>
         </div>
     );

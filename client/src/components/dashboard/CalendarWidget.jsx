@@ -43,20 +43,20 @@ const CalendarWidget = ({ meetings = [] }) => {
         <div className="glass-card" style={{ padding: '0', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
             <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b', fontWeight: 700 }}>
+                    <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)' }}>
                         {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                     </h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={prevMonth} style={{ background: 'transparent', border: '1px solid #e2e8f0', color: '#64748b', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button onClick={prevMonth} style={{ background: 'transparent', border: '1px solid #e2e8f0', color: 'var(--color-text-)', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <FiChevronLeft />
                         </button>
-                        <button onClick={nextMonth} style={{ background: 'transparent', border: '1px solid #e2e8f0', color: '#64748b', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button onClick={nextMonth} style={{ background: 'transparent', border: '1px solid #e2e8f0', color: 'var(--color-text-)', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <FiChevronRight />
                         </button>
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8', marginBottom: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-semibold)', color: 'var(--color-text-)', marginBottom: '12px' }}>
                     <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
@@ -83,7 +83,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                                     background: isSelected ? '#3b82f6' : (isToday ? '#eff6ff' : 'transparent'),
                                     color: isSelected ? 'white' : (isToday ? '#3b82f6' : '#475569'),
                                     position: 'relative',
-                                    fontSize: '0.9rem',
+                                    fontSize: 'var(--fs-body)',
                                     fontWeight: isSelected || isToday ? 600 : 400,
                                     margin: '0 auto',
                                     width: '36px',
@@ -101,7 +101,7 @@ const CalendarWidget = ({ meetings = [] }) => {
             </div>
 
             <div style={{ padding: '24px', flex: 1, overflowY: 'auto', background: '#fafafa' }}>
-                <h4 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                <h4 style={{ margin: '0 0 16px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'var(--fw-semibold)' }}>
                     <FiCalendar /> Meetings on {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
                 </h4>
 
@@ -111,7 +111,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                             <div
                                 key={meeting.id || idx}
                                 style={{
-                                    padding: '16px',
+                                    padding: 'var(--space-24)',
                                     borderRadius: '12px',
                                     border: '1px solid #e2e8f0',
                                     background: 'white',
@@ -124,10 +124,10 @@ const CalendarWidget = ({ meetings = [] }) => {
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                                     <div>
-                                        <div style={{ fontWeight: 600, color: '#1e293b', marginBottom: '4px' }}>
+                                        <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b', marginBottom: '4px' }}>
                                             {meeting.title || meeting.discussionSummary || 'Mentorship Session'}
                                         </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <FiClock size={14} />
                                             {new Date(meeting.meetingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             <span style={{ margin: '0 4px' }}>•</span>
@@ -155,15 +155,15 @@ const CalendarWidget = ({ meetings = [] }) => {
                                                 color: 'white',
                                                 borderRadius: '8px',
                                                 textDecoration: 'none',
-                                                fontSize: '0.85rem',
-                                                fontWeight: 600,
+                                                fontSize: 'var(--fs-body)',
+                                                fontWeight: 'var(--fw-semibold)',
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
                                             <FiVideo /> Join
                                         </a>
                                     ) : (
-                                        <div style={{ padding: '8px 16px', background: '#f1f5f9', color: '#94a3b8', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                        <div style={{ padding: '8px 16px', background: '#f1f5f9', color: 'var(--color-text-)', borderRadius: '8px', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', whiteSpace: 'nowrap' }}>
                                             Offline
                                         </div>
                                     );
@@ -172,7 +172,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                         ))}
                     </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8' }}>
+                    <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--color-text-)' }}>
                         <p>No meetings scheduled for this day.</p>
                     </div>
                 )}

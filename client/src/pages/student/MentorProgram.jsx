@@ -199,27 +199,27 @@ const MentorProgram = () => {
                                             transition: 'all 0.2s'
                                         }}
                                     >
-                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1F2937', marginBottom: '8px' }}>{batch.name}</h3>
-                                        <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '12px' }}>{batch.description || 'No description available'}</p>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem', color: '#6B7280' }}>
+                                        <h3 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1F2937', marginBottom: '8px' }}>{batch.name}</h3>
+                                        <p style={{ fontSize: 'var(--fs-body)', color: '#6B7280', marginBottom: '12px' }}>{batch.description || 'No description available'}</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: 'var(--fs-small)', color: '#6B7280' }}>
                                             {batch.mentors && batch.mentors.length > 0 && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontWeight: '600', color: '#4F46E5' }}>Mentors:</span>
+                                                    <span style={{ fontWeight: 'var(--fw-semibold)', color: '#4F46E5' }}>Mentors:</span>
                                                     <span>{batch.mentors.map(m => m.name).join(', ')}</span>
                                                 </div>
                                             )}
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ fontWeight: '600', color: '#4F46E5' }}>Students:</span>
+                                                <span style={{ fontWeight: 'var(--fw-semibold)', color: '#4F46E5' }}>Students:</span>
                                                 <span>{batch.studentCount}</span>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ fontWeight: '600', color: '#4F46E5' }}>Status:</span>
+                                                <span style={{ fontWeight: 'var(--fw-semibold)', color: '#4F46E5' }}>Status:</span>
                                                 <span style={{
                                                     padding: '2px 8px',
                                                     background: batch.status === 'ACTIVE' ? '#DCFCE7' : '#F3F4F6',
                                                     color: batch.status === 'ACTIVE' ? '#16A34A' : '#6B7280',
                                                     borderRadius: '4px',
-                                                    fontSize: '0.75rem'
+                                                    fontSize: 'var(--fs-small)'
                                                 }}>{batch.status}</span>
                                             </div>
                                         </div>
@@ -255,7 +255,7 @@ const MentorProgram = () => {
                                                     <h4>{meeting.discussionSummary || 'Mentorship Meeting'}</h4>
                                                     <p>{date.time} • {meeting.duration || 30} mins</p>
                                                 </div>
-                                                <div className="meeting-status" style={{ background: '#DBEAFE', color: '#1E40AF', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>Scheduled</div>
+                                                <div className="meeting-status" style={{ background: '#DBEAFE', color: '#1E40AF', padding: '4px 12px', borderRadius: '12px', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-semibold)' }}>Scheduled</div>
                                             </div>
                                         );
                                     })
