@@ -9,13 +9,17 @@ import {
     FiCalendar,
     FiCheckCircle,
     FiClock,
-    FiTrendingUp
+    FiTrendingUp,
+    FiPlayCircle,
+    FiBriefcase,
+    FiBell,
+    FiSun,
+    FiMoon
 } from 'react-icons/fi';
 import { userAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { FiActivity, FiArrowRight, FiCalendar, FiCheckCircle, FiPlayCircle, FiBriefcase, FiBell, FiSun, FiMoon } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ActivityHeatmap from './ActivityHeatmap';
 import StudentAssignmentSection from '../../components/StudentAssignmentSection';
 import StudentResourcesSection from '../../components/StudentResourcesSection';
@@ -309,122 +313,122 @@ const StudentDashboard = () => {
                 })}
             </section>
 
-                        <motion.div
-                            className="stat-card stat-blue"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                        >
-                            <div className="stat-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                                </svg>
-                            </div>
-                            <div className="stat-info">
-                                <span className="stat-label">Courses Completed</span>
-                                <span className="stat-value"><CountUp value={stats?.completedCourses || 0} /></span>
-                            </div>
-                        </motion.div>
+            <motion.div
+                className="stat-card stat-blue"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+            >
+                <div className="stat-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
+                </div>
+                <div className="stat-info">
+                    <span className="stat-label">Courses Completed</span>
+                    <span className="stat-value"><CountUp value={stats?.completedCourses || 0} /></span>
+                </div>
+            </motion.div>
 
-                        <motion.div
-                            className="stat-card stat-orange"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <div className="stat-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                </svg>
-                            </div>
-                            <div className="stat-info">
-                                <span className="stat-label">Learning Resources</span>
-                                <span className="stat-value"><CountUp value={stats?.learningResources || 0} /></span>
-                            </div>
-                        </motion.div>
+            <motion.div
+                className="stat-card stat-orange"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+            >
+                <div className="stat-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div className="stat-info">
+                    <span className="stat-label">Learning Resources</span>
+                    <span className="stat-value"><CountUp value={stats?.learningResources || 0} /></span>
+                </div>
+            </motion.div>
 
-                        <motion.div
-                            className="stat-card stat-purple"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <div className="stat-icon">
-                                <FiActivity size={24} />
-                            </div>
-                            <div className="stat-info">
-                                <span className="stat-label">Login Streak</span>
-                                <div className="stat-value-row">
-                                    {stats?.streakStatus === 'paused' ? (
-                                        <>
-                                            <span className="stat-value" style={{ fontSize: '1.2rem', color: 'var(--admin-status-danger)' }}>Paused</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="stat-value"><CountUp value={stats?.loginStreak || 0} /></span>
-                                            <span className="stat-of">days</span>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
+            <motion.div
+                className="stat-card stat-purple"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+            >
+                <div className="stat-icon">
+                    <FiActivity size={24} />
+                </div>
+                <div className="stat-info">
+                    <span className="stat-label">Login Streak</span>
+                    <div className="stat-value-row">
+                        {stats?.streakStatus === 'paused' ? (
+                            <>
+                                <span className="stat-value" style={{ fontSize: '1.2rem', color: 'var(--admin-status-danger)' }}>Paused</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="stat-value"><CountUp value={stats?.loginStreak || 0} /></span>
+                                <span className="stat-of">days</span>
+                            </>
+                        )}
                     </div>
+                </div>
+            </motion.div>
+        </div>
 
-                    {/* Dashboard Sections - 70/30 Grid */}
-                    <div className="overview-grid" style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
+                    {/* Dashboard Sections - 70/30 Grid */ }
+    <div className="overview-grid" style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
 
-                        {/* Left: Upcoming Sessions (70%) */}
-                        <section>
-                            <div className="dashboard-section-header">
-                                <h2 className="student-section-title"><FiCalendar /> Upcoming Sessions & Meetings</h2>
-                                <span className="count">{upcomingSessions.length}</span>
+        {/* Left: Upcoming Sessions (70%) */}
+        <section>
+            <div className="dashboard-section-header">
+                <h2 className="student-section-title"><FiCalendar /> Upcoming Sessions & Meetings</h2>
+                <span className="count">{upcomingSessions.length}</span>
+            </div>
+            <div className="list-container">
+                {upcomingSessions.length === 0 ? (
+                    <div className="empty-state">
+                        <div className="empty-state-icon"><FiCalendar /></div>
+                        <p>No upcoming sessions scheduled</p>
+                    </div>
+                ) : (
+                    upcomingSessions.map((session, i) => (
+                        <div key={i} className="list-item">
+                            <div className="date-badge">
+                                <span className="day">{new Date(session.scheduledAt).getDate()}</span>
+                                <span className="month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
                             </div>
-                            <div className="list-container">
-                                {upcomingSessions.length === 0 ? (
-                                    <div className="empty-state">
-                                        <div className="empty-state-icon"><FiCalendar /></div>
-                                        <p>No upcoming sessions scheduled</p>
-                                    </div>
-                                ) : (
-                                    upcomingSessions.map((session, i) => (
-                                        <div key={i} className="list-item">
-                                            <div className="date-badge">
-                                                <span className="day">{new Date(session.scheduledAt).getDate()}</span>
-                                                <span className="month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
-                                            </div>
-                                            <div className="list-item-content">
-                                                <span className="list-item-title">{session.title}</span>
-                                                <span className="list-item-subtitle">
-                                                    {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.type === 'meeting' ? 'Mentorship' : 'Class'}
-                                                </span>
-                                            </div>
-                                            <div className="list-item-action">
-                                                <a href={session.link} target="_blank" rel="noopener noreferrer" className="btn-primary-sm" style={{ textDecoration: 'none', fontSize: '0.8rem', padding: '6px 12px', background: '#4f46e5', color: 'white', borderRadius: '8px' }}>
-                                                    Join
-                                                </a>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
+                            <div className="list-item-content">
+                                <span className="list-item-title">{session.title}</span>
+                                <span className="list-item-subtitle">
+                                    {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.type === 'meeting' ? 'Mentorship' : 'Class'}
+                                </span>
                             </div>
-                        </section>
+                            <div className="list-item-action">
+                                <a href={session.link} target="_blank" rel="noopener noreferrer" className="btn-primary-sm" style={{ textDecoration: 'none', fontSize: '0.8rem', padding: '6px 12px', background: '#4f46e5', color: 'white', borderRadius: '8px' }}>
+                                    Join
+                                </a>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </section>
 
-                        {/* Right: Announcements (30%) - Meeting Card Style */}
-                        <section>
-                            <div className="dashboard-section-header">
-                                <h2><FiBell /> Announcements</h2>
-                                <span className="count">{announcements.length}</span>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {announcements.length === 0 ? (
-                                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
-                                        <FiBell style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }} />
-                                        <p>No announcements</p>
-                                    </div>
-                                ) : (
-                                    announcements.slice(0, 3).map((announcement, i) => (
+        {/* Right: Announcements (30%) - Meeting Card Style */}
+        <section>
+            <div className="dashboard-section-header">
+                <h2><FiBell /> Announcements</h2>
+                <span className="count">{announcements.length}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {announcements.length === 0 ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
+                        <FiBell style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }} />
+                        <p>No announcements</p>
+                    </div>
+                ) : (
+                    announcements.slice(0, 3).map((announcement, i) => (
                                         <motion.div
                                             key={i}
                                             initial={{ opacity: 0, y: 20 }}
@@ -511,64 +515,64 @@ const StudentDashboard = () => {
                                             )}
                                         </div>
                                     </article>
-                                );
+            );
                             })
-                        ) : (
-                            <div className="student-empty-state">
-                                <FiCalendar />
-                                <h4>No sessions lined up</h4>
-                                <p>Take a focused self-study slot today while your mentor schedules the next session.</p>
-                                <button type="button" className="btn btn-primary btn-sm" onClick={() => navigate('/student/courses')}>
-                                    Browse Learning Content
-                                </button>
-                            </div>
+            ) : (
+            <div className="student-empty-state">
+                <FiCalendar />
+                <h4>No sessions lined up</h4>
+                <p>Take a focused self-study slot today while your mentor schedules the next session.</p>
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => navigate('/student/courses')}>
+                    Browse Learning Content
+                </button>
+            </div>
                         )}
-                    </div>
-                </motion.article>
+    </div>
+                </motion.article >
 
-                <motion.article className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-                    <header className="student-panel-header">
-                        <div>
-                            <h2>Announcements</h2>
-                            <p>Latest updates from mentors and admins.</p>
-                        </div>
-                        <span className="badge badge-warning">{announcements.length}</span>
-                    </header>
+    <motion.article className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+        <header className="student-panel-header">
+            <div>
+                <h2>Announcements</h2>
+                <p>Latest updates from mentors and admins.</p>
+            </div>
+            <span className="badge badge-warning">{announcements.length}</span>
+        </header>
 
-                    <div className="student-announcement-list">
-                        {announcements.length > 0 ? (
-                            announcements.slice(0, 4).map((announcement) => (
-                                <article key={announcement.id} className="student-announcement-card">
-                                    <h4>{announcement.title}</h4>
-                                    <p>{announcement.content}</p>
-                                    <small>{new Date(announcement.createdAt).toLocaleDateString()}</small>
-                                </article>
-                            ))
-                        ) : (
-                            <div className="student-empty-state compact">
-                                <FiCheckCircle />
-                                <h4>No announcements yet</h4>
-                                <p>You are up to date. Focus on learning today.</p>
-                            </div>
-                        )}
-                    </div>
-                </motion.article>
-            </section>
-
-            <motion.section className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
-                <header className="student-panel-header with-link">
-                    <div>
-                        <h2>Learning Activity Heatmap</h2>
-                        <p>Visualize your consistency by week and month.</p>
-                    </div>
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/student/courses')}>
-                        Open Learning
-                        <FiArrowRight />
-                    </button>
-                </header>
-                <ActivityHeatmap loginDates={loginDates} />
-            </motion.section>
+        <div className="student-announcement-list">
+            {announcements.length > 0 ? (
+                announcements.slice(0, 4).map((announcement) => (
+                    <article key={announcement.id} className="student-announcement-card">
+                        <h4>{announcement.title}</h4>
+                        <p>{announcement.content}</p>
+                        <small>{new Date(announcement.createdAt).toLocaleDateString()}</small>
+                    </article>
+                ))
+            ) : (
+                <div className="student-empty-state compact">
+                    <FiCheckCircle />
+                    <h4>No announcements yet</h4>
+                    <p>You are up to date. Focus on learning today.</p>
+                </div>
+            )}
         </div>
+    </motion.article>
+            </section >
+
+    <motion.section className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+        <header className="student-panel-header with-link">
+            <div>
+                <h2>Learning Activity Heatmap</h2>
+                <p>Visualize your consistency by week and month.</p>
+            </div>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/student/courses')}>
+                Open Learning
+                <FiArrowRight />
+            </button>
+        </header>
+        <ActivityHeatmap loginDates={loginDates} />
+    </motion.section>
+        </div >
     );
 };
 
