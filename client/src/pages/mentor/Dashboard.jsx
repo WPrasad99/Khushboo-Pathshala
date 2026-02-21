@@ -389,26 +389,18 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
 
     const submissionBars = useMemo(() => {
         if (!batches || batches.length === 0) {
-            return [
-                { label: 'Batch A', value: 68 },
-                { label: 'Batch B', value: 74 },
-                { label: 'Batch C', value: 58 }
-            ];
+            return [];
         }
 
         return batches.slice(0, 5).map((batch) => ({
             label: batch.name.length > 10 ? `${batch.name.slice(0, 10)}...` : batch.name,
-            value: Math.min(96, 50 + (batch.studentsCount || 0) * 4)
+            value: batch.studentsCount > 0 ? Math.min(100, Math.round((batch.studentsCount / (studentsCount || 1)) * 100)) : 0
         }));
-    }, [batches]);
+    }, [batches, studentsCount]);
 
     const donutSegments = useMemo(() => {
         if (!batches || batches.length === 0) {
-            return [
-                { label: 'Batch A', value: 20, color: '#3b82f6' },
-                { label: 'Batch B', value: 14, color: '#14b8a6' },
-                { label: 'Batch C', value: 10, color: '#f59e0b' }
-            ];
+            return [];
         }
 
         const palette = ['#3b82f6', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444'];
@@ -485,15 +477,21 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                     </header>
 
                     <div className="mentor-bar-chart">
-                        {submissionBars.map((bar) => (
-                            <div key={bar.label} className="mentor-bar-item">
-                                <div className="mentor-bar-track">
-                                    <div className="mentor-bar-fill" style={{ height: `${bar.value}%` }} />
-                                </div>
-                                <small>{bar.label}</small>
-                                <strong>{bar.value}%</strong>
+                        {submissionBars.length === 0 ? (
+                            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--admin-text-secondary)', fontSize: '0.85rem' }}>
+                                No batch data available yet.
                             </div>
-                        ))}
+                        ) : (
+                            submissionBars.map((bar) => (
+                                <div key={bar.label} className="mentor-bar-item">
+                                    <div className="mentor-bar-track">
+                                        <div className="mentor-bar-fill" style={{ height: `${bar.value}%` }} />
+                                    </div>
+                                    <small>{bar.label}</small>
+                                    <strong>{bar.value}%</strong>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </article>
 
@@ -503,47 +501,55 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
                         <span>Student distribution</span>
                     </header>
 
-                    <div className="mentor-donut-layout">
-                        <svg viewBox="0 0 120 120" className="mentor-donut-chart" role="img" aria-label="Batch distribution donut chart">
-                            <circle cx="60" cy="60" r="46" className="mentor-donut-base" />
-                            {donutSegments.map((segment) => {
-                                const fraction = segment.value / donutTotal;
-                                const dash = fraction * donutCircumference;
-                                const offset = -cumulativeFraction * donutCircumference;
-                                cumulativeFraction += fraction;
-
-                                return (
-                                    <circle
-                                        key={segment.label}
-                                        cx="60"
-                                        cy="60"
-                                        r="46"
-                                        className="mentor-donut-segment"
-                                        style={{
-                                            stroke: segment.color,
-                                            strokeDasharray: `${dash} ${donutCircumference - dash}`,
-                                            strokeDashoffset: offset
-                                        }}
-                                    />
-                                );
-                            })}
-                        </svg>
-
-                        <div className="mentor-donut-center">
-                            <strong>{donutTotal}</strong>
-                            <small>Students</small>
+                    {donutSegments.length === 0 ? (
+                        <div style={{ padding: '32px', textAlign: 'center', color: 'var(--admin-text-secondary)', fontSize: '0.85rem' }}>
+                            No batch data available yet.
                         </div>
-                    </div>
+                    ) : (
+                        <>
+                            <div className="mentor-donut-layout">
+                                <svg viewBox="0 0 120 120" className="mentor-donut-chart" role="img" aria-label="Batch distribution donut chart">
+                                    <circle cx="60" cy="60" r="46" className="mentor-donut-base" />
+                                    {donutSegments.map((segment) => {
+                                        const fraction = segment.value / donutTotal;
+                                        const dash = fraction * donutCircumference;
+                                        const offset = -cumulativeFraction * donutCircumference;
+                                        cumulativeFraction += fraction;
 
-                    <div className="mentor-donut-legend">
-                        {donutSegments.map((segment) => (
-                            <div key={segment.label} className="mentor-donut-legend-row">
-                                <span className="mentor-dot" style={{ background: segment.color }} />
-                                <span>{segment.label}</span>
-                                <strong>{segment.value}</strong>
+                                        return (
+                                            <circle
+                                                key={segment.label}
+                                                cx="60"
+                                                cy="60"
+                                                r="46"
+                                                className="mentor-donut-segment"
+                                                style={{
+                                                    stroke: segment.color,
+                                                    strokeDasharray: `${dash} ${donutCircumference - dash}`,
+                                                    strokeDashoffset: offset
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </svg>
+
+                                <div className="mentor-donut-center">
+                                    <strong>{donutTotal}</strong>
+                                    <small>Students</small>
+                                </div>
                             </div>
-                        ))}
-                    </div>
+
+                            <div className="mentor-donut-legend">
+                                {donutSegments.map((segment) => (
+                                    <div key={segment.label} className="mentor-donut-legend-row">
+                                        <span className="mentor-dot" style={{ background: segment.color }} />
+                                        <span>{segment.label}</span>
+                                        <strong>{segment.value}</strong>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </article>
             </section>
 

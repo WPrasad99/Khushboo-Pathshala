@@ -376,7 +376,7 @@ app.get('/api/auth/google/callback',
 );
 
 // Login User
-app.post('/api/users/login', authLimiter, async (req, res, next) => {
+app.post('/api/auth/login', authLimiter, async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -4910,7 +4910,7 @@ app.get('/api/admin/analytics/attendance-trend', authenticateToken, requireRole(
             return acc;
         }, {});
         res.json({ labels: Object.keys(grouped), datasets: [{ label: 'Attendance', data: Object.values(grouped) }] });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.get('/api/admin/analytics/submission-rate', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
@@ -4922,21 +4922,21 @@ app.get('/api/admin/analytics/submission-rate', authenticateToken, requireRole('
             return acc;
         }, {});
         res.json({ labels: Object.keys(grouped), datasets: [{ label: 'Submissions', data: Object.values(grouped) }] });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.get('/api/admin/analytics/batch-comparison', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
     try {
         const batches = await prisma.batch.findMany({ include: { _count: { select: { students: true } } } });
         res.json({ labels: batches.map(b => b.name), datasets: [{ data: batches.map(b => b._count.students) }] });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.get('/api/mentor/analytics/:batchId', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
     try {
         const students = await prisma.batchStudent.count({ where: { batchId: req.params.batchId } });
         res.json({ students });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // 2. Granular Learning Course Tracking
@@ -4991,7 +4991,7 @@ app.get('/api/student/activity', authenticateToken, async (req, res) => {
             } else { break; }
         }
         res.json({ loginDates: dates, activeDays30: active30, currentStreak: streak });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // 4. Notifications
@@ -4999,21 +4999,21 @@ app.put('/api/notifications/read-all', authenticateToken, async (req, res) => {
     try {
         await prisma.notification.updateMany({ where: { userId: req.user.id, read: false }, data: { read: true, readAt: new Date() } });
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
     try {
         await prisma.notification.update({ where: { id: req.params.id }, data: { read: true, readAt: new Date() } });
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.delete('/api/notifications/clear', authenticateToken, async (req, res) => {
     try {
         await prisma.notification.deleteMany({ where: { userId: req.user.id } });
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // 5. Forum Upvoting & Threading Complexities
@@ -5022,14 +5022,14 @@ app.delete('/api/forum/answers/:answerId/upvote', authenticateToken, async (req,
         await prisma.answerVote.delete({ where: { userId_answerId: { userId: req.user.id, answerId: req.params.answerId } } });
         await prisma.forumAnswer.update({ where: { id: req.params.answerId }, data: { upvotes: { decrement: 1 } } });
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.patch('/api/forum/answers/:id/accept', authenticateToken, async (req, res) => {
     try {
         const updated = await prisma.forumAnswer.update({ where: { id: req.params.id }, data: { isAccepted: true } });
         res.json(updated);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // 6. Advanced Quiz and Assignment Grading
@@ -5057,7 +5057,7 @@ app.post('/api/assignments/submissions/:id/grade', authenticateToken, requireRol
             data: { rubricBreakdown, marks: overallScore, feedback, status: 'GRADED', reviewedAt: new Date(), reviewedById: req.user.id }
         });
         res.json(updated);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // ============ SOCKET.IO EVENTS ============

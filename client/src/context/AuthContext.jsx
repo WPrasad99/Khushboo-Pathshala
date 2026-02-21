@@ -108,6 +108,24 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
+    // Multi-tab logout synchronization
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === 'token' && !e.newValue) {
+                // Token was removed in another tab — force logout here too
+                setToken(null);
+                setUser(null);
+                if (socket) {
+                    socket.disconnect();
+                    setSocket(null);
+                }
+                delete axios.defaults.headers.common['Authorization'];
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [socket]);
+
     const logout = () => {
         localStorage.removeItem('token');
         setToken(null);

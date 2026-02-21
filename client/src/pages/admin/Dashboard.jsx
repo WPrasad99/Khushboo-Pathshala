@@ -218,11 +218,7 @@ const AdminDashboard = () => {
     const batchDistribution = useMemo(() => {
         const source = dashboardData?.recentBatches || [];
         if (source.length === 0) {
-            return [
-                { label: 'Batch A', value: 22 },
-                { label: 'Batch B', value: 14 },
-                { label: 'Batch C', value: 10 }
-            ];
+            return [];
         }
 
         return source.slice(0, 5).map((batch) => ({

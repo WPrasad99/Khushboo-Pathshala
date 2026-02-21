@@ -19,6 +19,26 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Auto-logout on expired/invalid token
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            // Token is expired or invalid — force logout
+            const isAuthRoute = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
+            if (!isAuthRoute) {
+                localStorage.removeItem('token');
+                delete api.defaults.headers.common['Authorization'];
+                // Redirect to login if not already there
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 // API functions
 export const authAPI = {
     login: (email, password) => api.post('/auth/login', { email, password }),
