@@ -1,6 +1,6 @@
 .settings-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 50%, #e0e7ff 100%);
+    background: var(--bg-primary);
     padding: 32px;
     display: flex;
     flex-direction: column;
@@ -17,9 +17,9 @@
 }
 
 .back-btn {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--bg-secondary);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(147, 197, 253, 0.3);
+    border: 1px solid var(--border-subtle);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -27,9 +27,9 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #3b82f6;
+    color: var(--primary-500);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    box-shadow: var(--admin-shadow-sm);
 }
 
 .back-btn:hover {
@@ -51,12 +51,10 @@
 .settings-card {
     width: 100%;
     max-width: 1300px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
+    background: var(--bg-secondary);
     border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.08),
-        0 0 0 1px rgba(147, 197, 253, 0.2) inset;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--admin-shadow-lg);
     overflow: hidden;
     display: grid;
     grid-template-columns: 340px 1fr;
@@ -70,11 +68,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    background: linear-gradient(180deg,
-            rgba(224, 242, 254, 0.4) 0%,
-            rgba(219, 234, 254, 0.4) 50%,
-            rgba(224, 231, 255, 0.4) 100%);
-    border-right: 1px solid rgba(147, 197, 253, 0.2);
+    background: var(--bg-tertiary);
+    border-right: 1px solid var(--border-subtle);
 }
 
 .avatar-container {
@@ -123,9 +118,9 @@
 }
 
 .profile-name {
-    font-size: var(--fs-h2);
-    font-weight: var(--fw-bold);
-    color: #1e40af;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
     text-align: center;
 }
@@ -198,10 +193,10 @@
 .bio-input {
     width: 100%;
     padding: 12px 14px;
-    font-size: var(--fs-body);
-    color: #1e40af;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1.5px solid rgba(147, 197, 253, 0.4);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-subtle);
     border-radius: 12px;
     transition: all 0.3s ease;
     font-family: inherit;
@@ -317,12 +312,11 @@
 
 /* Form Section */
 .form-section {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(10px);
+    background: var(--bg-tertiary);
     border-radius: 18px;
     padding: 24px 28px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.05);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--admin-shadow-sm);
     transition: all 0.3s ease;
 }
 
@@ -383,10 +377,10 @@
 .form-input {
     width: 100%;
     padding: 11px 14px;
-    font-size: var(--fs-body);
-    color: #1e40af;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1.5px solid rgba(147, 197, 253, 0.4);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-subtle);
     border-radius: 12px;
     transition: all 0.3s ease;
     font-family: inherit;

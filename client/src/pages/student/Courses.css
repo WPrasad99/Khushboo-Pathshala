@@ -36,54 +36,53 @@
     flex-wrap: wrap;
 }
 
-.learning-hero-metrics span {
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    padding: 8px 16px;
-    font-size: var(--fs-small);
-    font-weight: var(--fw-semibold);
-    color: var(--color-text-secondary);
-    box-shadow: var(--shadow-sm);
+.courses-header-text h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
 }
 
-.learning-toolbar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-16);
+.courses-header-text p {
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .learning-search {
     display: flex;
     align-items: center;
-    gap: var(--space-12);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background: var(--color-surface);
-    padding: 0 16px;
-    height: 48px;
-    max-width: 480px;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+    gap: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 10px 18px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 320px;
+    transition: var(--transition-normal);
 }
 
-.learning-search:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-soft);
+.courses-search:focus-within {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 4px var(--primary-100);
 }
 
-.learning-search svg {
-    color: var(--color-text-muted);
-    font-size: var(--fs-h3);
+.courses-search svg {
+    color: var(--text-muted);
 }
 
-.learning-search input {
-    flex: 1;
-    border: none;
-    outline: none;
+.courses-search input {
     background: transparent;
-    color: var(--color-text-primary);
-    font-size: var(--fs-body);
+    border: none;
+    padding: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.courses-search input:focus {
+    box-shadow: none;
+    outline: none;
+    /* Added to ensure outline is removed */
 }
 
 .learning-search input::placeholder {

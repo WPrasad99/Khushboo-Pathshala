@@ -23,28 +23,21 @@
   --color-primary-soft: #EEF2FF;
   /* 10-15% opacity Indigo */
 
-  /* Semantic Colors */
-  --color-success: #10B981;
-  /* Soft green */
-  --color-success-soft: #D1FAE5;
-  --color-warning: #F59E0B;
-  /* Muted amber */
-  --color-warning-soft: #FEF3C7;
-  --color-error: #EF4444;
-  /* Soft red */
-  --color-error-soft: #FEE2E2;
-  --color-info: #3B82F6;
-  /* Soft blue */
-  --color-info-soft: #DBEAFE;
+  /* Semantic Background Colors */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F5F9;
 
-  /* Typography Colors */
-  --color-text-primary: #0F172A;
-  /* Dark slate for high contrast */
-  --color-text-secondary: #475569;
-  /* Balanced slate */
-  --color-text-muted: #94A3B8;
-  /* Muted metadata */
-  --color-text-on-primary: #FFFFFF;
+  /* Text Colors */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-white: #FFFFFF;
+
+  /* Borders */
+  --border-light: rgba(148, 163, 184, 0.15);
+  --border-medium: rgba(148, 163, 184, 0.25);
+  --border-subtle: rgba(15, 23, 42, 0.08);
 
   /* --- 2. LIGHT UI SPACING & STRUCTURE (8PX SYSTEM) --- */
   --space-4: 4px;
@@ -96,7 +89,18 @@
   --lh-small: 1.4;
 }
 
-/* Base Reset */
+[data-theme="dark"] {
+  --bg-primary: #0B1220;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1E293B;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -126,34 +130,79 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: var(--fw-bold);
-  color: var(--color-text-primary);
-  line-height: var(--lh-heading);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
 }
 
 h1 {
-  font-size: var(--fs-h1);
-  letter-spacing: -0.025em;
-  margin-bottom: var(--space-12);
+  font-size: 28px;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: var(--fs-h2);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-8);
+  font-size: 22px;
+  font-weight: 600;
 }
 
 h3 {
-  font-size: var(--fs-h3);
-  letter-spacing: -0.01em;
-  font-weight: var(--fw-semibold);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+h6 {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 p {
-  color: var(--color-text-secondary);
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
-  margin-bottom: var(--space-12);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ========== GLOBAL TRANSITIONS ========== */
+* {
+  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ========== INPUTS & PLACEHOLDERS ========== */
+input,
+textarea {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 small {
