@@ -10,6 +10,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+
 const app = express();
 
 const session = require('express-session');
@@ -62,11 +66,15 @@ const upload = multer({
 });
 
 // Middleware
+app.use(helmet({ crossOriginResourcePolicy: false })); // Basic security headers, except allowing local image/uploads
+app.use(xss()); // XSS payload prevention
+app.use(globalLimiter); // Protect API logic
+
 app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' })); // Cap JSON payloads to 2MB to prevent large object parsing denial of service
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -367,8 +375,8 @@ app.get('/api/auth/google/callback',
     }
 );
 
-// Login
-app.post('/api/auth/login', async (req, res) => {
+// Login User
+app.post('/api/users/login', authLimiter, async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -485,7 +493,7 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
 });
 
 // Upload Avatar
-app.post('/api/users/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+app.post('/api/users/avatar', authenticateToken, upload.single('avatar'), validateUploadedFile, async (req, res, next) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -708,8 +716,8 @@ app.get('/api/users/dashboard', authenticateToken, async (req, res) => {
                 }))
             ].sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt)); // Sort ascending for "Upcoming"?
 
-            // The user wants "createed previouly meetings... also extracted". 
-            // If we sort ascending, past meetings are first. 
+            // The user wants "createed previouly meetings... also extracted".
+            // If we sort ascending, past meetings are first.
             // Let's separate future and past or just show them.
             // But usually "Upcoming" card shows immediate next.
             // I will return them all, but frontend cuts to "slice(0, 3)".
@@ -1229,7 +1237,7 @@ app.post('/api/mentor/sessions/upload', authenticateToken, requireRole('MENTOR')
 });
 
 // Upload Resource (Files - PDF, PPTX)
-app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'), upload.single('file'), async (req, res) => {
+app.post('/api/mentor/resources/upload', authenticateToken, requireRole('MENTOR'), upload.single('file'), validateUploadedFile, async (req, res, next) => {
     try {
         const { title, description, batchId, category } = req.body;
 
@@ -2335,50 +2343,47 @@ app.get('/api/chat/groups', authenticateToken, async (req, res) => {
 
             // 3. Add Students (if user is Mentor - optional, but user requested 'added in list')
             // Note: This might spam mentor if they have many students, but requested behavior implies mutual visibility.
-            if (currentUser.role === 'MENTOR') {
-                // For now, let's strictly follow "when student message to mentor... student should get added".
-                // But also "assigned mentor... added to chat list".
-                // So for Mentor, we won't auto-create chats with all students to avoid clutter, 
-                // as the requirement says "when student message to mentor".
-                // However, "admin should gets added in student and mentor messaging list".
-            }
+            // For now, let's strictly follow "when student message to mentor... student should get added".
+            // But also "admin should gets added in student and mentor messaging list".
+            // So for Mentor, we won't auto-create chats with all students to avoid clutter,
+            // as the requirement says "when student message to mentor".
+        }
 
-            // Remove self and ensure no duplicates
-            targetIds.delete(userId);
+        // Remove self and ensure no duplicates
+        targetIds.delete(userId);
 
-            // Ensure DM groups exist
-            for (const targetId of targetIds) {
-                // Check if group exists
-                const existingGroup = await prisma.chatGroup.findFirst({
-                    where: {
-                        groupType: 'direct',
-                        AND: [
-                            { members: { some: { userId: userId } } },
-                            { members: { some: { userId: targetId } } }
-                        ]
-                    }
-                });
+        // Ensure DM groups exist
+        for (const targetId of targetIds) {
+            // Check if group exists
+            const existingGroup = await prisma.chatGroup.findFirst({
+                where: {
+                    groupType: 'direct',
+                    AND: [
+                        { members: { some: { userId: userId } } },
+                        { members: { some: { userId: targetId } } }
+                    ]
+                }
+            });
 
-                if (!existingGroup) {
-                    console.log(`Auto-creating DM between ${userId} and ${targetId}`);
-                    try {
-                        await prisma.chatGroup.create({
-                            data: {
-                                name: 'Direct Message',
-                                groupType: 'direct',
-                                createdById: userId, // User acts as creator
-                                members: {
-                                    create: [
-                                        { userId: userId, role: 'member', status: 'accepted' },
-                                        { userId: targetId, role: 'member', status: 'accepted' }
-                                    ]
-                                }
+            if (!existingGroup) {
+                console.log(`Auto-creating DM between ${userId} and ${targetId}`);
+                try {
+                    await prisma.chatGroup.create({
+                        data: {
+                            name: 'Direct Message',
+                            groupType: 'direct',
+                            createdById: userId, // User acts as creator
+                            members: {
+                                create: [
+                                    { userId: userId, role: 'member', status: 'accepted' },
+                                    { userId: targetId, role: 'member', status: 'accepted' }
+                                ]
                             }
-                        });
-                    } catch (err) {
-                        console.error('Error auto-creating DM:', err);
-                        // Continue to next target, don't fail the request
-                    }
+                        }
+                    });
+                } catch (err) {
+                    console.error('Error auto-creating DM:', err);
+                    // Continue to next target, don't fail the request
                 }
             }
         }
@@ -3855,7 +3860,7 @@ app.get('/api/assignments/:id', authenticateToken, async (req, res) => {
         // For simplicity and immediate fix, checking if creator matches OR user is Admin
         const mentorId = req.user.userId || req.user.id;
 
-        // Strict check: Only creator or admin can view details? 
+        // Strict check: Only creator or admin can view details?
         // Ideally any mentor assigned to the batch should be able to view.
         if (req.user.role === 'MENTOR' && assignment.createdById !== mentorId) {
             // Optional: Add logic to check if mentor is assigned to assignment.batchId
@@ -3873,7 +3878,7 @@ app.get('/api/assignments/:id', authenticateToken, async (req, res) => {
 });
 
 // Submit assignment (Student only) - With File Upload
-app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file'), async (req, res) => {
+app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file'), validateUploadedFile, async (req, res, next) => {
     try {
         if (req.user.role !== 'STUDENT') {
             return res.status(403).json({ error: 'Only students can submit assignments' });
@@ -4258,7 +4263,7 @@ app.post('/api/chatbot/ask', authenticateToken, async (req, res) => {
         // Configure the model with educational and technical focus
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
-            systemInstruction: `You are an AI Study Assistant for students at Khushboo Pathshala. 
+            systemInstruction: `You are an AI Study Assistant for students at Khushboo Pathshala.
 Your role is to help with educational questions, programming, coding, and technical topics.
 
 IMPORTANT GUIDELINES:
@@ -4588,7 +4593,7 @@ app.get('/api/assignments/:id', authenticateToken, async (req, res) => {
 });
 
 // Submit assignment
-app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file'), async (req, res) => {
+app.post('/api/assignments/:id/submit', authenticateToken, upload.single('file'), validateUploadedFile, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { content } = req.body;
@@ -5028,9 +5033,25 @@ app.patch('/api/forum/answers/:id/accept', authenticateToken, async (req, res) =
 });
 
 // 6. Advanced Quiz and Assignment Grading
-app.post('/api/assignments/submissions/:id/grade', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res) => {
+app.post('/api/assignments/submissions/:id/grade', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res, next) => {
     try {
         const { rubricBreakdown, overallScore, feedback } = req.body;
+
+        // Fix IDOR: Validate Mentor matches the assignment batch
+        if (req.user.role === 'MENTOR') {
+            const submission = await prisma.assignmentSubmission.findUnique({
+                where: { id: req.params.id },
+                include: { assignment: { include: { batch: { include: { mentors: true } } } } }
+            });
+
+            if (!submission) return res.status(404).json({ error: "Submission not found" });
+
+            const isAuthorized = submission.assignment?.batch?.mentors?.some(m => m.id === req.user.id);
+            if (!isAuthorized) {
+                return res.status(403).json({ error: "Unauthorized: You do not have permission to grade students outside your assigned batches." });
+            }
+        }
+
         const updated = await prisma.assignmentSubmission.update({
             where: { id: req.params.id },
             data: { rubricBreakdown, marks: overallScore, feedback, status: 'GRADED', reviewedAt: new Date(), reviewedById: req.user.id }
@@ -5069,6 +5090,30 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
+});
+
+// ============ CENTRALIZED ERROR HANDLER ============
+app.use((err, req, res, next) => {
+    console.error('Unhandled Error:', err);
+
+    // Prisma DB Errors Masking
+    if (err.code === 'P2002') {
+        return res.status(409).json({ error: 'A conflict occurred: record already exists.' });
+    }
+    if (err.code === 'P2025') {
+        return res.status(404).json({ error: 'Record not found in database.' });
+    }
+
+    // Express internal syntax parsing errors (malformed JSON)
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({ error: 'Malformed JSON payload.' });
+    }
+
+    // Default 500 block (never leak stack trace)
+    const statusCode = err.statusCode || 500;
+    const message = process.env.NODE_ENV === 'production' ? 'An unexpected internal server error occurred' : err.message;
+
+    res.status(statusCode).json({ error: message });
 });
 
 // Start server with Socket.IO
