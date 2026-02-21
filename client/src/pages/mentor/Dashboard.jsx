@@ -356,27 +356,10 @@ const MentorDashboard = () => {
     );
 };
 
-const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLogs }) => (
-    <div className="overview-container">
-        <div className="mentor-stats-grid-5">
-            {[
-                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers /> },
-                { label: 'Active Sessions', value: 8, icon: <FiBookOpen /> },
-                { label: 'Avg. Attendance', value: 88, icon: <FiCheckCircle />, suffix: '%' },
-                { label: 'Pending Queries', value: 5, icon: <FiMessageSquare /> },
-                { label: 'Upcoming Sessions', value: 2, icon: <FiCalendar /> }
-            ].map((stat, idx) => (
-                <div key={idx} className="stat-card-refined read-only">
-                    <div className="stat-icon-refined stat-icon-wrapper">
-                        {stat.icon}
-                    </div>
-                    <span className="stat-value-bold stat-val-enterprise">
-                        <CountUp value={stat.value} />{stat.suffix || ''}
-                    </span>
-                    <span className="stat-label-muted">{stat.label}</span>
-                </div>
-            ))}
-        </div>
+const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLogs, batches }) => {
+    const attendanceSeries = useMemo(() => {
+        const bucket = new Map();
+        const today = new Date();
 
         meetingLogs.forEach((meeting) => {
             const key = new Date(meeting.meetingDate).toISOString().slice(0, 10);

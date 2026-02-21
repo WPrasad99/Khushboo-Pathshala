@@ -676,48 +676,47 @@ const StudentAssignmentSection = () => {
             }
             `}</style>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {/* Top Bar: Tabs & Search */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                        {/* Tabs */}
-                        <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                            {[
-                                { id: 'all', label: 'All Items' },
-                                { id: 'assignments', label: 'Assignments' },
-                                { id: 'quizzes', label: 'Quizzes' }
-                            ].map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        padding: '8px 20px',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
-                                        color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
-                                        fontWeight: activeTab === tab.id ? 700 : 500,
-                                        boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Top Bar: Tabs & Search */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    {/* Tabs */}
+                    <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                        {[
+                            { id: 'all', label: 'All Items' },
+                            { id: 'assignments', label: 'Assignments' },
+                            { id: 'quizzes', label: 'Quizzes' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                style={{
+                                    padding: '8px 20px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
+                                    color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
+                                    fontWeight: activeTab === tab.id ? 700 : 500,
+                                    boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
 
-                        {/* Search */}
-                        <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
-                            <FiSearch style={{ color: 'var(--text-muted)' }} />
-                            <input
-                                type="text"
-                                className="search-input-student"
-                                placeholder="Search by title..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
-                            />
-                        </div>
+                    {/* Search */}
+                    <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
+                        <FiSearch style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            type="text"
+                            className="search-input-student"
+                            placeholder="Search by title..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
+                        />
                     </div>
                 </div>
             </div>
@@ -884,7 +883,7 @@ const StudentAssignmentSection = () => {
                                 </div>
                             </form>
                         </motion.div>
-                    </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

@@ -448,7 +448,7 @@ const AdminDashboard = () => {
                                     <p className="page-subtitle-enterprise">Real-time metrics and operational status.</p>
                                 </div>
                                 <span className="badge badge-primary">Live Monitoring</span>
-                            </section>
+                            </div>
 
                             <div className="stats-grid">
                                 <div className="stat-card-enterprise">
@@ -519,7 +519,7 @@ const AdminDashboard = () => {
                                             </div>
                                         )) || <div style={{ padding: '32px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>No recent activity.</div>}
                                     </div>
-                                </article>
+                                </motion.div>
 
                                 {/* Active Batches */}
                                 <motion.div
@@ -557,7 +557,8 @@ const AdminDashboard = () => {
                                             </div>
                                         )}
                                     </div>
-                                </article>
+                                </motion.div>
+                            </div>
 
                             {/* Full Width Section: Latest Announcements */}
                             <motion.div
