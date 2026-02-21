@@ -6,33 +6,34 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  STUDENT
-  MENTOR
-  ADMIN
-}
+// SQLite doesn't support native enums, using strings instead
+// enum Role {
+//   STUDENT
+//   MENTOR
+//   ADMIN
+// }
 
-enum ResourceCategory {
-  TECHNICAL_SKILLS
-  SOFT_SKILLS
-  CAREER_GUIDANCE
-}
+// enum ResourceCategory {
+//   TECHNICAL_SKILLS
+//   SOFT_SKILLS
+//   CAREER_GUIDANCE
+// }
 
-enum AchievementType {
-  BADGE
-  PLACEMENT
-}
+// enum AchievementType {
+//   BADGE
+//   PLACEMENT
+// }
 
 model User {
   id              String    @id @default(uuid())
   email           String    @unique
   password        String
   name            String
-  role            Role      @default(STUDENT)
+  role            String    @default("STUDENT")
   phone           String?
   gender          String?
   dateOfBirth     DateTime?
@@ -75,7 +76,7 @@ model LearningResource {
   id            String           @id @default(uuid())
   title         String
   description   String
-  category      ResourceCategory
+  category      String
   videoUrl      String
   duration      Int              // Duration in minutes
   thumbnailUrl  String?
@@ -196,7 +197,7 @@ model AnnouncementBatch {
 model Achievement {
   id          String          @id @default(uuid())
   userId      String
-  type        AchievementType
+  type        String
   title       String
   description String?
   createdAt   DateTime        @default(now())

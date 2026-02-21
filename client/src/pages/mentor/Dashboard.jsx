@@ -6,12 +6,37 @@ import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, ann
 import {
     FiSearch, FiBell, FiUser, FiLogOut, FiUsers, FiBookOpen,
     FiCalendar, FiPlus, FiUpload, FiSettings, FiCheckCircle,
-    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle, FiMenu, FiX, FiZap
+    FiMessageSquare, FiLayers, FiBarChart2, FiClock, FiAlertCircle, FiChevronDown, FiChevronUp, FiFileText, FiEdit2, FiArrowRight, FiTrash2, FiMessageCircle, FiMenu, FiX, FiZap,
+    FiSun, FiMoon
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../student/Dashboard.css';
 import '../admin/AdminDashboard.css';
 import './MentorDashboard.css';
+
+// Simple CountUp Component for Animated Metrics
+const CountUp = ({ value, duration = 1500 }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // easeOutQuart
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            setCount(Math.floor(easeProgress * value));
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                setCount(value);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }, [value, duration]);
+
+    return <span>{count}</span>;
+};
 import MessagingPage from '../MessagingPage';
 import CalendarWidget from '../../components/dashboard/CalendarWidget';
 
@@ -40,9 +65,22 @@ const MentorDashboard = () => {
     const [announcements, setAnnouncements] = useState([]);
     const [startChatUser, setStartChatUser] = useState(null);
 
+    // Theme Architecture State
+    const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
+
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Theme Application Effect
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('admin-theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    };
 
     useEffect(() => {
         if (socket) {
@@ -176,6 +214,9 @@ const MentorDashboard = () => {
                     </div>
 
                     <div className="navbar-right-actions">
+                        <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
+                            {theme === 'light' ? <FiMoon /> : <FiSun />}
+                        </button>
                         <button className="icon-btn" style={{ position: 'relative' }}>
                             <FiBell />
                             {unreadNotifications > 0 && <span className="notification-dot"></span>}
@@ -318,18 +359,20 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
     <div className="overview-container">
         <div className="mentor-stats-grid-5">
             {[
-                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#10B981', bgColor: '#ECFDF5' },
-                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3B82F6', bgColor: '#EFF6FF' },
-                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#F59E0B', bgColor: '#FFFBEB' },
-                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#8B5CF6', bgColor: '#F5F3FF' },
-                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#6366F1', bgColor: '#EEF2FF' }
+                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers /> },
+                { label: 'Active Sessions', value: 8, icon: <FiBookOpen /> },
+                { label: 'Avg. Attendance', value: 88, icon: <FiCheckCircle />, suffix: '%' },
+                { label: 'Pending Queries', value: 5, icon: <FiMessageSquare /> },
+                { label: 'Upcoming Sessions', value: 2, icon: <FiCalendar /> }
             ].map((stat, idx) => (
-                <div key={idx} className="stat-card-refined read-only" style={{ background: 'white', border: '1px solid #edf2f7' }}>
-                    <div className="stat-icon-refined" style={{ background: stat.bgColor, color: stat.color, boxShadow: 'none' }}>
+                <div key={idx} className="stat-card-refined read-only">
+                    <div className="stat-icon-refined stat-icon-wrapper">
                         {stat.icon}
                     </div>
-                    <span className="stat-value-bold" style={{ color: '#1e293b', fontSize: '1.4rem' }}>{stat.value}</span>
-                    <span className="stat-label-muted" style={{ color: '#64748b', fontWeight: 600 }}>{stat.label}</span>
+                    <span className="stat-value-bold stat-val-enterprise">
+                        <CountUp value={stat.value} />{stat.suffix || ''}
+                    </span>
+                    <span className="stat-label-muted">{stat.label}</span>
                 </div>
             ))}
         </div>
@@ -1258,44 +1301,44 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                 {/* Right Column: Sidebar */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-                    {/* Quick Actions Card - White Glassy */}
-                    <div className="glass-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)' }}>
-                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '10px', color: '#1e293b' }}>
+                    {/* Quick Actions Card */}
+                    <div className="sidebar-widget-card">
+                        <h3 className="sidebar-widget-title">
                             <FiZap style={{ color: '#f59e0b' }} /> Quick Actions
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <button
                                 onClick={() => setIsScheduling(true)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
-                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                className="widget-action-btn"
                             >
-                                <div style={{ background: '#eff6ff', color: '#3b82f6', padding: '6px', borderRadius: '6px', display: 'flex' }}><FiCalendar size={18} /></div>
+                                <div className="widget-action-icon primary">
+                                    <FiCalendar size={18} />
+                                </div>
                                 Schedule Meeting
                             </button>
                             <button
                                 onClick={() => setIsUploadingAttendance(true)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}
-                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                className="widget-action-btn"
                             >
-                                <div style={{ background: '#f0fdf4', color: '#10b981', padding: '6px', borderRadius: '6px', display: 'flex' }}><FiCheckCircle size={18} /></div>
+                                <div className="widget-action-icon success">
+                                    <FiCheckCircle size={18} />
+                                </div>
                                 Upload Attendance
                             </button>
                         </div>
                     </div>
 
                     {/* Insights Card */}
-                    <div className="glass-card" style={{ padding: '24px', border: '1px solid #edf2f7' }}>
-                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1rem', color: '#1e293b' }}>Insights</h3>
+                    <div className="sidebar-widget-card">
+                        <h3 className="sidebar-widget-title">Insights</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3b82f6' }}>{students?.length || 0}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Total Mentees</div>
+                            <div className="widget-metric-box">
+                                <div className="widget-metric-value primary">{students?.length || 0}</div>
+                                <div className="widget-metric-label">Total Mentees</div>
                             </div>
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>{batches?.length || 0}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Active Batches</div>
+                            <div className="widget-metric-box">
+                                <div className="widget-metric-value success">{batches?.length || 0}</div>
+                                <div className="widget-metric-label">Active Batches</div>
                             </div>
                         </div>
                     </div>
