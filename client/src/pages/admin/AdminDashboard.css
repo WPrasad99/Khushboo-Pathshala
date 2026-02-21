@@ -53,8 +53,8 @@
 [data-theme="dark"] {
     /* Layer 0 - App Background (Deep Base Charcoal) */
     --admin-bg-color: var(--bg-primary);
-    --admin-section-bg: var(--bg-primary);
     --admin-surface: var(--bg-secondary);
+    --admin-section-bg: var(--bg-primary);
     --admin-input-bg: var(--bg-tertiary);
 
     --admin-border-color: var(--border-subtle);
@@ -128,18 +128,17 @@ body {
 /* Base Card Style - Standardized Elevation */
 .admin-card {
     background-color: var(--admin-surface);
-    border: 1px solid var(--admin-border-color);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--admin-radius-lg);
-    box-shadow: var(--admin-shadow-sm);
-    /* Level 1 */
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
     transition: var(--admin-transition);
 }
 
-.admin-card:hover {
-    box-shadow: var(--admin-shadow-md);
-    /* Level 2 */
-    transform: translateY(-2px);
-    border-color: var(--admin-accent-primary);
+.admin-card-elevated {
+    background-color: var(--admin-input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--admin-radius-lg);
+    box-shadow: var(--admin-shadow-lg);
 }
 
 
@@ -152,7 +151,7 @@ body {
     background-color: var(--admin-glass-bg);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--admin-glass-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     padding: 0 24px;
     height: 72px;
     /* Sleeker profile */

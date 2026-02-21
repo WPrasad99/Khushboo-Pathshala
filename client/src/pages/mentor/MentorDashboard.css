@@ -8,25 +8,28 @@
     transition: background-color var(--admin-transition-slow), color var(--admin-transition-slow);
 }
 
-/* Global Typography for Mentor Dashboard */
 .mentor-dashboard-page h1,
 .mentor-dashboard-page h2 {
-    color: var(--admin-text-primary);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
 }
 
 .mentor-dashboard-page h3,
 .mentor-dashboard-page h4 {
-    color: var(--admin-text-secondary);
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.mentor-section-title {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 22px !important;
+    margin-bottom: 20px !important;
 }
 
 .mentor-dashboard-page p {
-    color: var(--admin-text-body);
-    line-height: 1.6;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 
@@ -41,8 +44,7 @@
 .mentor-logo-text {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--admin-text-primary);
-    letter-spacing: -0.01em;
+    color: var(--text-primary);
 }
 
 .navbar-actions-mentor {
@@ -220,8 +222,7 @@
 }
 
 .student-row:nth-child(even) {
-    background-color: rgba(255, 255, 255, 0.015);
-    /* Suble Striping */
+    background-color: var(--bg-primary);
 }
 
 .student-row:hover {

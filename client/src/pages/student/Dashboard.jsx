@@ -233,7 +233,7 @@ const StudentDashboard = () => {
                         {/* Left: Upcoming Sessions (70%) */}
                         <section>
                             <div className="dashboard-section-header">
-                                <h2><FiCalendar /> Upcoming Sessions & Meetings</h2>
+                                <h2 className="student-section-title"><FiCalendar /> Upcoming Sessions & Meetings</h2>
                                 <span className="count">{upcomingSessions.length}</span>
                             </div>
                             <div className="list-container">

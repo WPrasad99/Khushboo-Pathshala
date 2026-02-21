@@ -715,7 +715,7 @@ const SessionsSection = ({ batches }) => {
         <div className="sessions-container">
             <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h3>Learning Sessions & Resources Management</h3>
+                    <h3 className="mentor-section-title">Learning Sessions & Resources Management</h3>
                 </div>
 
                 <div className="mentor-grid" style={{ marginBottom: '30px' }}>
@@ -1231,16 +1231,17 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                     {/* Search & Filter Bar */}
-                    <div className="glass-card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #edf2f7' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>My Mentees <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 400 }}>({filteredStudents.length})</span></h3>
-                        <div className="search-box-refined" style={{ width: '300px', display: 'flex', alignItems: 'center', background: '#f8fafc', borderRadius: '12px', padding: '8px 16px', border: '1px solid #e2e8f0' }}>
-                            <FiSearch style={{ color: '#94a3b8', marginRight: '10px' }} />
+                    <div className="glass-card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-subtle)' }}>
+                        <h3 className="mentor-section-title" style={{ margin: 0 }}>My Mentees <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>({filteredStudents.length})</span></h3>
+                        <div className="courses-search" style={{ border: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
+                            <FiSearch style={{ color: 'var(--text-muted)', marginRight: '10px' }} />
                             <input
                                 type="text"
+                                className="search-input-clean"
+                                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
                                 placeholder="Search by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem', color: '#1e293b' }}
                             />
                         </div>
                     </div>
@@ -1346,7 +1347,7 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                     {/* Upcoming Sessions Preview (Mini) */}
                     <div className="glass-card" style={{ padding: '20px', border: '1px solid #edf2f7' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Upcoming</h3>
+                            <h3 className="sidebar-widget-title" style={{ margin: 0 }}>Upcoming</h3>
                             <span style={{ fontSize: '0.8rem', color: '#3b82f6', cursor: 'pointer' }}>View All</span>
                         </div>
 

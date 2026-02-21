@@ -13,22 +13,19 @@
 /* Global Typography for Student Dashboard */
 .student-layout h1,
 .student-layout h2 {
-    color: var(--admin-text-primary);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
 }
 
 .student-layout h3,
 .student-layout h4 {
-    color: var(--admin-text-secondary);
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
 .student-layout p {
-    color: var(--admin-text-body);
-    line-height: 1.6;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 
@@ -114,7 +111,7 @@
 }
 
 .list-item:hover {
-    background-color: var(--admin-bg-color);
+    background-color: var(--bg-tertiary);
 }
 
 .list-item-icon {

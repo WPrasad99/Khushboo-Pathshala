@@ -325,7 +325,7 @@ const StudentAssignmentSection = () => {
                 style={{
                     position: isFullScreen ? 'fixed' : 'relative',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    background: '#f1f5f9',
+                    background: 'var(--bg-primary)',
                     zIndex: isFullScreen ? 9999 : 1,
                     display: 'flex',
                     flexDirection: 'column',
@@ -336,12 +336,12 @@ const StudentAssignmentSection = () => {
             >
                 {/* Header */}
                 <div style={{
-                    background: '#e2e8f0',
+                    background: 'var(--bg-tertiary)',
                     padding: '12px 24px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    borderBottom: '1px solid #cbd5e1',
+                    borderBottom: '1px solid var(--border-subtle)',
                     flexShrink: 0
                 }}>
                     <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 600 }}>
@@ -356,14 +356,14 @@ const StudentAssignmentSection = () => {
                 <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
                     {/* Left: Question Area */}
-                    <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'white', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                    <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px' }}>
                             <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>
                                 Question {currentQuestionIndex + 1}
                             </h3>
                         </div>
 
-                        <div style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#0f172a', marginBottom: '32px' }}>
+                        <div style={{ fontSize: '1.1rem', lineHeight: '1.6', color: 'var(--text-primary)', marginBottom: '32px' }}>
                             {currentQuestion.question}
                         </div>
 
@@ -373,8 +373,8 @@ const StudentAssignmentSection = () => {
                                     key={idx}
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-                                        background: answers[currentQuestion.id] === idx ? '#eff6ff' : 'white',
-                                        border: `1px solid ${answers[currentQuestion.id] === idx ? '#3b82f6' : '#cbd5e1'}`,
+                                        background: answers[currentQuestion.id] === idx ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+                                        border: `1px solid ${answers[currentQuestion.id] === idx ? 'var(--primary-500)' : 'var(--border-subtle)'}`,
                                         borderRadius: '8px', cursor: 'pointer', transition: 'all 0.1s'
                                     }}
                                 >
@@ -454,23 +454,23 @@ const StudentAssignmentSection = () => {
                     </div>
 
                     {/* Right: Sidebar */}
-                    <div style={{ width: '320px', background: '#f8fafc', borderLeft: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ width: '320px', background: 'var(--bg-primary)', borderLeft: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column' }}>
                         {/* Timer Section */}
-                        <div style={{ padding: '24px', background: '#e2e8f0', textAlign: 'center', borderBottom: '1px solid #cbd5e1' }}>
-                            <div style={{ marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Time Left</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? '#dc2626' : '#1e293b', fontFamily: 'monospace' }}>
+                        <div style={{ padding: '24px', background: 'var(--bg-tertiary)', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
+                            <div style={{ marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Time Left</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? 'var(--admin-status-danger)' : 'var(--text-primary)', fontFamily: 'monospace' }}>
                                 {formatTime(timeLeft)}
                             </div>
                         </div>
 
                         {/* User Info (Placeholder) */}
-                        <div style={{ padding: '16px', background: '#e2e8f0', borderBottom: '1px solid #cbd5e1', marginBottom: '16px' }}>
-                            <div style={{ fontWeight: 700, color: '#1e293b' }}>Section: General</div>
+                        <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border-subtle)', marginBottom: '16px' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Section: General</div>
                         </div>
 
                         {/* Question Palette */}
                         <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
-                            <h4 style={{ margin: '0 0 16px', color: '#1e293b', fontSize: '1rem' }}>Question Palette</h4>
+                            <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)', fontSize: '1rem' }}>Question Palette</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                                 {quizData.questions.map((q, idx) => (
                                     <button
@@ -524,7 +524,7 @@ const StudentAssignmentSection = () => {
                     animate={{ scale: 1 }}
                     style={{
                         maxWidth: '500px', margin: '0 auto', padding: '40px',
-                        background: '#f8faff', borderRadius: '16px', border: '2px solid #3b82f6'
+                        background: 'var(--bg-secondary)', borderRadius: '16px', border: '2px solid var(--primary-500)'
                     }}
                 >
                     <FiCheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px' }} />
@@ -549,7 +549,7 @@ const StudentAssignmentSection = () => {
                     {/* Top Bar: Tabs & Search */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                         {/* Tabs */}
-                        <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
                             {[
                                 { id: 'all', label: 'All Items' },
                                 { id: 'assignments', label: 'Assignments' },
@@ -562,10 +562,10 @@ const StudentAssignmentSection = () => {
                                         padding: '8px 20px',
                                         borderRadius: '8px',
                                         border: 'none',
-                                        background: activeTab === tab.id ? 'white' : 'transparent',
-                                        color: activeTab === tab.id ? '#3b82f6' : '#64748b',
+                                        background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
+                                        color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
                                         fontWeight: activeTab === tab.id ? 700 : 500,
-                                        boxShadow: activeTab === tab.id ? '0 2px 4px -1px rgba(0,0,0,0.1)' : 'none',
+                                        boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s'
                                     }}
@@ -576,24 +576,15 @@ const StudentAssignmentSection = () => {
                         </div>
 
                         {/* Search */}
-                        <div style={{ position: 'relative', minWidth: '300px' }}>
-                            <FiSearch style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
+                            <FiSearch style={{ color: 'var(--text-muted)' }} />
                             <input
                                 type="text"
+                                className="search-input-student"
                                 placeholder="Search by title..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 10px 10px 40px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0',
-                                    fontSize: '0.9rem',
-                                    outline: 'none',
-                                    transition: 'border-color 0.2s'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
                             />
                         </div>
                     </div>
@@ -619,13 +610,13 @@ const StudentAssignmentSection = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 style={{
-                                    background: 'white',
+                                    background: 'var(--bg-secondary)',
                                     borderRadius: '16px',
-                                    border: '1px solid #e2e8f0',
+                                    border: '1px solid var(--border-subtle)',
                                     overflow: 'hidden',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                                    boxShadow: 'var(--admin-shadow-sm)',
                                     transition: 'transform 0.2s, box-shadow 0.2s',
                                     cursor: 'pointer'
                                 }}
@@ -759,10 +750,10 @@ const StudentAssignmentSection = () => {
                     })}
                 </div>
             ) : (
-                <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                    <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
-                    <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No content found</h3>
-                    <p style={{ color: '#64748b', margin: 0 }}>Try adjusting your filters or search query.</p>
+                <div style={{ textAlign: 'center', padding: '60px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px dashed var(--border-subtle)' }}>
+                    <FiFileText size={48} style={{ marginBottom: '16px', color: 'var(--text-muted)' }} />
+                    <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>No content found</h3>
+                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Try adjusting your filters or search query.</p>
                 </div>
             )}
 
@@ -773,7 +764,7 @@ const StudentAssignmentSection = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}
                         onClick={() => setShowSubmitModal(false)}
                     >
                         <motion.div
@@ -781,16 +772,16 @@ const StudentAssignmentSection = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ background: 'white', borderRadius: '24px', padding: '32px', maxWidth: '600px', width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                            style={{ background: 'var(--bg-secondary)', borderRadius: '24px', padding: '32px', maxWidth: '600px', width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: 'var(--admin-shadow-xl)', border: '1px solid var(--border-subtle)' }}
                         >
-                            <h2 style={{ margin: '0 0 8px', fontSize: '1.5rem', color: '#1e293b' }}>{selectedAssignment.title}</h2>
-                            <p style={{ margin: '0 0 24px', color: '#64748b', lineHeight: '1.6' }}>{selectedAssignment.description}</p>
+                            <h2 style={{ margin: '0 0 8px', fontSize: '1.5rem', color: 'var(--text-primary)' }}>{selectedAssignment.title}</h2>
+                            <p style={{ margin: '0 0 24px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{selectedAssignment.description}</p>
 
                             <form onSubmit={handleSubmitAssignment}>
                                 <div style={{ marginBottom: '24px' }}>
-                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: '#334155' }}>File Submission</label>
+                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: 'var(--text-primary)' }}>File Submission</label>
                                     <div
-                                        style={{ border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '32px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' }}
+                                        style={{ border: '2px dashed var(--border-subtle)', borderRadius: '12px', padding: '32px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg-tertiary)', transition: 'all 0.2s' }}
                                         onClick={() => document.getElementById('file-upload').click()}
                                     >
                                         <input
@@ -800,8 +791,8 @@ const StudentAssignmentSection = () => {
                                             style={{ display: 'none' }}
                                             accept=".pdf,.doc,.docx,.ppt,.pptx"
                                         />
-                                        <FiUpload size={32} style={{ color: '#94a3b8', marginBottom: '12px' }} />
-                                        <div style={{ color: '#334155', fontWeight: 500, marginBottom: '4px' }}>
+                                        <FiUpload size={32} style={{ color: 'var(--text-muted)', marginBottom: '12px' }} />
+                                        <div style={{ color: 'var(--text-primary)', fontWeight: 500, marginBottom: '4px' }}>
                                             {selectedFile ? selectedFile.name : 'Click to upload your work'}
                                         </div>
                                         <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
@@ -811,9 +802,9 @@ const StudentAssignmentSection = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '32px' }}>
-                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: '#334155' }}>Comments (Optional)</label>
+                                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: 'var(--text-primary)' }}>Comments (Optional)</label>
                                     <textarea
-                                        style={{ width: '100%', minHeight: '120px', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', resize: 'vertical' }}
+                                        style={{ width: '100%', minHeight: '120px', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', fontSize: '1rem', resize: 'vertical' }}
                                         value={submissionContent}
                                         onChange={(e) => setSubmissionContent(e.target.value)}
                                         placeholder="Add any notes for your mentor..."
@@ -821,8 +812,8 @@ const StudentAssignmentSection = () => {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '16px' }}>
-                                    <button type="button" onClick={() => setShowSubmitModal(false)} style={{ flex: 1, padding: '14px', background: 'white', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                                    <button type="submit" style={{ flex: 1, padding: '14px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={!selectedFile && !submissionContent}>
+                                    <button type="button" onClick={() => setShowSubmitModal(false)} style={{ flex: 1, padding: '14px', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                                    <button type="submit" style={{ flex: 1, padding: '14px', background: 'var(--brand-primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={!selectedFile && !submissionContent}>
                                         <FiSend /> Submit Assignment
                                     </button>
                                 </div>
