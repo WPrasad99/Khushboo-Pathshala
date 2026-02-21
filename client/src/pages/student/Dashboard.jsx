@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { userAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { FiActivity, FiArrowRight, FiCalendar, FiCheckCircle, FiPlayCircle, FiBriefcase, FiBell } from 'react-icons/fi';
+import { FiActivity, FiArrowRight, FiCalendar, FiCheckCircle, FiPlayCircle, FiBriefcase, FiBell, FiSun, FiMoon } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import ActivityHeatmap from './ActivityHeatmap';
@@ -10,6 +10,30 @@ import StudentResourcesSection from '../../components/StudentResourcesSection';
 
 import './Dashboard.css';
 import './DashboardMobileFix.css';
+
+// Simple CountUp Component for Animated Metrics
+const CountUp = ({ value, duration = 1500 }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // easeOutQuart
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            setCount(Math.floor(easeProgress * value));
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                setCount(value);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }, [value, duration]);
+
+    return <span>{count}</span>;
+};
 
 const StudentDashboard = () => {
     const { user } = useAuth();
@@ -29,9 +53,22 @@ const StudentDashboard = () => {
         announcements: []
     });
 
+    // Theme Architecture State
+    const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
+
     useEffect(() => {
         fetchDashboard();
     }, []);
+
+    // Theme Application Effect
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('admin-theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    };
 
     const fetchDashboard = async () => {
         try {
@@ -90,10 +127,15 @@ const StudentDashboard = () => {
         <div className="dashboard-content">
             {/* Header - Only Show in Overview */}
             {isOverview && (
-                <header className="dashboard-header" style={{ marginBottom: '30px' }}>
+                <header className="dashboard-header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <h1 className="welcome-title" style={{ fontSize: '2rem', fontWeight: 800 }}>Hello, {user?.name?.split(' ')[0]} 👋</h1>
-                        <p className="welcome-subtitle" style={{ color: '#64748b', marginTop: '4px' }}>Here's what's happening with your learning today.</p>
+                        <p className="welcome-subtitle" style={{ color: 'var(--admin-text-muted)', marginTop: '4px' }}>Here's what's happening with your learning today.</p>
+                    </div>
+                    <div className="header-actions">
+                        <button className="header-icon-btn" onClick={toggleTheme} title="Toggle Theme">
+                            {theme === 'light' ? <FiMoon /> : <FiSun />}
+                        </button>
                     </div>
                 </header>
             )}
@@ -118,7 +160,7 @@ const StudentDashboard = () => {
                             </div>
                             <div className="stat-info">
                                 <span className="stat-label">Attendance</span>
-                                <span className="stat-value">{stats?.attendancePercentage || 0}%</span>
+                                <span className="stat-value"><CountUp value={stats?.attendancePercentage || 0} />%</span>
                             </div>
                         </motion.div>
 
@@ -136,7 +178,7 @@ const StudentDashboard = () => {
                             </div>
                             <div className="stat-info">
                                 <span className="stat-label">Courses Completed</span>
-                                <span className="stat-value">{stats?.completedCourses || 0}</span>
+                                <span className="stat-value"><CountUp value={stats?.completedCourses || 0} /></span>
                             </div>
                         </motion.div>
 
@@ -154,7 +196,7 @@ const StudentDashboard = () => {
                             </div>
                             <div className="stat-info">
                                 <span className="stat-label">Learning Resources</span>
-                                <span className="stat-value">{stats?.learningResources || 0}</span>
+                                <span className="stat-value"><CountUp value={stats?.learningResources || 0} /></span>
                             </div>
                         </motion.div>
 
@@ -172,11 +214,11 @@ const StudentDashboard = () => {
                                 <div className="stat-value-row">
                                     {stats?.streakStatus === 'paused' ? (
                                         <>
-                                            <span className="stat-value" style={{ fontSize: '1.2rem', color: '#ef4444' }}>Paused</span>
+                                            <span className="stat-value" style={{ fontSize: '1.2rem', color: 'var(--admin-status-danger)' }}>Paused</span>
                                         </>
                                     ) : (
                                         <>
-                                            <span className="stat-value">{stats?.loginStreak || 0}</span>
+                                            <span className="stat-value"><CountUp value={stats?.loginStreak || 0} /></span>
                                             <span className="stat-of">days</span>
                                         </>
                                     )}
@@ -191,7 +233,7 @@ const StudentDashboard = () => {
                         {/* Left: Upcoming Sessions (70%) */}
                         <section>
                             <div className="dashboard-section-header">
-                                <h2><FiCalendar /> Upcoming Sessions & Meetings</h2>
+                                <h2 className="student-section-title"><FiCalendar /> Upcoming Sessions & Meetings</h2>
                                 <span className="count">{upcomingSessions.length}</span>
                             </div>
                             <div className="list-container">
@@ -249,31 +291,32 @@ const StudentDashboard = () => {
                                                 gap: '16px',
                                                 padding: '12px',
                                                 borderRadius: '16px',
-                                                background: '#ffffff',
-                                                border: '1px solid #f1f5f9',
-                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                                background: 'var(--admin-surface)',
+                                                border: '1px solid var(--admin-border-color)',
+                                                boxShadow: 'var(--admin-shadow-sm)',
                                                 cursor: 'pointer',
-                                                transition: 'all 0.3s ease'
+                                                transition: 'var(--admin-transition)'
                                             }}
                                             whileHover={{
                                                 transform: 'translateY(-2px)',
-                                                boxShadow: '0 12px 20px -5px rgba(0, 0, 0, 0.05)',
-                                                borderColor: '#e2e8f0'
+                                                boxShadow: 'var(--admin-shadow-md)',
+                                                borderColor: 'var(--admin-accent-primary)'
                                             }}
                                         >
                                             <div style={{
                                                 width: '44px',
                                                 height: '54px',
-                                                background: '#F8FAFC',
+                                                background: 'var(--admin-bg-color)',
                                                 borderRadius: '12px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                flexShrink: 0
+                                                flexShrink: 0,
+                                                border: '1px solid var(--admin-border-color)'
                                             }}>
-                                                <FiBell style={{ fontSize: '1.1rem', fontWeight: '800', color: '#ef4444' }} />
-                                                <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', fontWeight: '700', color: '#94A3B8', marginTop: '2px' }}>
+                                                <FiBell style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--admin-status-danger)' }} />
+                                                <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', fontWeight: '700', color: 'var(--admin-status-danger)', marginTop: '2px' }}>
                                                     New
                                                 </span>
                                             </div>
@@ -281,7 +324,7 @@ const StudentDashboard = () => {
                                                 <h4 style={{
                                                     fontSize: '0.9rem',
                                                     fontWeight: '700',
-                                                    color: '#1e293b',
+                                                    color: 'var(--admin-text-primary)',
                                                     margin: '0 0 4px 0',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
@@ -291,7 +334,7 @@ const StudentDashboard = () => {
                                                 </h4>
                                                 <p style={{
                                                     fontSize: '0.7rem',
-                                                    color: '#64748b',
+                                                    color: 'var(--admin-text-secondary)',
                                                     margin: 0,
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',

@@ -15,45 +15,52 @@
 }
 
 .courses-header-text h1 {
-    font-size: 1.75rem;
+    font-size: 28px;
     font-weight: 700;
-    color: #1F2937;
-    margin: 0 0 4px 0;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
 }
 
 .courses-header-text p {
-    color: #6B7280;
-    font-size: 0.95rem;
-    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .courses-search {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 10px 18px;
     border-radius: 12px;
-    padding: 12px 16px;
-    min-width: 280px;
-    transition: all 0.2s;
+    width: 100%;
+    max-width: 320px;
+    transition: var(--transition-normal);
 }
 
 .courses-search:focus-within {
-    border-color: #4F46E5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 4px var(--primary-100);
 }
 
 .courses-search svg {
-    color: #9CA3AF;
+    color: var(--text-muted);
 }
 
 .courses-search input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 0.95rem;
     background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.courses-search input:focus {
+    box-shadow: none;
+    outline: none;
+    /* Added to ensure outline is removed */
 }
 
 /* Content Type Tabs */

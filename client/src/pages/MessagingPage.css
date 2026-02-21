@@ -1,17 +1,16 @@
-/* WhatsApp-like Messaging Page Styling */
 .messaging-page {
     display: grid;
     grid-template-columns: 350px 1fr;
     height: 100%;
-    background: #f8fafc;
+    background: var(--bg-primary);
     gap: 0;
     overflow: hidden;
 }
 
 /* Conversations Sidebar */
 .conversations-sidebar {
-    background: white;
-    border-right: 1px solid #e2e8f0;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -19,11 +18,11 @@
 
 .sidebar-header {
     padding: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--bg-secondary);
 }
 
 .sidebar-header h2 {
@@ -74,11 +73,11 @@
 
 .search-box {
     padding: 16px 20px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     gap: 12px;
-    background: white;
+    background: var(--bg-secondary);
 }
 
 .search-box svg {
@@ -209,9 +208,9 @@
 }
 
 .messages-header {
-    background: white;
+    background: var(--bg-secondary);
     padding: 16px 24px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -295,16 +294,17 @@
 }
 
 .message.own .message-bubble {
-    background: #3b82f6;
+    background: var(--primary-500);
     color: white;
     border-bottom-right-radius: 4px;
 }
 
 .message.other .message-bubble {
-    background: white;
-    color: #1e293b;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border-bottom-left-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--admin-shadow-sm);
+    border: 1px solid var(--border-subtle);
 }
 
 .message-bubble p {
@@ -333,9 +333,9 @@
 }
 
 .message-input-container {
-    background: white;
+    background: var(--bg-secondary);
     padding: 16px 24px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-subtle);
     display: flex;
     gap: 12px;
 }

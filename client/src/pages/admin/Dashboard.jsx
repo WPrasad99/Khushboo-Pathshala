@@ -5,7 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
-    FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2, FiMenu, FiX
+    FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2, FiMenu, FiX,
+    FiSun, FiMoon
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
@@ -15,6 +16,30 @@ import CreateUserModal from '../../components/admin/CreateUserModal';
 import BulkUserModal from '../../components/admin/BulkUserModal';
 import '../student/Dashboard.css';
 import './AdminDashboard.css';
+
+// Simple CountUp Component for Animated Metrics
+const CountUp = ({ value, duration = 1500 }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // easeOutQuart
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            setCount(Math.floor(easeProgress * value));
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                setCount(value);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }, [value, duration]);
+
+    return <span>{count}</span>;
+};
 
 const AdminDashboard = () => {
     const { user, logout, socket } = useAuth(); // Get socket from auth context
@@ -31,6 +56,9 @@ const AdminDashboard = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    // Theme Architecture State
+    const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
+
     const [batches, setBatches] = useState([]);
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
@@ -43,6 +71,16 @@ const AdminDashboard = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Theme Application Effect
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('admin-theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    };
 
     // Filter Users Effect
     useEffect(() => {
@@ -169,11 +207,9 @@ const AdminDashboard = () => {
 
     return (
         <div className="dashboard-page">
-            {/* Navbar Refined to match Mentor/Student */}
-            {/* Navbar Refined to match Mentor/Student */}
             <nav className="admin-navbar">
                 <div className="navbar-brand-mentor" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
-                    <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
+                    <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '36px', width: 'auto' }} />
                     <span className="mentor-logo-text">Khushboo Pathshala</span>
                 </div>
 
@@ -219,18 +255,20 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="navbar-right-actions">
+                        <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
+                            {theme === 'light' ? <FiMoon /> : <FiSun />}
+                        </button>
                         <button className="icon-btn" style={{ position: 'relative' }} onClick={() => setShowNotifications(!showNotifications)}>
                             <FiBell />
                             {unreadNotifications > 0 && <span className="notification-dot"></span>}
                         </button>
                         <div className="user-info-pill" onClick={() => navigate('/settings')}>
                             <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky'} alt={user?.name} className="avatar-sm" />
-                            <span>{user?.name?.split(' ')[0]} (Admin)</span>
+                            <span className="user-name-text">{user?.name?.split(' ')[0]} (Admin)</span>
                         </div>
                         <button className="icon-btn" onClick={handleLogout} title="Logout">
                             <FiLogOut />
                         </button>
-                        {/* Mobile Toggle removed from here */}
                     </div>
                 </div>
             </nav>
@@ -336,109 +374,117 @@ const AdminDashboard = () => {
                     {/* Stats & Welcome moved inside Overview */}
                     {activeTab === 'overview' && (
                         <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <h1 style={{ marginBottom: '4px', fontSize: '2rem', fontWeight: 800 }}>Welcome Back, {user?.name?.split(' ')[0]} 👋</h1>
-                                    <p style={{ color: '#64748b', margin: 0 }}>Here's what's happening in your academy today.</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <h1 className="page-title-enterprise">Academy Overview</h1>
+                                    <p className="page-subtitle-enterprise">Real-time metrics and operational status.</p>
                                 </div>
                             </div>
 
-                            <div className="stats-grid" style={{ marginBottom: '24px' }}>
-                                <div className="stat-card stat-card-teal">
-                                    <div className="stat-icon">
-                                        <FiUsers />
+                            <div className="stats-grid">
+                                <div className="stat-card-enterprise">
+                                    <div className="stat-header">
+                                        <div className="stat-icon-wrapper">
+                                            <FiUsers />
+                                        </div>
+                                        <span className="stat-label-enterprise">Total Students</span>
                                     </div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Students</span>
-                                        <span className="stat-value">{stats.totalStudents || 0}</span>
-                                    </div>
+                                    <span className="stat-val-enterprise"><CountUp value={stats.totalStudents || 0} /></span>
                                 </div>
-                                <div className="stat-card stat-card-blue">
-                                    <div className="stat-icon">
-                                        <FiBook />
+                                <div className="stat-card-enterprise">
+                                    <div className="stat-header">
+                                        <div className="stat-icon-wrapper">
+                                            <FiLayers />
+                                        </div>
+                                        <span className="stat-label-enterprise">Total Mentors</span>
                                     </div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Mentors</span>
-                                        <span className="stat-value">{stats.totalMentors || 0}</span>
-                                    </div>
+                                    <span className="stat-val-enterprise"><CountUp value={stats.totalMentors || 0} /></span>
                                 </div>
-                                <div className="stat-card stat-card-orange">
-                                    <div className="stat-icon">
-                                        <FiBook />
+                                <div className="stat-card-enterprise">
+                                    <div className="stat-header">
+                                        <div className="stat-icon-wrapper">
+                                            <FiBook />
+                                        </div>
+                                        <span className="stat-label-enterprise">Total Resources</span>
                                     </div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Resources</span>
-                                        <span className="stat-value">{stats.totalResources || 0}</span>
-                                    </div>
+                                    <span className="stat-val-enterprise"><CountUp value={stats.totalResources || 0} /></span>
                                 </div>
-                                <div className="stat-card stat-card-purple">
-                                    <div className="stat-icon">
-                                        <FiCalendar />
+                                <div className="stat-card-enterprise">
+                                    <div className="stat-header">
+                                        <div className="stat-icon-wrapper">
+                                            <FiCalendar />
+                                        </div>
+                                        <span className="stat-label-enterprise">Total Sessions</span>
                                     </div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Sessions</span>
-                                        <span className="stat-value">{stats.totalSessions || 0}</span>
-                                    </div>
+                                    <span className="stat-val-enterprise"><CountUp value={stats.totalSessions || 0} /></span>
                                 </div>
                             </div>
 
                             {/* Main Grid: Recent Activity & Active Batches */}
-                            <div className="mentor-grid">
+                            <div className="admin-main-grid">
                                 {/* Recent Activity */}
                                 <motion.div
-                                    className="glass-card"
-                                    style={{ padding: '16px 20px' }}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                 >
-                                    <h3 style={{ marginBottom: '16px' }}>
-                                        <FiCalendar style={{ marginRight: '8px' }} /> Recent Session Trackings
-                                    </h3>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div className="section-header">
+                                        <h3 className="section-title">
+                                            <FiCalendar style={{ color: 'var(--admin-text-muted)' }} /> Recent Session Trackings
+                                        </h3>
+                                        <span className="view-all-link">View All</span>
+                                    </div>
+                                    <div className="tracking-list-container">
                                         {dashboardData?.recentTrackings?.slice(0, 5).map((tracking, index) => (
-                                            <div key={index} className="mentee-card" style={{ padding: '12px' }}>
+                                            <div key={index} className={`tracking-row ${tracking.attendanceMarked ? 'is-completed' : 'is-progress'}`}>
                                                 <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1e293b' }}>
+                                                    <div className="tracking-user-name">
                                                         {tracking.user?.name}
                                                     </div>
-                                                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
-                                                        Watched: {tracking.resource?.title}
+                                                    <div className="tracking-resource-title">
+                                                        {tracking.resource?.title}
                                                     </div>
                                                 </div>
-                                                <span className={`badge ${tracking.attendanceMarked ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
+                                                <span className={`status-badge-enterprise ${tracking.attendanceMarked ? 'completed' : 'progress'}`}>
                                                     {tracking.attendanceMarked ? 'Completed' : 'In Progress'}
                                                 </span>
                                             </div>
-                                        )) || <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>No recent activity.</p>}
+                                        )) || <div style={{ padding: '32px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>No recent activity.</div>}
                                     </div>
                                 </motion.div>
 
-                                {/* Active Batches (No Card Wrapper) */}
+                                {/* Active Batches */}
                                 <motion.div
-                                    style={{ padding: '0px 4px' }}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.1 }}
                                 >
-                                    <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
-                                        <FiBook style={{ marginRight: '8px' }} /> Active Batches
-                                    </h3>
+                                    <div className="section-header">
+                                        <h3 className="section-title">
+                                            <FiBook style={{ color: 'var(--admin-text-muted)' }} /> Active Batches
+                                        </h3>
+                                        {/* Optional View All if list goes beyond 5 */}
+                                    </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                         {dashboardData?.recentBatches && dashboardData.recentBatches.length > 0 ? (
                                             dashboardData.recentBatches.slice(0, 6).map((batch) => (
-                                                <div key={batch.id} className="mentee-card" style={{ padding: '14px 16px' }}>
-                                                    <div style={{ flex: 1 }}>
-                                                        <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{batch.name}</div>
-                                                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
-                                                            {(batch._count?.students ?? batch.students?.length ?? 0)} Students
+                                                <div key={batch.id} className="admin-card" style={{ padding: '16px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>{batch.name}</div>
+                                                            <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginTop: '4px' }}>
+                                                                {(batch._count?.students ?? batch.students?.length ?? 0)} Enrolled Students
+                                                            </div>
                                                         </div>
+                                                        <span className="status-badge-enterprise completed">Active</span>
                                                     </div>
-                                                    <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '4px 8px' }}>Active</span>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div style={{ padding: '40px 0', textAlign: 'center', background: 'rgba(255,255,255,0.3)', borderRadius: '16px', border: '1px dashed rgba(0,0,0,0.1)' }}>
-                                                <p style={{ color: '#64748b' }}>No active batches found.</p>
+                                            <div className="empty-state-container">
+                                                <FiLayers className="empty-state-icon" />
+                                                <h4 className="empty-state-title">No Active Batches</h4>
+                                                <p className="empty-state-desc">You haven't assigned any active cohort batches yet.</p>
+                                                <button className="btn-enterprise-secondary" onClick={() => setActiveTab('batches')}>Manage Batches</button>
                                             </div>
                                         )}
                                     </div>
@@ -447,65 +493,30 @@ const AdminDashboard = () => {
 
                             {/* Full Width Section: Latest Announcements */}
                             <motion.div
-                                className="glass-card"
-                                style={{
-                                    padding: '16px 20px',
-                                    marginTop: '24px',
-                                    background: 'rgba(255, 255, 255, 0.15)',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)'
-                                }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
-                                    <FiBell style={{ marginRight: '8px' }} /> Latest Announcements
-                                </h3>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                                    gap: '16px'
-                                }}>
-                                    {announcements && announcements.slice(0, 4).map((ann) => (
-                                        <div key={ann.id} className="mentee-card" style={{
-                                            padding: '16px',
-                                            background: 'white',
-                                            height: '100%',
-                                            display: 'flex',
-                                            flexDirection: 'column'
-                                        }}>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{
-                                                    fontWeight: '600',
-                                                    fontSize: '0.95rem',
-                                                    color: '#1e293b',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap'
-                                                }} title={ann.title}>
-                                                    {ann.title}
-                                                </div>
-                                                <div style={{
-                                                    fontSize: '0.85rem',
-                                                    color: '#64748b',
-                                                    marginTop: '6px',
-                                                    display: '-webkit-box',
-                                                    WebkitLineClamp: 3,
-                                                    WebkitBoxOrient: 'vertical',
-                                                    overflow: 'hidden',
-                                                    wordBreak: 'break-word'
-                                                }}>
-                                                    {ann.content}
-                                                </div>
-                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px' }}>
-                                                    {new Date(ann.createdAt).toLocaleDateString()}
-                                                </div>
+                                <div className="section-header">
+                                    <h3 className="section-title">
+                                        <FiBell style={{ color: 'var(--admin-text-muted)' }} /> Latest Announcements
+                                    </h3>
+                                    <span className="view-all-link" onClick={() => setActiveTab('announcements')}>Manage Announcements</span>
+                                </div>
+
+                                <div className="announcements-grid">
+                                    {announcements && announcements.length > 0 ? (
+                                        announcements.slice(0, 3).map((ann) => (
+                                            <div key={ann.id} className="announcement-card">
+                                                <span className="announcement-category">Academy Notice</span>
+                                                <h4 className="announcement-title" title={ann.title}>{ann.title}</h4>
+                                                <p className="announcement-desc">{ann.content}</p>
+                                                <p className="announcement-meta">Published on {new Date(ann.createdAt).toLocaleDateString()}</p>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {(!announcements || announcements.length === 0) && (
-                                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0' }}>
-                                            <p style={{ color: '#64748b' }}>No announcements yet.</p>
+                                        ))
+                                    ) : (
+                                        <div style={{ gridColumn: '1 / -1', padding: '48px', textAlign: 'center', border: '1px dashed var(--admin-border-color)', borderRadius: 'var(--admin-radius-lg)' }}>
+                                            <p style={{ color: 'var(--admin-text-secondary)', margin: 0 }}>No announcements broadcasted yet.</p>
                                         </div>
                                     )}
                                 </div>
