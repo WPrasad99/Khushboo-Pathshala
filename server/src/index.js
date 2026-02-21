@@ -4893,6 +4893,152 @@ app.post('/api/quizzes/:id/submit', authenticateToken, async (req, res) => {
 });
 
 
+// ============ MISSING BACKEND INTEGRATIONS ============
+
+// 1. Advanced Batch Analytics & Visualizations
+app.get('/api/admin/analytics/attendance-trend', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
+    try {
+        const trackings = await prisma.sessionTracking.findMany({ select: { createdAt: true } });
+        const grouped = trackings.reduce((acc, t) => {
+            const date = t.createdAt.toISOString().split('T')[0];
+            acc[date] = (acc[date] || 0) + 1;
+            return acc;
+        }, {});
+        res.json({ labels: Object.keys(grouped), datasets: [{ label: 'Attendance', data: Object.values(grouped) }] });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/analytics/submission-rate', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
+    try {
+        const subs = await prisma.assignmentSubmission.findMany({ include: { assignment: { include: { batch: true } } } });
+        const grouped = subs.reduce((acc, s) => {
+            const batchName = s.assignment?.batch?.name || 'Unknown';
+            acc[batchName] = (acc[batchName] || 0) + 1;
+            return acc;
+        }, {});
+        res.json({ labels: Object.keys(grouped), datasets: [{ label: 'Submissions', data: Object.values(grouped) }] });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/analytics/batch-comparison', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
+    try {
+        const batches = await prisma.batch.findMany({ include: { _count: { select: { students: true } } } });
+        res.json({ labels: batches.map(b => b.name), datasets: [{ data: batches.map(b => b._count.students) }] });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/mentor/analytics/:batchId', authenticateToken, requireRole('ADMIN', 'MENTOR'), async (req, res) => {
+    try {
+        const students = await prisma.batchStudent.count({ where: { batchId: req.params.batchId } });
+        res.json({ students });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 2. Granular Learning Course Tracking
+app.get('/api/student/courses', authenticateToken, async (req, res) => {
+    try {
+        const courses = await prisma.course.findMany({ include: { modules: { include: { lessons: true } } } });
+        res.json(courses);
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.get('/api/student/courses/:id', authenticateToken, async (req, res) => {
+    try {
+        const course = await prisma.course.findUnique({ where: { id: req.params.id }, include: { modules: { include: { lessons: true } } } });
+        res.json(course);
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.patch('/api/student/courses/:id/progress', authenticateToken, async (req, res) => {
+    try {
+        const { completedLessons, completionPercentage } = req.body;
+        const progress = await prisma.courseProgress.upsert({
+            where: { studentId_courseId: { studentId: req.user.id, courseId: req.params.id } },
+            update: { completedLessons, completionPercentage, lastAccessed: new Date() },
+            create: { studentId: req.user.id, courseId: req.params.id, completedLessons, completionPercentage }
+        });
+        res.json(progress);
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.get('/api/student/courses/:id/progress', authenticateToken, async (req, res) => {
+    try {
+        const progress = await prisma.courseProgress.findUnique({ where: { studentId_courseId: { studentId: req.user.id, courseId: req.params.id } } });
+        res.json(progress || { completedLessons: 0, completionPercentage: 0 });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// 3. Login Heatmap Tracking
+app.get('/api/student/activity', authenticateToken, async (req, res) => {
+    try {
+        const logs = await prisma.loginLog.findMany({ where: { userId: req.user.id }, orderBy: { loginDate: 'asc' } });
+        const dates = [...new Set(logs.map(l => l.loginDate.toISOString().split('T')[0]))];
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const active30 = dates.filter(d => new Date(d) >= thirtyDaysAgo).length;
+
+        let streak = 0;
+        let p = new Date();
+        for (let i = dates.length - 1; i >= 0; i--) {
+            const dStr = p.toISOString().split('T')[0];
+            if (dates.includes(dStr) || dates.includes(new Date(p.getTime() - 86400000).toISOString().split('T')[0])) {
+                streak++; p.setDate(p.getDate() - 1);
+            } else { break; }
+        }
+        res.json({ loginDates: dates, activeDays30: active30, currentStreak: streak });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 4. Notifications
+app.put('/api/notifications/read-all', authenticateToken, async (req, res) => {
+    try {
+        await prisma.notification.updateMany({ where: { userId: req.user.id, read: false }, data: { read: true, readAt: new Date() } });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        await prisma.notification.update({ where: { id: req.params.id }, data: { read: true, readAt: new Date() } });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/notifications/clear', authenticateToken, async (req, res) => {
+    try {
+        await prisma.notification.deleteMany({ where: { userId: req.user.id } });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 5. Forum Upvoting & Threading Complexities
+app.delete('/api/forum/answers/:answerId/upvote', authenticateToken, async (req, res) => {
+    try {
+        await prisma.answerVote.delete({ where: { userId_answerId: { userId: req.user.id, answerId: req.params.answerId } } });
+        await prisma.forumAnswer.update({ where: { id: req.params.answerId }, data: { upvotes: { decrement: 1 } } });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/forum/answers/:id/accept', authenticateToken, async (req, res) => {
+    try {
+        const updated = await prisma.forumAnswer.update({ where: { id: req.params.id }, data: { isAccepted: true } });
+        res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 6. Advanced Quiz and Assignment Grading
+app.post('/api/assignments/submissions/:id/grade', authenticateToken, requireRole('MENTOR', 'ADMIN'), async (req, res) => {
+    try {
+        const { rubricBreakdown, overallScore, feedback } = req.body;
+        const updated = await prisma.assignmentSubmission.update({
+            where: { id: req.params.id },
+            data: { rubricBreakdown, marks: overallScore, feedback, status: 'GRADED', reviewedAt: new Date(), reviewedById: req.user.id }
+        });
+        res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ============ SOCKET.IO EVENTS ============
 
 io.on('connection', (socket) => {

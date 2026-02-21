@@ -70,6 +70,10 @@ model User {
   
   messageReads        MessageRead[]
   messageReactions    MessageReaction[]
+
+  // Missing integrations
+  courseProgresses    CourseProgress[]
+  answerVotes         AnswerVote[]
 }
 
 model LearningResource {
@@ -158,12 +162,29 @@ model ForumAnswer {
   content   String
   authorId  String
   upvotes   Int      @default(0)
+  isAccepted Boolean @default(false)
+  parentAnswerId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   post   ForumPost @relation(fields: [postId], references: [id])
   author User      @relation(fields: [authorId], references: [id])
+  parentAnswer ForumAnswer? @relation("AnswerReplies", fields: [parentAnswerId], references: [id])
+  replies      ForumAnswer[] @relation("AnswerReplies")
+  votes        AnswerVote[]
+}
+
+model AnswerVote {
+  id        String   @id @default(uuid())
+  userId    String
+  answerId  String
+  createdAt DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answer ForumAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, answerId])
 }
 
 model Announcement {
@@ -318,6 +339,7 @@ model Notification {
   message   String
   type      String   @default("info") // info, success, warning, error
   read      Boolean  @default(false)
+  readAt    DateTime?
   createdAt DateTime @default(now())
 
   // Relations
@@ -339,6 +361,7 @@ model Batch {
   resources   LearningResource[]
   announcements AnnouncementBatch[]
   chatGroups  ChatGroup[]
+  courses     Course[]
 }
 
 model BatchStudent {
@@ -392,6 +415,7 @@ model AssignmentSubmission {
   status       String   @default("PENDING")
   marks        Int?
   feedback     String?
+  rubricBreakdown Json?
   reviewedAt   DateTime?
   
   // Relations
@@ -436,4 +460,56 @@ model QuizSubmission {
   status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, AUTO_SUBMITTED
   
   @@unique([quizId, studentId])
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  batchId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  batch       Batch?   @relation(fields: [batchId], references: [id])
+  modules     Module[]
+  progresses  CourseProgress[]
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  moduleId    String
+  title       String
+  type        String   // video, pdf, quiz
+  url         String?
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model CourseProgress {
+  id                   String   @id @default(uuid())
+  studentId            String
+  courseId             String
+  completedLessons     Int      @default(0)
+  completionPercentage Float    @default(0)
+  lastAccessed         DateTime @default(now())
+
+  student              User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course               Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
 }
