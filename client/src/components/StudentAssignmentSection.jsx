@@ -344,7 +344,7 @@ const StudentAssignmentSection = () => {
                     borderBottom: '1px solid var(--border-subtle)',
                     flexShrink: 0
                 }}>
-                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-semibold)' }}>
+                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', fontWeight: 'var(--fw-semibold)' }}>
                         Online Test - {quizData.title}
                     </h2>
                     <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
@@ -358,7 +358,7 @@ const StudentAssignmentSection = () => {
                     {/* Left: Question Area */}
                     <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px' }}>
-                            <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-primary)' }}>
                                 Question {currentQuestionIndex + 1}
                             </h3>
                         </div>

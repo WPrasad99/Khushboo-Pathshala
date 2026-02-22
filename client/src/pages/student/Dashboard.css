@@ -1,50 +1,26 @@
-/* 1. GLOBAL VARIABLES & LAYOUT */
+/* 1. GLOBAL VARIABLES & LAYOUT (Now matching core theme tokens) */
 :root {
-    /* Student Theme - Indigo Foundation (Matches Admin) */
-    --student-primary: #4F46E5;
-    --student-primary-hover: #4338CA;
-    --student-bg: #F8FAFC;
-    --student-card: #FFFFFF;
-    --student-border: #E5E7EB;
-    --student-text-primary: #111827;
-    --student-text-secondary: #6B7280;
-    --student-text-muted: #9CA3AF;
+    --student-primary: var(--color-primary);
+    --student-primary-hover: var(--color-primary-hover);
+    --student-bg: var(--color-bg);
+    --student-card: var(--color-surface);
+    --student-border: var(--color-border);
+    --student-text-primary: var(--text-primary);
+    --student-text-secondary: var(--text-secondary);
+    --student-text-muted: var(--text-muted);
 
-    --student-success: #10B981;
-    --student-warning: #F59E0B;
-    --student-danger: #EF4444;
+    --student-success: var(--color-success);
+    --student-warning: var(--color-warning);
+    --student-danger: var(--color-error);
 
     /* Theme Tokens Mapped */
     --student-bg-color: var(--student-bg);
     --student-surface: var(--student-card);
     --student-border-color: var(--student-border);
-    --student-input-bg: var(--student-card);
+    --student-input-bg: var(--bg-tertiary);
 
-    /* Spacing & Radius */
-    --radius-sm: 8px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-
-    /* Shadows */
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
-    --shadow-glow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-
-    --student-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[data-theme="dark"] {
-    --student-bg: #0F172A;
-    --student-card: #111827;
-    --student-border: #1F2937;
-    --student-text-primary: #F9FAFB;
-    --student-text-secondary: #9CA3AF;
-    --student-text-muted: #6B7280;
-    --student-primary: #6366F1;
-    --student-input-bg: #1e293b;
-
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.35);
+    /* Transition */
+    --student-transition: var(--transition-normal);
 }
 
 .student-dashboard-shell {
@@ -154,7 +130,8 @@
 
 /* 3. PAGE CONTENT CONTAINER */
 .dashboard-content {
-    max-width: 1320px;
+    max-width: 1200px;
+    /* Matched to requested exact layout */
     width: 100%;
     margin: 0 auto;
     padding: 32px;
@@ -165,12 +142,25 @@
     box-sizing: border-box;
 }
 
+@media (max-width: 1024px) {
+    .dashboard-content {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-content {
+        padding: 16px;
+    }
+}
+
 /* 4. PAGE HERO (HELLO SECTION) */
 .student-hero-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: transparent;
+    padding-bottom: 8px;
 }
 
 .hero-text h1 {
@@ -239,19 +229,32 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    gap: 20px;
+    align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stat-card {
     background-color: var(--student-surface);
     border: 1px solid var(--student-border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 14px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 16px;
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: var(--student-transition);
 }
 
@@ -317,18 +320,23 @@
 /* 6. MAIN CONTENT PANELS (SESSIONS & ANNOUNCEMENTS) */
 .dashboard-sections {
     display: grid;
-    /* 12-column equivalent layout mapping for 2 sub-sections */
     grid-template-columns: 2fr 1fr;
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+    }
 }
 
 .dashboard-panel {
     background-color: var(--student-surface);
     border: 1px solid var(--student-border-color);
     border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: var(--shadow-card);
+    padding: 20px;
+    box-shadow: min(0 4px 12px rgba(0, 0, 0, 0.05));
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -367,7 +375,7 @@
 .announcements-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .session-card {
@@ -459,39 +467,27 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 60px 20px;
     text-align: center;
     background: transparent;
     border-radius: var(--radius-lg);
 }
 
 .empty-icon {
-    font-size: 32px;
+    font-size: 40px;
     color: var(--student-text-muted);
-    opacity: 0.5;
-    margin-bottom: 12px;
+    opacity: 0.3;
+    margin-bottom: 16px;
 }
 
 .empty-text {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--student-text-secondary);
 }
 
 /* 7. RESPONSIVE BEHAVIOR */
 @media (max-width: 1024px) {
-    .dashboard-sections {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dashboard-content {
-        padding: 24px;
-    }
-
     .student-search-bar {
         width: 280px;
     }

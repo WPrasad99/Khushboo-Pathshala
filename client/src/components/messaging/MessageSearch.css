@@ -116,3 +116,27 @@
     font-size: var(--fs-small);
     color: var(--color-text-muted);
 }
+
+/* Dark Theme */
+[data-theme="dark"] .message-search {
+    background: var(--bg-secondary);
+    border-color: var(--border-subtle);
+}
+[data-theme="dark"] .search-header {
+    border-color: var(--border-subtle);
+}
+[data-theme="dark"] .search-header h3 {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .search-input {
+    background: var(--bg-tertiary);
+}
+[data-theme="dark"] .search-input input {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .search-result-item:hover {
+    background: var(--bg-tertiary);
+}
+[data-theme="dark"] .result-name {
+    color: var(--text-primary);
+}

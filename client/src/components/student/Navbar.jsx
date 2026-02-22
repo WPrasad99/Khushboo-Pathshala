@@ -230,21 +230,23 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                 </nav>
             </div>
 
-            <form className="kp-global-search" onSubmit={handleSearch}>
-                <FiSearch className="kp-search-icon" />
-                <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search learning, assignments, mentorship..."
-                    aria-label="Global search"
-                />
-            </form>
+            <div className="kp-global-search-wrapper">
+                <form className="kp-global-search" onSubmit={handleSearch}>
+                    <FiSearch className="kp-search-icon" />
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder="Search learning, assignments, mentorship..."
+                        aria-label="Global search"
+                    />
+                </form>
+            </div>
 
             <div className="kp-topbar-actions">
                 <button
                     type="button"
-                    className="kp-icon-btn"
+                    className="icon-btn"
                     onClick={() => navigate('/student/messages')}
                     aria-label="Messages"
                     title="Messages"
@@ -253,13 +255,14 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                     {unreadMessages > 0 && <span className="kp-dot">{unreadMessages > 9 ? '9+' : unreadMessages}</span>}
                 </button>
 
-                <div className="kp-dropdown-anchor" ref={notifRef}>
+                <div className="kp-notification-wrap" ref={notifRef}>
                     <button
                         type="button"
-                        className="kp-icon-btn"
+                        className="icon-btn"
                         onClick={handleToggleNotifications}
                         aria-label="Notifications"
                         title="Notifications"
+                        aria-expanded={showNotifications}
                     >
                         <FiBell />
                         {unreadNotifications > 0 && <span className="kp-dot">{unreadNotifications > 9 ? '9+' : unreadNotifications}</span>}
@@ -309,7 +312,7 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                     </AnimatePresence>
                 </div>
 
-                <button type="button" className="kp-icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+                <button type="button" className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
                     {theme === 'dark' ? <FiSun /> : <FiMoon />}
                 </button>
 
@@ -354,7 +357,7 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                     </AnimatePresence>
                 </div>
 
-                <button type="button" className="kp-icon-btn kp-collapse-btn" onClick={onToggleSidebar} aria-label="Collapse sidebar">
+                <button type="button" className="icon-btn kp-collapse-btn" onClick={onToggleSidebar} aria-label="Collapse sidebar">
                     <FiMenu />
                 </button>
             </div>

@@ -14,6 +14,36 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 
+// Define rate limiters to prevent DoS/Brute-force
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 1000, // Limit each IP to 1000 requests per 15 minutes
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 login requests per 15 minutes
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: 'Too many login attempts, please try again after 15 minutes'
+});
+
+const validateUploadedFile = (req, res, next) => {
+    if (req.file) {
+        const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|zip/;
+        const extname = allowedTypes.test(path.extname(req.file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(req.file.mimetype);
+
+        if (!extname || !mimetype) {
+            return res.status(400).json({ error: 'Invalid file type.' });
+        }
+    }
+    next();
+};
+
 const app = express();
 
 const session = require('express-session');

@@ -187,6 +187,17 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleRoleChange = async (userId, newRole) => {
+        try {
+            await adminAPI.updateUserRole(userId, { role: newRole });
+            // Show subtle success indication if possible, for now fetchData is okay
+            fetchData();
+        } catch (error) {
+            console.error('Failed to update role:', error);
+            alert('Failed to update user role. Please try again.');
+        }
+    };
+
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -598,7 +609,7 @@ const AdminDashboard = () => {
                             right: 0,
                             bottom: 0,
                             zIndex: 100,
-                            background: '#fff'
+                            background: 'var(--bg-secondary)'
                         }}>
                             <MessagingPage />
                         </div>
@@ -609,198 +620,199 @@ const AdminDashboard = () => {
                     )}
 
                     {activeTab === 'users' && (
-                        <motion.div
-                            className="glass-card"
-                            style={{ padding: 'var(--spacing-xl)' }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                                <h3 style={{ marginBottom: 0 }}>
-                                    <FiUsers style={{ marginRight: 'var(--spacing-sm)' }} /> User Management
-                                </h3>
-                                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                        <div className="admin-page-container">
+                            <header className="admin-section-header">
+                                <div className="title-stack">
+                                    <h1><FiUsers /> User Management</h1>
+                                    <p>Manage access, assign roles, and track academy membership.</p>
+                                </div>
+                                <div className="header-actions">
                                     <button
-                                        className="btn-glass-secondary"
+                                        className="btn-admin-outline"
                                         onClick={() => setShowBulkUserModal(true)}
                                     >
-                                        <FiPlus /> Create Bulk Users
+                                        <FiPlus /> Bulk Create
                                     </button>
                                     <button
-                                        className="btn-glass-primary"
+                                        className="btn-admin-primary"
                                         onClick={() => setShowCreateUserModal(true)}
                                     >
                                         <FiPlus /> New User
                                     </button>
                                 </div>
-                            </div>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>User</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Email</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Role</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Joined</th>
-                                            <th style={{ textAlign: 'left', padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)' }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredUsers.map((u) => (
-                                            <tr key={u.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                                                        <img src={u.avatar} alt={u.name} className="avatar avatar-sm" />
-                                                        <span style={{ fontWeight: 'var(--fw-medium)' }}>{u.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                                                    {u.email}
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)' }}>
-                                                    <span className={`badge ${u.role === 'ADMIN' ? 'badge-danger' :
-                                                        u.role === 'MENTOR' ? 'badge-warning' : 'badge-primary'
-                                                        }`}>
-                                                        {u.role}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-                                                    {new Date(u.createdAt).toLocaleDateString()}
-                                                </td>
-                                                <td style={{ padding: 'var(--spacing-md)', display: 'flex', gap: '8px' }}>
-                                                    <select
-                                                        className="select"
-                                                        style={{ minWidth: '120px', padding: 'var(--spacing-xs) var(--spacing-sm)' }}
-                                                        value={u.role}
-                                                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                                                    >
-                                                        <option value="STUDENT">Student</option>
-                                                        <option value="MENTOR">Mentor</option>
-                                                        <option value="ADMIN">Admin</option>
-                                                    </select>
-                                                    <button
-                                                        className="btn-icon-sm"
-                                                        onClick={() => handleDeleteUser(u.id)}
-                                                        title="Delete User"
-                                                        style={{ color: '#ef4444', background: '#fee2e2' }}
-                                                    >
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </td>
+                            </header>
+
+                            <div className="admin-table-card">
+                                <div className="table-responsive">
+                                    <table className="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>User Profile</th>
+                                                <th>Email Address</th>
+                                                <th className="text-center">Role</th>
+                                                <th className="text-center">Joined Date</th>
+                                                <th className="text-right">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {filteredUsers.length > 0 ? filteredUsers.map((u) => (
+                                                <tr key={u.id} className="admin-table-row">
+                                                    <td>
+                                                        <div className="user-stack">
+                                                            <div className="avatar-wrapper">
+                                                                <img src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} alt={u.name} />
+                                                                <div className="status-ring" />
+                                                            </div>
+                                                            <span className="user-name">{u.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className="user-email">{u.email}</span>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span className={`role-badge ${u.role.toLowerCase()}`}>
+                                                            {u.role}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span className="date-text">{new Date(u.createdAt).toLocaleDateString()}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="table-actions">
+                                                            <select
+                                                                className="role-selector"
+                                                                value={u.role}
+                                                                onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                                                            >
+                                                                <option value="STUDENT">Student</option>
+                                                                <option value="MENTOR">Mentor</option>
+                                                                <option value="ADMIN">Admin</option>
+                                                            </select>
+                                                            <button
+                                                                className="btn-delete-ghost"
+                                                                onClick={() => handleDeleteUser(u.id)}
+                                                                title="Delete User"
+                                                            >
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )) : (
+                                                <tr>
+                                                    <td colSpan="5" className="empty-table-state">
+                                                        No users found matching your search.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </motion.div>
+                        </div>
                     )}
 
                     {activeTab === 'announcements' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            {/* New Announcement Section - Always Open */}
-                            <motion.div
-                                className="glass-card"
-                                style={{ padding: 'var(--spacing-xl)' }}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-                                    <h3 style={{ margin: 0 }}>
-                                        <FiPlus style={{ marginRight: 'var(--spacing-sm)' }} /> Create New Announcement
-                                    </h3>
+                        <div className="admin-page-container">
+                            <header className="admin-section-header">
+                                <div className="title-stack">
+                                    <h1><FiBell /> Announcements</h1>
+                                    <p>Broadcast notices and updates to specific batches or the entire academy.</p>
                                 </div>
+                            </header>
 
-                                <motion.form
-                                    onSubmit={handleAddAnnouncement}
-                                >
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Title</label>
-                                        <input
-                                            type="text"
-                                            className="input"
-                                            value={newAnnouncement.title}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                                            required
-                                            placeholder="Enter announcement title..."
-                                        />
+                            <div className="admin-card-container">
+                                <header className="card-inner-header">
+                                    <h2><FiPlus /> Create New Announcement</h2>
+                                    <div className="divider" />
+                                </header>
+
+                                <form onSubmit={handleAddAnnouncement} className="announcement-form">
+                                    <div className="form-row">
+                                        <div className="input-group full">
+                                            <label>Announcement Title</label>
+                                            <input
+                                                type="text"
+                                                className="admin-input"
+                                                value={newAnnouncement.title}
+                                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                                                required
+                                                placeholder="e.g., Upcoming Holiday Notice"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Content</label>
-                                        <textarea
-                                            className="input"
-                                            rows={4}
-                                            value={newAnnouncement.content}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
-                                            required
-                                            placeholder="Enter announcement details..."
-                                        />
+
+                                    <div className="form-row">
+                                        <div className="input-group full">
+                                            <label>Message Content</label>
+                                            <textarea
+                                                className="admin-textarea"
+                                                value={newAnnouncement.content}
+                                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
+                                                required
+                                                placeholder="Write your announcement details here..."
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-md)' }}>
-                                        <label>Priority</label>
-                                        <select
-                                            className="select"
-                                            value={newAnnouncement.priority}
-                                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })}
-                                        >
-                                            <option value="low">Low</option>
-                                            <option value="normal">Normal</option>
-                                            <option value="high">High</option>
-                                        </select>
+
+                                    <div className="form-row split">
+                                        <div className="input-group">
+                                            <label>Priority Level</label>
+                                            <div className="select-wrapper">
+                                                <select
+                                                    className="admin-select"
+                                                    value={newAnnouncement.priority}
+                                                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })}
+                                                >
+                                                    <option value="low">Low Priority</option>
+                                                    <option value="normal">Normal</option>
+                                                    <option value="high">High Priority</option>
+                                                </select>
+                                                <div className={`priority-indicator ${newAnnouncement.priority}`} />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="input-group" style={{ marginBottom: 'var(--spacing-lg)' }}>
-                                        <label>Target Batches (optional - leave empty for all students)</label>
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                                            gap: '12px',
-                                            padding: 'var(--space-20)',
-                                            background: '#f8fafc',
-                                            borderRadius: '8px',
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            {batches.length > 0 ? batches.map(batch => (
-                                                <label key={batch.id} style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    cursor: 'pointer',
-                                                    padding: '8px',
-                                                    background: (newAnnouncement.batchIds || []).includes(batch.id) ? '#dbeafe' : 'white',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid',
-                                                    borderColor: (newAnnouncement.batchIds || []).includes(batch.id) ? '#3b82f6' : '#e2e8f0',
-                                                    transition: 'all 0.2s'
-                                                }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={(newAnnouncement.batchIds || []).includes(batch.id)}
-                                                        onChange={() => handleBatchSelection(batch.id)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    />
-                                                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-medium)' }}>{batch.name}</span>
-                                                </label>
-                                            )) : (
-                                                <p style={{ color: 'var(--color-text-)', gridColumn: '1 / -1' }}>No batches available</p>
+
+                                    <div className="input-group full">
+                                        <label>Target Batches <span className="helper-text">(Optional — leave empty for all students)</span></label>
+                                        <div className="batch-chips-grid">
+                                            {batches.length > 0 ? batches.map(batch => {
+                                                const isSelected = (newAnnouncement.batchIds || []).includes(batch.id);
+                                                return (
+                                                    <div
+                                                        key={batch.id}
+                                                        className={`batch-chip-card ${isSelected ? 'selected' : ''}`}
+                                                        onClick={() => handleBatchSelection(batch.id)}
+                                                    >
+                                                        <div className="chip-checkbox">
+                                                            {isSelected && <FiCheckCircle />}
+                                                        </div>
+                                                        <div className="chip-info">
+                                                            <span className="batch-name">{batch.name}</span>
+                                                            <span className="batch-meta">{(batch._count?.students ?? batch.students?.length ?? 0)} Students</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }) : (
+                                                <div className="empty-selection-state">No batches created yet.</div>
                                             )}
                                         </div>
-                                        <small style={{ color: 'var(--color-text-)', marginTop: '4px', display: 'block' }}>
-                                            Select specific batches or leave empty to send to all students
-                                        </small>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '12px' }}>
-                                        <button type="submit" className="btn btn-primary">
-                                            Publish Announcement
-                                        </button>
+
+                                    <footer className="form-actions">
                                         <button
                                             type="button"
-                                            className="btn btn-ghost"
+                                            className="btn-admin-secondary"
                                             onClick={() => setNewAnnouncement({ title: '', content: '', priority: 'normal', batchIds: [] })}
                                         >
-                                            Clear
+                                            Clear Form
                                         </button>
-                                    </div>
-                                </motion.form>
-                            </motion.div>
+                                        <button type="submit" className="btn-admin-primary">
+                                            Publish Announcement
+                                        </button>
+                                    </footer>
+                                </form>
+                            </div>
                         </div>
                     )}
                 </motion.div>
