@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
     FiActivity,
+    FiArrowRight,
     FiAward,
     FiBookOpen,
     FiCalendar,
     FiCheckCircle,
     FiClock,
     FiBell,
-    FiFileText
+    FiFileText,
+    FiTrendingUp
 } from 'react-icons/fi';
 import { userAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
@@ -55,7 +58,6 @@ const CountUp = ({ value, duration = 1500 }) => {
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            // easeOutQuart
             const easeProgress = 1 - Math.pow(1 - progress, 4);
             setCount(Math.floor(easeProgress * value));
             if (progress < 1) {
@@ -106,8 +108,6 @@ const StudentDashboard = () => {
 
         fetchDashboard();
     }, []);
-
-    // Removed undefined theme effect
 
     const activeDaysIn30 = useMemo(() => {
         const threshold = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -216,7 +216,6 @@ const StudentDashboard = () => {
             <section className="stats-grid">
                 {metricCards.map((card, index) => {
                     const Icon = card.icon;
-                    // Map generic tones to specific CSS theme tones for icons
                     const toneMap = { success: 'teal', primary: 'blue', accent: 'purple', warning: 'orange' };
                     const themeTone = toneMap[card.tone] || 'blue';
                     return (
