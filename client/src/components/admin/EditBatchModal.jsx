@@ -224,7 +224,7 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
                                             </div>
 
                                             {/* Available to Add */}
-                                            <div className="add-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--space-20)', background: '#f8fafc' }}>
+                                            <div className="add-list" style={{ overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--space-20)', background: 'var(--bg-tertiary)' }}>
                                                 <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', textTransform: 'uppercase' }}>
                                                     Available to Add
                                                 </h4>
@@ -232,7 +232,7 @@ const EditBatchModal = ({ batchId, onClose, onSuccess }) => {
                                                     activeTab === 'students' ? availableStudents : availableMentors,
                                                     currentMembers[activeTab].map(u => u.id)
                                                 ).map(user => (
-                                                    <div key={user.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: 'white', borderRadius: '8px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                                                    <div key={user.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '8px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                                                             <img src={user.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
                                                             <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>

@@ -40,10 +40,10 @@ const CalendarWidget = ({ meetings = [] }) => {
     const selectedMeetings = getMeetingsForDate(selectedDate);
 
     return (
-        <div className="glass-card" style={{ padding: '0', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+        <div className="glass-card" style={{ padding: '0', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
             <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)' }}>
+                    <h3 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', fontWeight: 'var(--fw-bold)' }}>
                         {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                     </h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -114,7 +114,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                                     padding: 'var(--space-24)',
                                     borderRadius: '12px',
                                     border: '1px solid #e2e8f0',
-                                    background: 'white',
+                                    background: 'var(--bg-secondary)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
@@ -124,7 +124,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                                     <div>
-                                        <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b', marginBottom: '4px' }}>
+                                        <div style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--text-primary)', marginBottom: '4px' }}>
                                             {meeting.title || meeting.discussionSummary || 'Mentorship Session'}
                                         </div>
                                         <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -163,7 +163,7 @@ const CalendarWidget = ({ meetings = [] }) => {
                                             <FiVideo /> Join
                                         </a>
                                     ) : (
-                                        <div style={{ padding: '8px 16px', background: '#f1f5f9', color: 'var(--color-text-)', borderRadius: '8px', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', whiteSpace: 'nowrap' }}>
+                                        <div style={{ padding: '8px 16px', background: 'var(--bg-tertiary)', color: 'var(--color-text-)', borderRadius: '8px', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', whiteSpace: 'nowrap' }}>
                                             Offline
                                         </div>
                                     );

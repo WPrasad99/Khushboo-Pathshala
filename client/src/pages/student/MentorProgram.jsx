@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mentorshipAPI } from '../../api';
-import { FiArrowLeft, FiSearch, FiBell, FiUser, FiLogOut, FiCalendar, FiMessageCircle } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { FiCalendar, FiMessageCircle, FiUser } from 'react-icons/fi';
+import { AnimatePresence } from 'framer-motion';
 import './Dashboard.css';
 import './MentorProgram.css';
 
 const MentorProgram = () => {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
     const [mentorship, setMentorship] = useState(null);
     const [batches, setBatches] = useState([]);
     const [upcomingMeetings, setUpcomingMeetings] = useState([]);
@@ -65,7 +63,7 @@ const MentorProgram = () => {
             setShowMsgModal(false);
             setFormData({ date: '', message: '' });
             fetchMentorshipData();
-        } catch (error) {
+        } catch {
             alert("Failed to perform action.");
         } finally {
             setActionLoading(false);
@@ -192,7 +190,7 @@ const MentorProgram = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         style={{
-                                            background: 'white',
+                                            background: 'var(--bg-secondary)',
                                             borderRadius: '12px',
                                             padding: '20px',
                                             border: '1px solid #E5E7EB',
@@ -200,8 +198,8 @@ const MentorProgram = () => {
                                         }}
                                     >
                                         <h3 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1F2937', marginBottom: '8px' }}>{batch.name}</h3>
-                                        <p style={{ fontSize: 'var(--fs-body)', color: '#6B7280', marginBottom: '12px' }}>{batch.description || 'No description available'}</p>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: 'var(--fs-small)', color: '#6B7280' }}>
+                                        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', marginBottom: '12px' }}>{batch.description || 'No description available'}</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: 'var(--fs-small)', color: 'var(--text-secondary)' }}>
                                             {batch.mentors && batch.mentors.length > 0 && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     <span style={{ fontWeight: 'var(--fw-semibold)', color: '#4F46E5' }}>Mentors:</span>

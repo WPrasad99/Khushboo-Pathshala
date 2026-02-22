@@ -344,7 +344,7 @@ const MentorDashboard = () => {
                                 right: 0,
                                 bottom: 0,
                                 zIndex: 100,
-                                background: '#fff'
+                                background: 'var(--bg-secondary)'
                             }}>
                                 <MessagingPage initialChatUser={startChatUser} onClearInitialChatUser={handleClearStartChat} />
                             </div>
@@ -626,7 +626,7 @@ const BatchesSection = ({ batches }) => {
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={e => e.stopPropagation()}
                             style={{
-                                background: 'white',
+                                background: 'var(--bg-secondary)',
                                 borderRadius: '24px',
                                 padding: '32px',
                                 width: '100%',
@@ -638,10 +638,10 @@ const BatchesSection = ({ batches }) => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedBatch.name}</h2>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: 'var(--text-primary)' }}>{selectedBatch.name}</h2>
                                     <p style={{ margin: '4px 0 0', color: 'var(--color-text-)' }}>{selectedBatch.studentsCount} Students • {selectedBatch.status}</p>
                                 </div>
-                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-)' }}>
+                                <button onClick={() => setSelectedBatch(null)} style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-)' }}>
                                     <FiX size={20} />
                                 </button>
                             </div>
@@ -662,7 +662,7 @@ const BatchesSection = ({ batches }) => {
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <img src={s.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>{s.name}</div>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--text-primary)' }}>{s.name}</div>
                                                             <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>{s.email}</div>
                                                         </div>
                                                     </div>
@@ -670,8 +670,8 @@ const BatchesSection = ({ batches }) => {
                                                 <td style={{ padding: 'var(--space-24)', color: 'var(--color-text-)' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
                                                 <td style={{ padding: 'var(--space-24)', textAlign: 'right' }}>
                                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.5 }}>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiUser size={14} /></button>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'var(--bg-secondary)', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiUser size={14} /></button>
+                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'var(--bg-secondary)', color: 'var(--color-text-)', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -684,7 +684,7 @@ const BatchesSection = ({ batches }) => {
                 )}
             </AnimatePresence>
 
-            <h2 style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#1e293b', marginBottom: '24px' }}>Your Batches</h2>
+            <h2 style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)', marginBottom: '24px' }}>Your Batches</h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                 {batches && batches.length > 0 ? (
@@ -696,7 +696,7 @@ const BatchesSection = ({ batches }) => {
                             style={{
                                 padding: '0',
                                 overflow: 'hidden',
-                                background: 'white',
+                                background: 'var(--bg-secondary)',
                                 border: '1px solid #e2e8f0',
                                 borderRadius: '20px',
                                 height: '100%',
@@ -721,7 +721,7 @@ const BatchesSection = ({ batches }) => {
                                 </div>
                                 <div style={{
                                     width: '48px', height: '48px',
-                                    background: 'white', borderRadius: '12px',
+                                    background: 'var(--bg-secondary)', borderRadius: '12px',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     marginBottom: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                                 }}>
@@ -764,7 +764,7 @@ const BatchesSection = ({ batches }) => {
                                         style={{
                                             width: '100%',
                                             padding: 'var(--space-20)',
-                                            background: '#f8fafc',
+                                            background: 'var(--bg-tertiary)',
                                             border: '1px solid #e2e8f0',
                                             borderRadius: '12px',
                                             color: '#3b82f6',
@@ -784,7 +784,7 @@ const BatchesSection = ({ batches }) => {
                     ))
                 ) : (
                     <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--color-text-)' }}>
-                        <div style={{ background: '#f1f5f9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                        <div style={{ background: 'var(--bg-tertiary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                             <FiLayers size={32} opacity={0.5} />
                         </div>
                         <h3>No Batches Assigned</h3>
@@ -1009,7 +1009,7 @@ const SessionsSection = ({ batches }) => {
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                background: 'white',
+                                background: 'var(--bg-secondary)',
                                 borderRadius: '16px',
                                 padding: '32px',
                                 maxWidth: '500px',
@@ -1111,7 +1111,7 @@ const SessionsSection = ({ batches }) => {
                                             flex: 1,
                                             padding: 'var(--space-20)',
                                             border: '1px solid #e2e8f0',
-                                            background: 'white',
+                                            background: 'var(--bg-secondary)',
                                             borderRadius: '8px',
                                             cursor: 'pointer'
                                         }}
@@ -1197,7 +1197,7 @@ const ScheduleMeetingModal = ({ isOpen, onClose, batches, onSuccess }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 style={{
-                    background: 'white', padding: '24px', borderRadius: '16px',
+                    background: 'var(--bg-secondary)', padding: '24px', borderRadius: '16px',
                     width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
                 }}
@@ -1322,7 +1322,7 @@ const UploadAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 style={{
-                    background: 'white', padding: '24px', borderRadius: '16px',
+                    background: 'var(--bg-secondary)', padding: '24px', borderRadius: '16px',
                     width: '100%', maxWidth: '400px',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
                 }}
@@ -1433,14 +1433,14 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                         {filteredStudents.length > 0 ? (
                             filteredStudents.map((s, idx) => (
-                                <div key={s.id || idx} className="mentee-card-modern" style={{ position: 'relative', padding: '20px', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', transition: 'all 0.3s ease' }}>
+                                <div key={s.id || idx} className="mentee-card-modern" style={{ position: 'relative', padding: '20px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid #f1f5f9', transition: 'all 0.3s ease' }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '16px' }}>
                                         <div className="avatar-wrapper">
                                             <img src={s.avatar} alt={s.name} className="avatar-lg" style={{ width: '56px', height: '56px' }} />
                                             <div className="status-indicator online" style={{ width: '12px', height: '12px', border: '2px solid white' }}></div>
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-h3)', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
+                                            <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
                                             <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', marginTop: '4px' }}>{s.batchName}</div>
                                             <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', marginTop: '2px' }}>{s.email}</div>
                                         </div>
@@ -1452,7 +1452,7 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                                             <span>Course Progress</span>
                                             <span style={{ fontWeight: 'var(--fw-semibold)', color: '#3b82f6' }}>75%</span>
                                         </div>
-                                        <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                                        <div style={{ height: '6px', background: 'var(--bg-tertiary)', borderRadius: '3px', overflow: 'hidden' }}>
                                             <div style={{ width: '75%', height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
                                         </div>
                                     </div>
@@ -1474,7 +1474,7 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
                                 </div>
                             ))
                         ) : (
-                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--color-text-)', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
+                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--color-text-)', background: 'var(--bg-tertiary)', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
                                 <FiUsers size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
                                 <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-medium)' }}>No students found matching "{searchTerm}"</p>
                             </div>
@@ -1536,13 +1536,13 @@ const MentorshipSection = ({ students, batches, logs, onRefresh, onStartChat }) 
 
                         {/* Mock Mini List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px', background: '#fff', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px', background: 'var(--bg-secondary)', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px', background: '#eff6ff', borderRadius: '8px', minWidth: '50px' }}>
                                     <span style={{ fontSize: 'var(--fs-small)', color: '#3b82f6', fontWeight: 'var(--fw-bold)' }}>FEB</span>
-                                    <span style={{ fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)' }}>20</span>
+                                    <span style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', fontWeight: 'var(--fw-bold)' }}>20</span>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>Resume Review</div>
+                                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-primary)' }}>Resume Review</div>
                                     <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>10:00 AM • Online</div>
                                 </div>
                             </div>
@@ -1622,7 +1622,7 @@ const ForumSection = ({ batches }) => {
             <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: 'linear-gradient(to bottom, #ffffff, #f8fafc)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                     <div>
-                        <h3 style={{ fontSize: 'var(--fs-h2)', margin: 0, color: '#1e293b' }}>Q&A / Discussion Forum</h3>
+                        <h3 style={{ fontSize: 'var(--fs-h2)', margin: 0, color: 'var(--text-primary)' }}>Q&A / Discussion Forum</h3>
                         <p style={{ margin: '4px 0 0', color: 'var(--color-text-)', fontSize: 'var(--fs-body)' }}>Engage with your students and solve their queries</p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
@@ -1634,7 +1634,7 @@ const ForumSection = ({ batches }) => {
                                     padding: '10px 16px',
                                     borderRadius: '12px',
                                     border: '1px solid #e2e8f0',
-                                    background: 'white',
+                                    background: 'var(--bg-secondary)',
                                     color: 'var(--color-text-)',
                                     fontWeight: 'var(--fw-medium)',
                                     cursor: 'pointer',
@@ -1667,7 +1667,7 @@ const ForumSection = ({ batches }) => {
                                     className="forum-thread-card-modern"
                                     whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}
                                     style={{
-                                        background: 'white',
+                                        background: 'var(--bg-secondary)',
                                         borderRadius: '16px',
                                         padding: '24px',
                                         border: '1px solid #f1f5f9',
@@ -1692,8 +1692,8 @@ const ForumSection = ({ batches }) => {
 
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                                <h4 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: '#1e293b', fontWeight: 'var(--fw-bold)', lineHeight: '1.4' }}>{post.title}</h4>
-                                                <span style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
+                                                <h4 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', fontWeight: 'var(--fw-bold)', lineHeight: '1.4' }}>{post.title}</h4>
+                                                <span style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
                                                     {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                 </span>
                                             </div>
@@ -1716,7 +1716,7 @@ const ForumSection = ({ batches }) => {
                                                     style={{
                                                         padding: '8px 20px',
                                                         fontSize: 'var(--fs-body)',
-                                                        background: 'white',
+                                                        background: 'var(--bg-secondary)',
                                                         color: '#3b82f6',
                                                         border: '1px solid #dbeafe',
                                                         borderRadius: '8px',
@@ -1736,8 +1736,8 @@ const ForumSection = ({ batches }) => {
                             );
                         })
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--color-text-)', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
-                            <div style={{ background: '#fff', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                        <div style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--color-text-)', background: 'var(--bg-tertiary)', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                            <div style={{ background: 'var(--bg-secondary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                 <FiMessageSquare size={32} color="#94a3b8" />
                             </div>
                             <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-text-)' }}>No discussions yet</h3>
@@ -1775,7 +1775,7 @@ const ForumSection = ({ batches }) => {
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                background: 'white',
+                                background: 'var(--bg-secondary)',
                                 borderRadius: '16px',
                                 padding: '32px',
                                 maxWidth: '700px',
@@ -1787,7 +1787,7 @@ const ForumSection = ({ batches }) => {
                             {/* Post Header */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedPost.title}</h2>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: 'var(--text-primary)' }}>{selectedPost.title}</h2>
                                     <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                         <span>By {selectedPost.author?.name}</span>
                                         <span>•</span>
@@ -1805,17 +1805,17 @@ const ForumSection = ({ batches }) => {
                             {/* Post Content */}
                             <div style={{
                                 padding: '20px',
-                                background: '#f8fafc',
+                                background: 'var(--bg-tertiary)',
                                 borderRadius: '12px',
                                 marginBottom: '24px',
                                 borderLeft: '4px solid #3b82f6'
                             }}>
-                                <p style={{ margin: 0, color: '#1e293b', lineHeight: '1.6' }}>{selectedPost.content}</p>
+                                <p style={{ margin: 0, color: 'var(--text-primary)', lineHeight: '1.6' }}>{selectedPost.content}</p>
                             </div>
 
                             {/* Answers Section */}
                             <div style={{ marginBottom: '24px' }}>
-                                <h3 style={{ fontSize: 'var(--fs-h3)', color: '#1e293b', marginBottom: '16px' }}>
+                                <h3 style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', marginBottom: '16px' }}>
                                     {selectedPost.answers?.length || 0} Answer{selectedPost.answers?.length !== 1 ? 's' : ''}
                                 </h3>
 
@@ -1836,7 +1836,7 @@ const ForumSection = ({ batches }) => {
                                                             style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                                                         />
                                                         <div>
-                                                            <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', color: '#1e293b' }}>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)', color: 'var(--text-primary)' }}>
                                                                 {answer.author?.name}
                                                                 {answer.author?.role === 'MENTOR' && (
                                                                     <span style={{
@@ -1857,7 +1857,7 @@ const ForumSection = ({ batches }) => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p style={{ margin: '8px 0 0', color: '#1e293b', lineHeight: '1.6' }}>{answer.content}</p>
+                                                <p style={{ margin: '8px 0 0', color: 'var(--text-primary)', lineHeight: '1.6' }}>{answer.content}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -1868,7 +1868,7 @@ const ForumSection = ({ batches }) => {
 
                             {/* Reply Form */}
                             <form onSubmit={handleSubmitReply}>
-                                <h4 style={{ fontSize: 'var(--fs-body-lg)', color: '#1e293b', marginBottom: '12px' }}>Your Answer</h4>
+                                <h4 style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--text-primary)', marginBottom: '12px' }}>Your Answer</h4>
                                 <textarea
                                     className="glass-input"
                                     style={{
@@ -1889,7 +1889,7 @@ const ForumSection = ({ batches }) => {
                                         onClick={() => setShowModal(false)}
                                         style={{
                                             padding: '10px 20px',
-                                            background: '#f1f5f9',
+                                            background: 'var(--bg-tertiary)',
                                             color: 'var(--color-text-)',
                                             border: 'none',
                                             borderRadius: '8px',
@@ -2177,7 +2177,7 @@ const AssignmentsSection = ({ batches }) => {
                             exit={{ height: 0, opacity: 0 }}
                             style={{ overflow: 'hidden', marginBottom: '24px' }}
                         >
-                            <form onSubmit={handleCreateAssignment} style={{ padding: '20px', background: 'white', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+                            <form onSubmit={handleCreateAssignment} style={{ padding: '20px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid #edf2f7' }}>
                                 <div className="glass-form-group">
                                     <label className="glass-label">Title</label>
                                     <input
@@ -2246,7 +2246,7 @@ const AssignmentsSection = ({ batches }) => {
                 {/* Tabs & Search Bar */}
                 <div style={{ marginBottom: '32px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '6px', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-tertiary)', padding: '6px', borderRadius: '12px' }}>
                             <button
                                 onClick={() => setActiveTab('assignments')}
                                 style={{
@@ -2304,7 +2304,7 @@ const AssignmentsSection = ({ batches }) => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             style={{
-                                                background: 'white',
+                                                background: 'var(--bg-secondary)',
                                                 borderRadius: '16px',
                                                 border: '1px solid #e2e8f0',
                                                 overflow: 'hidden',
@@ -2326,13 +2326,13 @@ const AssignmentsSection = ({ batches }) => {
                                                 <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)' }}>
                                                     {assignment.batch?.name || 'General'}
                                                 </div>
-                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
+                                                <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
                                                     <FiFileText size={20} />
                                                 </div>
                                             </div>
 
                                             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1e293b' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>
                                                     {assignment.title}
                                                 </h4>
                                                 <p style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
@@ -2340,7 +2340,7 @@ const AssignmentsSection = ({ batches }) => {
                                                 </p>
 
                                                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px' }}>
                                                         <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
                                                         <span style={{ fontWeight: 'var(--fw-semibold)', color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
                                                             {submissionsCount} Subs {pendingCount > 0 && `(${pendingCount} new)`}
@@ -2349,7 +2349,7 @@ const AssignmentsSection = ({ batches }) => {
 
                                                     <button
                                                         onClick={() => handleViewSubmissions(assignment.id)}
-                                                        style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                        style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                                     >
                                                         View Submissions
                                                     </button>
@@ -2360,9 +2360,9 @@ const AssignmentsSection = ({ batches }) => {
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
                                 <FiFileText size={48} style={{ marginBottom: '16px', color: 'var(--color-text-)' }} />
-                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No assignments yet</h3>
+                                <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>No assignments yet</h3>
                                 <p style={{ color: 'var(--color-text-)', margin: 0 }}>Create your first assignment to get started.</p>
                             </div>
                         )
@@ -2382,7 +2382,7 @@ const AssignmentsSection = ({ batches }) => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             style={{
-                                                background: 'white',
+                                                background: 'var(--bg-secondary)',
                                                 borderRadius: '16px',
                                                 border: '1px solid #e2e8f0',
                                                 overflow: 'hidden',
@@ -2404,13 +2404,13 @@ const AssignmentsSection = ({ batches }) => {
                                                 <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)' }}>
                                                     {quiz.questions?.length || 0} Questions
                                                 </div>
-                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#059669' }}>
+                                                <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px', color: '#059669' }}>
                                                     <FiCheckCircle size={20} />
                                                 </div>
                                             </div>
 
                                             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: '#1e293b' }}>
+                                                <h4 style={{ margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>
                                                     {quiz.title}
                                                 </h4>
                                                 <p style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
@@ -2418,7 +2418,7 @@ const AssignmentsSection = ({ batches }) => {
                                                 </p>
 
                                                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px' }}>
                                                         <span>⏱ {quiz.duration} mins</span>
                                                         <span>🎯 {quiz.totalMarks} Marks</span>
                                                         <span>👥 {submissionsCount} Attempts</span>
@@ -2430,9 +2430,9 @@ const AssignmentsSection = ({ batches }) => {
                                 })}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
                                 <FiCheckCircle size={48} style={{ marginBottom: '16px', color: 'var(--color-text-)' }} />
-                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No quizzes yet</h3>
+                                <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>No quizzes yet</h3>
                                 <p style={{ color: 'var(--color-text-)', margin: 0 }}>Create a quiz to assess your students.</p>
                             </div>
                         )
@@ -2455,9 +2455,9 @@ const AssignmentsSection = ({ batches }) => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ background: 'white', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
+                            style={{ background: 'var(--bg-secondary)', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
                         >
-                            <h2 style={{ margin: '0 0 24px', fontSize: 'var(--fs-h2)', color: '#1e293b' }}>Create New Quiz</h2>
+                            <h2 style={{ margin: '0 0 24px', fontSize: 'var(--fs-h2)', color: 'var(--text-primary)' }}>Create New Quiz</h2>
                             <form onSubmit={handleCreateQuiz}>
                                 <div className="glass-form-group">
                                     <label className="glass-label">Title</label>
@@ -2504,7 +2504,7 @@ const AssignmentsSection = ({ batches }) => {
                                             className="glass-input"
                                             value={quizFormData.totalMarks}
                                             readOnly
-                                            style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
+                                            style={{ background: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
                                         />
                                     </div>
                                     <div className="glass-form-group">
@@ -2569,7 +2569,7 @@ const AssignmentsSection = ({ batches }) => {
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateQuiz(false)}
-                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#f1f5f9', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: 'var(--bg-tertiary)', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Cancel
                                     </button>
@@ -2595,11 +2595,11 @@ const AssignmentsSection = ({ batches }) => {
                         exit={{ opacity: 0 }}
                         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}
                     >
-                        <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '600px', width: '90%', maxHeight: '80vh', overflowY: 'auto' }}>
+                        <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '600px', width: '90%', maxHeight: '80vh', overflowY: 'auto' }}>
                             <h3 style={{ margin: '0 0 16px' }}>CSV Preview ({csvPreview.length} questions)</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {csvPreview.map((q, i) => (
-                                    <div key={i} style={{ padding: 'var(--space-20)', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div key={i} style={{ padding: 'var(--space-20)', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                                         <p style={{ fontWeight: 'var(--fw-semibold)', margin: '0 0 8px' }}>{i + 1}. {q.question}</p>
                                         <ul style={{ margin: 0, paddingLeft: '20px', fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
                                             {q.options.map((opt, optIdx) => (
@@ -2614,7 +2614,7 @@ const AssignmentsSection = ({ batches }) => {
                             <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                                 <button
                                     onClick={() => setShowCsvPreview(false)}
-                                    style={{ flex: 1, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                    style={{ flex: 1, padding: '10px', background: 'var(--bg-tertiary)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                                 >
                                     Cancel
                                 </button>
@@ -2645,11 +2645,11 @@ const AssignmentsSection = ({ batches }) => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ background: 'white', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '100%', maxHeight: '80vh', overflowY: 'auto' }}
+                            style={{ background: 'var(--bg-secondary)', borderRadius: '16px', padding: '32px', maxWidth: '800px', width: '100%', maxHeight: '80vh', overflowY: 'auto' }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: '#1e293b' }}>{selectedAssignment.title}</h2>
+                                    <h2 style={{ margin: 0, fontSize: 'var(--fs-h2)', color: 'var(--text-primary)' }}>{selectedAssignment.title}</h2>
                                     <p style={{ margin: '8px 0 0', color: 'var(--color-text-)' }}>{selectedAssignment.submissions?.length || 0} Submissions</p>
                                 </div>
                                 <button onClick={() => setShowSubmissionsModal(false)} style={{ background: 'none', border: 'none', fontSize: 'var(--fs-h2)', color: 'var(--color-text-)', cursor: 'pointer' }}>×</button>
@@ -2660,12 +2660,12 @@ const AssignmentsSection = ({ batches }) => {
                                     {selectedAssignment.submissions.map(submission => {
                                         const statusStyle = getStatusBadge(submission.status);
                                         return (
-                                            <div key={submission.id} style={{ padding: 'var(--space-24)', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                            <div key={submission.id} style={{ padding: 'var(--space-24)', background: 'var(--bg-tertiary)', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <img src={submission.student?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'} alt={submission.student?.name} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: '#1e293b' }}>{submission.student?.name}</div>
+                                                            <div style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--text-primary)' }}>{submission.student?.name}</div>
                                                             <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>Submitted: {new Date(submission.submittedAt).toLocaleString()}</div>
                                                         </div>
                                                     </div>
@@ -2673,7 +2673,7 @@ const AssignmentsSection = ({ batches }) => {
                                                         {submission.status}
                                                     </span>
                                                 </div>
-                                                <p style={{ margin: '12px 0', color: '#1e293b', lineHeight: '1.6', background: 'white', padding: 'var(--space-20)', borderRadius: '8px' }}>
+                                                <p style={{ margin: '12px 0', color: 'var(--text-primary)', lineHeight: '1.6', background: 'var(--bg-secondary)', padding: 'var(--space-20)', borderRadius: '8px' }}>
                                                     {submission.content.startsWith('/uploads') ? (
                                                         <a
                                                             href={`http://localhost:5001${submission.content}`}
@@ -2730,9 +2730,9 @@ const AssignmentsSection = ({ batches }) => {
                             animate={{ scale: 1 }}
                             exit={{ scale: 0.9 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ background: 'white', borderRadius: '16px', padding: '32px', maxWidth: '500px', width: '100%' }}
+                            style={{ background: 'var(--bg-secondary)', borderRadius: '16px', padding: '32px', maxWidth: '500px', width: '100%' }}
                         >
-                            <h3 style={{ margin: '0 0 20px', color: '#1e293b' }}>Review Submission</h3>
+                            <h3 style={{ margin: '0 0 20px', color: 'var(--text-primary)' }}>Review Submission</h3>
                             <form onSubmit={handleReviewSubmission}>
                                 <div className="glass-form-group">
                                     <label className="glass-label">Status</label>
@@ -2772,7 +2772,7 @@ const AssignmentsSection = ({ batches }) => {
                                     <button
                                         type="button"
                                         onClick={() => setReviewingSubmission(null)}
-                                        style={{ flex: 1, padding: 'var(--space-20)', background: '#f1f5f9', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: 'var(--space-20)', background: 'var(--bg-tertiary)', color: 'var(--color-text-)', border: 'none', borderRadius: '8px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}
                                     >
                                         Cancel
                                     </button>

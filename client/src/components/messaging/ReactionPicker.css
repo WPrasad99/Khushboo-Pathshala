@@ -76,3 +76,12 @@
     font-weight: var(--fw-medium);
     color: #1e293b;
 }
+
+/* Dark Theme */
+[data-theme="dark"] .reaction-picker-container {
+    background: var(--bg-secondary);
+    border-color: var(--border-subtle);
+}
+[data-theme="dark"] .reaction-btn:hover {
+    background: var(--bg-tertiary);
+}

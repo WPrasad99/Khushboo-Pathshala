@@ -150,7 +150,7 @@ const Batches = () => {
                 ) : (
                     batches.map(batch => (
                         <div key={batch.id} className="batch-card" style={{
-                            background: 'white',
+                            background: 'var(--bg-secondary)',
                             borderRadius: '12px',
                             border: '1px solid var(--border-color)',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.05)',

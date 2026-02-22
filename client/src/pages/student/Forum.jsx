@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
     FiArrowDown,
     FiArrowUp,
@@ -156,7 +156,7 @@ const Forum = () => {
                                 const isExpanded = expandedPostId === post.id;
 
                                 return (
-                                    <motion.article key={post.id} className="forum-v2-post" layout>
+                                    <article key={post.id} className="forum-v2-post">
                                         <button
                                             type="button"
                                             className="forum-v2-post-header"
@@ -200,11 +200,8 @@ const Forum = () => {
 
                                         <AnimatePresence>
                                             {isExpanded && (
-                                                <motion.div
+                                                <div
                                                     className="forum-v2-thread"
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    exit={{ opacity: 0, height: 0 }}
                                                 >
                                                     <div className="forum-v2-thread-list">
                                                         {(post.answers || []).length > 0 ? (
@@ -273,10 +270,10 @@ const Forum = () => {
                                                             {postingAnswerFor === post.id ? 'Posting...' : 'Post Answer'}
                                                         </button>
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             )}
                                         </AnimatePresence>
-                                    </motion.article>
+                                    </article>
                                 );
                             })
                         ) : (

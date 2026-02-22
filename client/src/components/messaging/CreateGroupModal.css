@@ -209,3 +209,31 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* Dark Theme */
+[data-theme="dark"] .modal-content {
+    background: var(--bg-secondary);
+}
+[data-theme="dark"] .modal-header {
+    border-color: var(--border-subtle);
+}
+[data-theme="dark"] .modal-header h2 {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .form-group label {
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .form-group input {
+    background: var(--bg-tertiary);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .user-list-item {
+    border-color: var(--border-subtle);
+}
+[data-theme="dark"] .user-list-item:hover {
+    background: var(--bg-tertiary);
+}
+[data-theme="dark"] .user-name {
+    color: var(--text-primary);
+}

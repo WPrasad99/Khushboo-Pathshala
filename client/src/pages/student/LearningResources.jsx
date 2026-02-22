@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { resourceAPI } from '../../api';
 import { FiArrowLeft, FiSearch, FiBell, FiUser, FiLogOut, FiPlay, FiClock } from 'react-icons/fi';
-import { motion } from 'framer-motion';
 import './Dashboard.css';
 
 const LearningResources = () => {
