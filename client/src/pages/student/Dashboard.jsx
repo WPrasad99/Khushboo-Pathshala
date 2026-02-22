@@ -1,20 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiActivity,
-    FiArrowRight,
     FiAward,
     FiBookOpen,
     FiCalendar,
     FiCheckCircle,
     FiClock,
-    FiTrendingUp,
-    FiPlayCircle,
-    FiBriefcase,
     FiBell,
-    FiSun,
-    FiMoon
+    FiFileText
 } from 'react-icons/fi';
 import { userAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
@@ -31,34 +25,6 @@ const CARD_VARIANTS = {
         y: 0,
         transition: { duration: 0.35, delay: index * 0.06 }
     })
-};
-
-const formatCountdown = (ms) => {
-    if (ms <= 0) return 'In progress';
-
-    const minutes = Math.floor(ms / (1000 * 60));
-    const days = Math.floor(minutes / (60 * 24));
-    const hours = Math.floor((minutes % (60 * 24)) / 60);
-    const mins = minutes % 60;
-
-    if (days > 0) return `${days}d ${hours}h left`;
-    if (hours > 0) return `${hours}h ${mins}m left`;
-    return `${mins}m left`;
-};
-
-const getSessionStatus = (sessionDate) => {
-    const now = new Date();
-    const date = new Date(sessionDate);
-
-    if (date < now) return 'completed';
-
-    const isToday =
-        date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
-
-    if (isToday) return 'today';
-    return 'upcoming';
 };
 
 const DashboardSkeleton = () => (
@@ -112,19 +78,17 @@ const StudentDashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loginDates, setLoginDates] = useState([]);
-    const [now, setNow] = useState(Date.now());
+
+    // Safely destructure dashboardData with defaults
+    const {
+        stats = {},
+        upcomingSessions = [],
+        announcements = []
+    } = dashboardData || {};
 
     const isAssignmentsView = location.pathname.includes('/assignments') || location.pathname.includes('/quizzes');
     const isResourcesView = location.pathname.includes('/resources');
     const isOverview = !isAssignmentsView && !isResourcesView;
-
-    useEffect(() => {
-        const timer = setInterval(() => setNow(Date.now()), 60_000);
-        return () => clearInterval(timer);
-    }, []);
-
-    // Theme Architecture State
-    const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -143,36 +107,7 @@ const StudentDashboard = () => {
         fetchDashboard();
     }, []);
 
-    // Theme Application Effect
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('admin-theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    };
-
-    const fetchDashboard = async () => {
-        try {
-            setLoading(true);
-            const response = await userAPI.getStudentDashboard();
-            console.log('Dashboard API Response:', response.data);
-            console.log('Announcements:', response.data.announcements);
-            console.log('Upcoming Sessions:', response.data.upcomingSessions);
-            setDashboardData(response.data);
-            setFilteredData({
-                recentActivities: response.data.recentActivities || [],
-                upcomingSessions: response.data.upcomingSessions || [],
-                announcements: response.data.announcements || []
-            });
-            setLoginDates(response.data.loginDates || []);
-        } catch (error) {
-            console.error('Failed to fetch dashboard data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Removed undefined theme effect
 
     const activeDaysIn30 = useMemo(() => {
         const threshold = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -180,25 +115,25 @@ const StudentDashboard = () => {
     }, [loginDates]);
 
     const badgesEarned = useMemo(() => {
-        if (typeof stats.badgesCount === 'number') return stats.badgesCount;
-        return Math.max(0, Math.floor((stats.completedCourses || 0) * 1.5));
-    }, [stats.badgesCount, stats.completedCourses]);
+        if (typeof stats?.badgesCount === 'number') return stats.badgesCount;
+        return Math.max(0, Math.floor((stats?.completedCourses || 0) * 1.5));
+    }, [stats?.badgesCount, stats?.completedCourses]);
 
     const metricCards = useMemo(
         () => [
             {
                 key: 'attendance',
                 label: 'Attendance %',
-                value: `${stats.attendancePercentage || 0}%`,
-                trend: `${stats.attendancePercentage >= 80 ? '+' : ''}${Math.max(1, Math.round((stats.attendancePercentage || 0) / 20))}% this week`,
+                value: `${stats?.attendancePercentage || 0}%`,
+                trend: `${(stats?.attendancePercentage || 0) >= 80 ? '+' : ''}${Math.max(1, Math.round((stats?.attendancePercentage || 0) / 20))}% this week`,
                 icon: FiCheckCircle,
                 tone: 'success'
             },
             {
                 key: 'courses',
                 label: 'Completed Courses',
-                value: stats.completedCourses || 0,
-                trend: `+${Math.max(1, Math.min(9, stats.completedCourses || 1))}% this month`,
+                value: stats?.completedCourses || 0,
+                trend: `+${Math.max(1, Math.min(9, stats?.completedCourses || 1))}% this month`,
                 icon: FiBookOpen,
                 tone: 'primary'
             },
@@ -219,7 +154,7 @@ const StudentDashboard = () => {
                 tone: 'warning'
             }
         ],
-        [activeDaysIn30, badgesEarned, stats.attendancePercentage, stats.completedCourses]
+        [activeDaysIn30, badgesEarned, stats?.attendancePercentage, stats?.completedCourses]
     );
 
     if (loading && isOverview) {
@@ -259,237 +194,130 @@ const StudentDashboard = () => {
     }
 
     return (
-        <div className="student-dashboard-shell">
+        <div className="dashboard-content">
             {isOverview && (
-                <header className="dashboard-header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h1 className="welcome-title" style={{ fontSize: '2rem', fontWeight: 800 }}>Hello, {user?.name?.split(' ')[0]} 👋</h1>
-                        <p className="welcome-subtitle" style={{ color: 'var(--admin-text-muted)', marginTop: '4px' }}>Here's what's happening with your learning today.</p>
+                <section className="student-hero-section">
+                    <div className="hero-text">
+                        <h1>Hello, {user?.name?.split(' ')[0]} 👋</h1>
+                        <p>Here's what's happening with your learning today.</p>
                     </div>
-                    <div className="header-actions">
-                        <button className="header-icon-btn" onClick={toggleTheme} title="Toggle Theme">
-                            {theme === 'light' ? <FiMoon /> : <FiSun />}
+                    <div className="hero-actions">
+                        <button type="button" className="btn-student-outline" onClick={() => navigate('/student/courses')}>
+                            <FiBookOpen /> Explore Courses
+                        </button>
+                        <button type="button" className="btn-student-primary" onClick={() => navigate('/student/assignments')}>
+                            <FiFileText /> My Assignments
                         </button>
                     </div>
-                    <div className="student-header-actions">
-                        <button type="button" className="btn btn-secondary" onClick={() => navigate('/student/courses')}>
-                            Continue Learning
-                        </button>
-                        <button type="button" className="btn btn-primary" onClick={() => navigate('/student/assignments')}>
-                            View Assignments
-                        </button>
-                    </div>
-                </header>
+                </section>
             )}
 
-            <section className="student-stats-grid">
+            {/* Quick Metrics Grid */}
+            <section className="stats-grid">
                 {metricCards.map((card, index) => {
                     const Icon = card.icon;
+                    // Map generic tones to specific CSS theme tones for icons
+                    const toneMap = { success: 'teal', primary: 'blue', accent: 'purple', warning: 'orange' };
+                    const themeTone = toneMap[card.tone] || 'blue';
                     return (
                         <motion.article
                             key={card.key}
-                            className={`student-stat-card tone-${card.tone}`}
+                            className={`stat-card stat-${themeTone}`}
                             custom={index}
                             variants={CARD_VARIANTS}
                             initial="initial"
                             animate="animate"
                         >
-                            <div className="student-stat-card-top">
-                                <span className="student-stat-icon">
+                            <div className="stat-header">
+                                <span className="stat-label">{card.label}</span>
+                                <div className="icon-circle">
                                     <Icon />
-                                </span>
-                                <span className="student-stat-trend">
-                                    <FiTrendingUp />
-                                    {card.trend}
-                                </span>
+                                </div>
                             </div>
-                            <div className="stat-info">
-                                <span className="stat-label">Attendance</span>
-                                <span className="stat-value"><CountUp value={stats?.attendancePercentage || 0} />%</span>
+                            <div className="stat-value">
+                                {typeof card.value === 'number' ? <CountUp value={card.value} /> : card.value}
                             </div>
                         </motion.article>
                     );
                 })}
             </section>
 
-            <motion.div
-                className="stat-card stat-blue"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-            >
-                <div className="stat-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                    </svg>
-                </div>
-                <div className="stat-info">
-                    <span className="stat-label">Courses Completed</span>
-                    <span className="stat-value"><CountUp value={stats?.completedCourses || 0} /></span>
-                </div>
-            </motion.div>
-
-            <motion.div
-                className="stat-card stat-orange"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-            >
-                <div className="stat-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                </div>
-                <div className="stat-info">
-                    <span className="stat-label">Learning Resources</span>
-                    <span className="stat-value"><CountUp value={stats?.learningResources || 0} /></span>
-                </div>
-            </motion.div>
-
-            <motion.div
-                className="stat-card stat-purple"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-            >
-                <div className="stat-icon">
-                    <FiActivity size={24} />
-                </div>
-                <div className="stat-info">
-                    <span className="stat-label">Login Streak</span>
-                    <div className="stat-value-row">
-                        {stats?.streakStatus === 'paused' ? (
-                            <>
-                                <span className="stat-value" style={{ fontSize: '1.2rem', color: 'var(--admin-status-danger)' }}>Paused</span>
-                            </>
-                        ) : (
-                            <>
-                                <span className="stat-value"><CountUp value={stats?.loginStreak || 0} /></span>
-                                <span className="stat-of">days</span>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </motion.div>
-            {/* Dashboard Sections - 70/30 Grid */}
-            <div className="overview-grid" style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: '24px' }}>
-
+            {/* Main Content Grid: Sessions & Announcements */}
+            <div className="dashboard-sections">
                 {/* Left: Upcoming Sessions (70%) */}
-                <section>
-                    <div className="dashboard-section-header">
-                        <h2 className="student-section-title"><FiCalendar /> Upcoming Sessions & Meetings</h2>
-                        <span className="count">{upcomingSessions.length}</span>
-                    </div>
-                    <div className="list-container">
+                <section className="dashboard-panel">
+                    <header className="panel-header">
+                        <h2><FiCalendar /> Upcoming Sessions</h2>
+                        <span className="count-badge">{upcomingSessions.length}</span>
+                    </header>
+
+                    <div className="sessions-list">
                         {upcomingSessions.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-state-icon"><FiCalendar /></div>
-                                <p>No upcoming sessions scheduled</p>
+                            <div className="dashboard-empty-state">
+                                <FiCalendar className="empty-icon" />
+                                <span className="empty-text">No sessions scheduled this week.</span>
                             </div>
                         ) : (
                             upcomingSessions.map((session, i) => (
-                                <div key={i} className="list-item">
-                                    <div className="date-badge">
-                                        <span className="day">{new Date(session.scheduledAt).getDate()}</span>
-                                        <span className="month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
+                                <motion.div
+                                    key={session.id || i}
+                                    className="session-card"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                >
+                                    <div className="session-date-box">
+                                        <span className="date-day">{new Date(session.scheduledAt).getDate()}</span>
+                                        <span className="date-month">{new Date(session.scheduledAt).toLocaleString('default', { month: 'short' })}</span>
                                     </div>
-                                    <div className="list-item-content">
-                                        <span className="list-item-title">{session.title}</span>
-                                        <span className="list-item-subtitle">
-                                            {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.type === 'meeting' ? 'Mentorship' : 'Class'}
-                                        </span>
+                                    <div className="session-info">
+                                        <div className="session-title">{session.title}</div>
+                                        <div className="session-meta">
+                                            <span><FiClock /> {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <span className="status-badge upcoming">{session.type === 'MEETING' ? 'Mentorship' : 'Batch Session'}</span>
+                                        </div>
                                     </div>
-                                    <div className="list-item-action">
-                                        <a href={session.link} target="_blank" rel="noopener noreferrer" className="btn-primary-sm" style={{ textDecoration: 'none', fontSize: '0.8rem', padding: '6px 12px', background: '#4f46e5', color: 'white', borderRadius: '8px' }}>
-                                            Join
-                                        </a>
-                                    </div>
-                                </div>
+                                    <button className="btn-student-outline">Join</button>
+                                </motion.div>
                             ))
                         )}
                     </div>
                 </section>
 
-                {/* Right: Announcements (30%) - Meeting Card Style */}
-                <section>
-                    <div className="dashboard-section-header">
-                        <h2><FiBell /> Announcements</h2>
-                        <span className="count">{announcements.length}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Right: Announcements (30%) */}
+                <section className="dashboard-panel">
+                    <header className="panel-header">
+                        <div>
+                            <h2><FiBell /> Announcements</h2>
+                            <p>Latest from your mentors.</p>
+                        </div>
+                        <span className="count-badge">{announcements.length}</span>
+                    </header>
+
+                    <div className="announcements-list">
                         {announcements.length === 0 ? (
-                            <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
-                                <FiBell style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }} />
-                                <p>No announcements</p>
+                            <div className="dashboard-empty-state">
+                                <FiBell className="empty-icon" />
+                                <span className="empty-text">No announcements yet.</span>
                             </div>
                         ) : (
-                            announcements.slice(0, 3).map((announcement, i) => (
+                            announcements.slice(0, 4).map((announcement, i) => (
                                 <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    key={announcement.id || i}
+                                    className="session-card"
+                                    initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.05 }}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '16px',
-                                        padding: '12px',
-                                        borderRadius: '16px',
-                                        background: 'var(--admin-surface)',
-                                        border: '1px solid var(--admin-border-color)',
-                                        boxShadow: 'var(--admin-shadow-sm)',
-                                        cursor: 'pointer',
-                                        transition: 'var(--admin-transition)'
-                                    }}
-                                    whileHover={{
-                                        transform: 'translateY(-2px)',
-                                        boxShadow: 'var(--admin-shadow-md)',
-                                        borderColor: 'var(--admin-accent-primary)'
-                                    }}
                                 >
-                                    <div style={{
-                                        width: '44px',
-                                        height: '54px',
-                                        background: 'var(--admin-bg-color)',
-                                        borderRadius: '12px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0,
-                                        border: '1px solid var(--admin-border-color)'
-                                    }}>
-                                        <FiBell style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--admin-status-danger)' }} />
-                                        <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', fontWeight: '700', color: 'var(--admin-status-danger)', marginTop: '2px' }}>
-                                            New
-                                        </span>
+                                    <div className="icon-circle" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--student-primary)' }}>
+                                        <FiBell />
                                     </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <h4 style={{
-                                            fontSize: '0.9rem',
-                                            fontWeight: '700',
-                                            color: 'var(--admin-text-primary)',
-                                            margin: '0 0 4px 0',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}>
-                                            {announcement.title}
-                                        </h4>
-                                        <p style={{
-                                            fontSize: '0.7rem',
-                                            color: 'var(--admin-text-secondary)',
-                                            margin: 0,
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 1,
-                                            WebkitBoxOrient: 'vertical'
-                                        }}>
-                                            {announcement.content}
-                                        </p>
+                                    <div className="session-info">
+                                        <div className="session-title">{announcement.title}</div>
+                                        <div className="session-meta">
+                                            <span className="status-badge upcoming">New</span>
+                                            <span>{new Date(announcement.createdAt).toLocaleDateString()}</span>
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))
@@ -498,47 +326,27 @@ const StudentDashboard = () => {
                 </section>
             </div>
 
-            <motion.article className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-                <header className="student-panel-header">
+            {/* Bottom: Activity Heatmap */}
+            <motion.section
+                className="dashboard-panel heatmap-panel"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+            >
+                <header className="panel-header">
                     <div>
-                        <h2>Announcements</h2>
-                        <p>Latest updates from mentors and admins.</p>
+                        <h2><FiTrendingUp /> Learning Consistency</h2>
+                        <p>Your activity intensity over the past year.</p>
                     </div>
-                    <span className="badge badge-warning">{announcements.length}</span>
-                </header>
-
-                <div className="student-announcement-list">
-                    {announcements.length > 0 ? (
-                        announcements.slice(0, 4).map((announcement) => (
-                            <article key={announcement.id} className="student-announcement-card">
-                                <h4>{announcement.title}</h4>
-                                <p>{announcement.content}</p>
-                                <small>{new Date(announcement.createdAt).toLocaleDateString()}</small>
-                            </article>
-                        ))
-                    ) : (
-                        <div className="student-empty-state compact">
-                            <FiCheckCircle />
-                            <h4>No announcements yet</h4>
-                            <p>You are up to date. Focus on learning today.</p>
-                        </div>
-                    )}
-                </div>
-            </motion.article>
-            <motion.section className="student-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
-                <header className="student-panel-header with-link">
-                    <div>
-                        <h2>Learning Activity Heatmap</h2>
-                        <p>Visualize your consistency by week and month.</p>
-                    </div>
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/student/courses')}>
-                        Open Learning
-                        <FiArrowRight />
+                    <button type="button" className="btn-student-outline" onClick={() => navigate('/student/courses')}>
+                        View Learning History <FiArrowRight />
                     </button>
                 </header>
-                <ActivityHeatmap loginDates={loginDates} />
+                <div className="heatmap-container" style={{ marginTop: '20px' }}>
+                    <ActivityHeatmap loginDates={loginDates} />
+                </div>
             </motion.section>
-        </div >
+        </div>
     );
 };
 

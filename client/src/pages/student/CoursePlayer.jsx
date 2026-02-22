@@ -11,7 +11,6 @@ import {
     FiPlay,
     FiSave
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
 import { resourceAPI } from '../../api';
 import './CoursePlayer.css';
 

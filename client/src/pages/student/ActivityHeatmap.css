@@ -1,9 +1,9 @@
 .activity-heatmap-card {
-    background: var(--bg-secondary);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--admin-shadow-sm);
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: var(--space-24);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
     width: 100%;
     overflow-x: auto;
 }
@@ -17,14 +17,14 @@
 }
 
 .heatmap-header h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semibold);
     color: var(--text-primary);
     margin: 0;
 }
 
 .heatmap-subtitle {
-    font-size: 0.85rem;
+    font-size: var(--fs-small);
     color: var(--text-muted);
 }
 
@@ -192,8 +192,8 @@
 
 .heatmap-months span {
     position: absolute;
-    font-size: 10px;
-    color: #9CA3AF;
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
 }
 
 .heatmap-cells {
@@ -252,10 +252,10 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
-    font-size: 10px;
-    color: #9CA3AF;
-    margin-top: 8px;
+    gap: var(--space-4);
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: var(--space-8);
 }
 
 .legend-cell {
@@ -267,8 +267,8 @@
 /* ========== MOBILE RESPONSIVE ========== */
 @media (max-width: 768px) {
     .activity-heatmap-card {
-        padding: 16px;
-        border-radius: 14px;
+        padding: var(--space-16);
+        border-radius: var(--radius-lg);
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         width: 100%;
