@@ -1164,6 +1164,82 @@ app.get('/api/sessions/tracking', authenticateToken, async (req, res) => {
     }
 });
 
+// ============ MENTOR DATA ROUTES ============
+
+// Get mentor's batches
+app.get('/api/mentor/batches', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.userId || req.user.id;
+        const batches = await prisma.batchMentor.findMany({
+            where: { mentorId },
+            include: {
+                batch: {
+                    include: {
+                        _count: { select: { students: true } }
+                    }
+                }
+            }
+        });
+        res.json(batches.map(bm => bm.batch));
+    } catch (error) {
+        console.error('Get mentor batches error:', error);
+        res.status(500).json({ error: 'Failed to fetch batches' });
+    }
+});
+
+// Get mentor's students
+app.get('/api/mentor/students', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.userId || req.user.id;
+        const batches = await prisma.batchMentor.findMany({
+            where: { mentorId },
+            select: { batchId: true }
+        });
+        const batchIds = batches.map(b => b.batchId);
+
+        const students = await prisma.batchStudent.findMany({
+            where: { batchId: { in: batchIds } },
+            include: {
+                student: {
+                    select: { id: true, name: true, email: true, avatar: true }
+                },
+                batch: { select: { name: true } }
+            }
+        });
+        res.json(students.map(bs => ({
+            ...bs.student,
+            batchName: bs.batch.name
+        })));
+    } catch (error) {
+        console.error('Get mentor students error:', error);
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+});
+
+// Get mentor's meetings
+app.get('/api/mentor/meetings', authenticateToken, requireRole('MENTOR'), async (req, res) => {
+    try {
+        const mentorId = req.user.userId || req.user.id;
+        const meetings = await prisma.meeting.findMany({
+            where: {
+                mentorship: { mentorId }
+            },
+            include: {
+                mentorship: {
+                    include: {
+                        mentee: { select: { name: true, avatar: true } }
+                    }
+                }
+            },
+            orderBy: { meetingDate: 'desc' }
+        });
+        res.json(meetings);
+    } catch (error) {
+        console.error('Get mentor meetings error:', error);
+        res.status(500).json({ error: 'Failed to fetch meetings' });
+    }
+});
+
 // ============ MENTOR UPLOAD ROUTES ============
 
 // Upload Session (Video/YouTube Link)

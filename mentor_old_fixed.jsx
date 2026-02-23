@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userAPI, mentorshipAPI, resourceAPI, adminAPI, batchAPI, mentorAPI, announcementAPI, forumAPI, assignmentAPI, quizAPI } from '../../api';
 import {
@@ -27,22 +27,12 @@ const formatDate = (date) => {
 const MentorDashboard = () => {
     const { user, logout, socket } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
-
     const [dashboardData, setDashboardData] = useState(null);
     const [batches, setBatches] = useState([]);
     const [mentorStudents, setMentorStudents] = useState([]);
     const [meetingLogs, setMeetingLogs] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    // Determine activeTab from location
-    const getActiveTab = () => {
-        const path = location.pathname;
-        if (path === '/mentor' || path === '/mentor/') return 'overview';
-        return path.split('/').pop();
-    };
-
-    const activeTab = getActiveTab();
+    const [activeTab, setActiveTab] = useState('overview');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
@@ -66,7 +56,7 @@ const MentorDashboard = () => {
 
     const handleStartChat = (student) => {
         setStartChatUser(student);
-        navigate('/mentor/messages');
+        setActiveTab('messages');
     };
 
     const handleClearStartChat = () => {
@@ -125,132 +115,263 @@ const MentorDashboard = () => {
     }
 
     return (
-        <div className="mentor-dashboard-content-wrap">
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    {activeTab === 'overview' && (
-                        <OverviewSection
-                            data={dashboardData}
-                            studentsCount={mentorStudents.length}
-                            setTab={(tab) => navigate(`/mentor/${tab}`)}
-                            announcements={announcements}
-                            meetingLogs={meetingLogs}
-                        />
-                    )}
-                    {activeTab === 'batches' && <BatchesSection batches={batches} />}
-                    {activeTab === 'sessions' && <SessionsSection batches={batches} />}
-                    {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} onStartChat={handleStartChat} />}
-                    {activeTab === 'forum' && <ForumSection batches={batches} />}
-                    {activeTab === 'assignments' && <AssignmentsSection batches={batches} />}
-                    {activeTab === 'messages' && (
-                        <div style={{
-                            position: 'relative',
-                            height: 'calc(100vh - 120px)',
-                            margin: '-20px' // Offset layout padding
-                        }}>
-                            <MessagingPage initialChatUser={startChatUser} onClearInitialChatUser={handleClearStartChat} />
+        <div className="mentor-dashboard-page">
+            <nav className="mentor-navbar">
+                <div className="navbar-brand-mentor">
+                    <img src="/logo.png" alt="Logo" className="navbar-logo" style={{ height: '40px', width: 'auto' }} />
+                    <span className="mentor-logo-text">Khushboo Pathshala</span>
+                </div>
+
+                {/* Mobile Menu Button - Visible only on mobile */}
+                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+                </button>
+
+                <div className="navbar-actions-mentor">
+                    <div className="mentor-tabs-container">
+                        <div className="mentor-tabs nav-links-desktop">
+                            <button
+                                className={`mentor-tab ${activeTab === 'overview' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('overview')}
+                            >
+                                <FiBarChart2 /> Overview
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'batches' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('batches')}
+                            >
+                                <FiLayers /> Batches
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'sessions' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('sessions')}
+                            >
+                                <FiBookOpen /> Sessions
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'mentorship' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('mentorship')}
+                            >
+                                <FiUsers /> Mentorship
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'forum' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('forum')}
+                            >
+                                <FiMessageSquare /> Forum
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'assignments' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('assignments')}
+                            >
+                                <FiFileText /> Assignments
+                            </button>
+                            <button
+                                className={`mentor-tab ${activeTab === 'messages' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('messages')}
+                            >
+                                <FiMessageCircle /> Messages
+                            </button>
                         </div>
+                    </div>
+
+                    <div className="navbar-right-actions">
+                        <button className="icon-btn" style={{ position: 'relative' }}>
+                            <FiBell />
+                            {unreadNotifications > 0 && <span className="notification-dot"></span>}
+                        </button>
+                        <div className="user-info-pill" onClick={() => navigate('/settings')}>
+                            <img src={user?.avatar} alt={user?.name} className="avatar-sm" />
+                            <span>{user?.name?.split(' ')[0]}</span>
+                        </div>
+                        <button className="icon-btn" onClick={handleLogout} title="Logout">
+                            <FiLogOut />
+                        </button>
+                        {/* Mobile Toggle moved outside */}
+                    </div>
+                </div>
+            </nav>
+
+            {/* Mobile Menu - Sidebar Style via Portal */}
+            {ReactDOM.createPortal(
+                <AnimatePresence>
+                    {isMobileMenuOpen && (
+                        <motion.div
+                            className="mobile-menu-overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            <motion.div
+                                className="mobile-menu"
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'tween', duration: 0.3 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="mobile-menu-header">
+                                    <h3>Menu</h3>
+                                    <button onClick={() => setIsMobileMenuOpen(false)}>
+                                        <FiX size={24} />
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-links">
+                                    <button className={`mobile-menu-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }}>
+                                        <FiBarChart2 /> <span>Overview</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'batches' ? 'active' : ''}`} onClick={() => { setActiveTab('batches'); setIsMobileMenuOpen(false); }}>
+                                        <FiLayers /> <span>Batches</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => { setActiveTab('sessions'); setIsMobileMenuOpen(false); }}>
+                                        <FiBookOpen /> <span>Sessions</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'mentorship' ? 'active' : ''}`} onClick={() => { setActiveTab('mentorship'); setIsMobileMenuOpen(false); }}>
+                                        <FiUsers /> <span>Mentorship</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'forum' ? 'active' : ''}`} onClick={() => { setActiveTab('forum'); setIsMobileMenuOpen(false); }}>
+                                        <FiMessageSquare /> <span>Forum</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'assignments' ? 'active' : ''}`} onClick={() => { setActiveTab('assignments'); setIsMobileMenuOpen(false); }}>
+                                        <FiFileText /> <span>Assignments</span>
+                                    </button>
+                                    <button className={`mobile-menu-link ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => { setActiveTab('messages'); setIsMobileMenuOpen(false); }}>
+                                        <FiMessageCircle /> <span>Messages</span>
+                                    </button>
+                                </div>
+                                <div className="mobile-menu-footer">
+                                    <button className="mobile-settings-btn" onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }}>
+                                        <FiSettings />
+                                        <span>Settings</span>
+                                    </button>
+                                    <button className="mobile-logout-btn" onClick={() => { logout(); navigate('/login'); setIsMobileMenuOpen(false); }}>
+                                        <FiLogOut />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
                     )}
-                </motion.div>
-            </AnimatePresence>
-        </div>
+                </AnimatePresence>,
+                document.body
+            )}
+
+
+            <div className="dashboard-content">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {activeTab === 'overview' && (
+                            <div className="dashboard-header-modern" style={{ marginBottom: '30px' }}>
+                                <div>
+                                    <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                                        {activeTab === 'overview'
+                                            ? `Welcome back, ${user?.name?.split(' ')[0]}! 👋`
+                                            : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                                    </h1>
+                                    <p style={{ color: '#64748b', marginTop: '4px', fontWeight: 500 }}>{formatDate(new Date())}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'overview' && (
+                            <OverviewSection
+                                data={dashboardData}
+                                studentsCount={mentorStudents.length}
+                                setTab={setActiveTab}
+                                announcements={announcements}
+                                meetingLogs={meetingLogs}
+                            />
+                        )}
+                        {activeTab === 'batches' && <BatchesSection batches={batches} />}
+                        {activeTab === 'sessions' && <SessionsSection batches={batches} />}
+                        {activeTab === 'mentorship' && <MentorshipSection students={mentorStudents} batches={batches} logs={meetingLogs} onRefresh={fetchData} onStartChat={handleStartChat} />}
+                        {activeTab === 'forum' && <ForumSection batches={batches} />}
+                        {activeTab === 'assignments' && <AssignmentsSection batches={batches} />}
+                        {activeTab === 'messages' && (
+                            <div style={{
+                                position: 'fixed',
+                                top: '80px',
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                zIndex: 100,
+                                background: '#fff'
+                            }}>
+                                <MessagingPage initialChatUser={startChatUser} onClearInitialChatUser={handleClearStartChat} />
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+        </div >
     );
 };
 
 const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLogs }) => (
     <div className="overview-container">
-        <div className="mentor-stats-grid-5" style={{ marginBottom: '32px' }}>
+        <div className="mentor-stats-grid-5">
             {[
-                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, tone: 'teal' },
-                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, tone: 'blue' },
-                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, tone: 'orange' },
-                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, tone: 'purple' },
-                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, tone: 'indigo' }
+                { label: 'Assigned Students', value: studentsCount, icon: <FiUsers />, color: '#10B981', bgColor: '#ECFDF5' },
+                { label: 'Active Sessions', value: '8', icon: <FiBookOpen />, color: '#3B82F6', bgColor: '#EFF6FF' },
+                { label: 'Avg. Attendance', value: '88%', icon: <FiCheckCircle />, color: '#F59E0B', bgColor: '#FFFBEB' },
+                { label: 'Pending Queries', value: '5', icon: <FiMessageSquare />, color: '#8B5CF6', bgColor: '#F5F3FF' },
+                { label: 'Upcoming Sessions', value: '2', icon: <FiCalendar />, color: '#6366F1', bgColor: '#EEF2FF' }
             ].map((stat, idx) => (
-                <div key={idx} className={`stat-card-glass stat-${stat.tone}`}>
-                    <div className="icon-circle">
+                <div key={idx} className="stat-card-refined read-only" style={{ background: 'white', border: '1px solid #edf2f7' }}>
+                    <div className="stat-icon-refined" style={{ background: stat.bgColor, color: stat.color, boxShadow: 'none' }}>
                         {stat.icon}
                     </div>
-                    <div className="stat-value">{stat.value}</div>
-                    <div className="stat-label">{stat.label}</div>
+                    <span className="stat-value-bold" style={{ color: '#1e293b', fontSize: '1.4rem' }}>{stat.value}</span>
+                    <span className="stat-label-muted" style={{ color: '#64748b', fontWeight: 600 }}>{stat.label}</span>
                 </div>
             ))}
         </div>
 
-        <div className="mentor-dashboard-sections">
-            {/* Left: Upcoming Meetings (70%) */}
-            <section className="mentor-panel">
-                <header className="mentor-panel-header">
-                    <h2><FiCalendar /> Upcoming Meetings</h2>
-                    <span className="count-badge-modern">{meetingLogs?.length || 0}</span>
-                </header>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {meetingLogs?.length > 0 ? (
-                        meetingLogs.slice(0, 4).map((meeting, i) => (
-                            <div key={i} className="session-card" style={{ padding: '16px', borderRadius: '16px', border: '1px solid var(--admin-border-color)' }}>
-                                <div className="session-date-box" style={{ width: '50px', height: '50px' }}>
-                                    <span className="date-day" style={{ fontSize: '18px' }}>{new Date(meeting.meetingDate).getDate()}</span>
-                                    <span className="date-month" style={{ fontSize: '9px' }}>{new Date(meeting.meetingDate).toLocaleString('default', { month: 'short' })}</span>
-                                </div>
-                                <div className="session-info">
-                                    <div className="session-title" style={{ fontSize: '1rem' }}>{meeting.title}</div>
-                                    <div className="session-meta">
-                                        <span><FiClock /> {new Date(meeting.meetingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        <span className="status-badge upcoming">Mentorship</span>
+        <div className="mentor-grid">
+            <div className="glass-card" style={{ padding: '20px', background: 'white', border: '1px solid #edf2f7' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: '#1e293b', fontSize: '1.1rem' }}>
+                        <FiClock color="#3b82f6" /> Recent Updates
+                    </h3>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{announcements?.length || 0} Total</span>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px', maxHeight: '300px' }}>
+                    {announcements && announcements.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {announcements.map((ann, idx) => (
+                                <div key={idx} style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#334155' }}>{ann.title}</h4>
+                                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                                            {formatDate(new Date(ann.createdAt))}
+                                        </span>
                                     </div>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>{ann.content}</p>
                                 </div>
-                                <button className="btn-student-outline" style={{ height: '36px', fontSize: '0.8rem' }}>Join</button>
-                            </div>
-                        ))
+                            ))}
+                        </div>
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
-                            <FiCalendar size={40} style={{ marginBottom: '12px' }} />
-                            <p>No upcoming meetings found.</p>
+                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ background: '#f0f7ff', padding: '12px', borderRadius: '50%' }}>
+                                <FiBell size={20} color="#3b82f6" />
+                            </div>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>No new announcements from admin.</p>
                         </div>
                     )}
                 </div>
-            </section>
+            </div>
 
-            {/* Right: Recent Announcements (30%) */}
-            <section className="mentor-panel">
-                <header className="mentor-panel-header">
-                    <div>
-                        <h2><FiBell /> Announcements</h2>
-                    </div>
-                    <span className="count-badge-modern">{announcements?.length || 0}</span>
-                </header>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {announcements?.length > 0 ? (
-                        announcements.slice(0, 3).map((ann, i) => (
-                            <div key={i} className="session-card" style={{ padding: '12px', border: 'none', background: 'var(--admin-bg-color)' }}>
-                                <div className="icon-circle" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', minWidth: '32px' }}>
-                                    <FiBell />
-                                </div>
-                                <div className="session-info">
-                                    <div className="session-title" style={{ fontSize: '0.9rem' }}>{ann.title}</div>
-                                    <div className="session-meta">
-                                        <span className="status-badge upcoming" style={{ fontSize: '0.7rem' }}>New</span>
-                                        <span style={{ fontSize: '0.7rem' }}>{new Date(ann.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
-                            <FiBell size={40} style={{ marginBottom: '12px' }} />
-                            <p>No new announcements.</p>
-                        </div>
-                    )}
-                </div>
-            </section>
+            {/* Calendar Widget Replacement for Meeting Logs */}
+            <div style={{ minHeight: '350px', height: 'auto', marginTop: '0px' }}>
+                <CalendarWidget meetings={meetingLogs} />
+            </div>
         </div>
     </div>
 );

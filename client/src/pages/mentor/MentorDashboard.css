@@ -819,3 +819,153 @@
     background: rgba(34, 197, 94, 0.15);
     color: #4ADE80;
 }
+
+/* Legacy styles removed as they are now handled by MentorLayout and MentorNavbar */
+
+
+/* Layout styles (panels/stats) are kept as they are used within the dashboard content */
+
+/* Dashboard Sections & Panels */
+.mentor-dashboard-sections {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    /* 70/30 split like student */
+    gap: 24px;
+    align-items: stretch;
+}
+
+.mentor-panel {
+    background-color: var(--admin-surface);
+    border: 1px solid var(--admin-border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--admin-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mentor-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--admin-border-color);
+}
+
+.mentor-panel-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.count-badge-modern {
+    background: var(--admin-bg-color);
+    color: var(--admin-text-secondary);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid var(--admin-border-color);
+}
+
+/* Glassy Stat Cards - Student style */
+.stat-card-glass {
+    border-radius: 16px;
+    padding: 20px;
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: var(--admin-transition);
+    box-shadow: var(--admin-shadow-sm);
+}
+
+.stat-card-glass:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--admin-shadow-md);
+    border-color: var(--admin-accent-primary);
+}
+
+.stat-blue {
+    border-left: 4px solid #3b82f6;
+}
+
+.stat-teal {
+    border-left: 4px solid #10b981;
+}
+
+.stat-purple {
+    border-left: 4px solid #8b5cf6;
+}
+
+.stat-orange {
+    border-left: 4px solid #f59e0b;
+}
+
+.stat-indigo {
+    border-left: 4px solid #6366f1;
+}
+
+.stat-card-glass .icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.stat-blue .icon-circle {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-teal .icon-circle {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.stat-purple .icon-circle {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.stat-orange .icon-circle {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.stat-indigo .icon-circle {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.stat-card-glass .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+}
+
+.stat-card-glass .stat-label {
+    font-size: 0.8rem;
+    color: var(--admin-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+    .mentor-sidebar {
+        display: none;
+    }
+
+    .mentor-dashboard-sections {
+        grid-template-columns: 1fr;
+    }
+}

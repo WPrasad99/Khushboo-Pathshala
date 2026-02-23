@@ -4,6 +4,7 @@ import Login from './pages/auth/Login';
 import RoleSelection from './pages/auth/RoleSelection';
 import StudentDashboard from './pages/student/Dashboard';
 import StudentLayout from './components/layout/StudentLayout';
+import MentorLayout from './components/layout/MentorLayout';
 import Courses from './pages/student/Courses';
 import CoursePlayer from './pages/student/CoursePlayer';
 import MentorProgram from './pages/student/MentorProgram';
@@ -116,9 +117,18 @@ function AppRoutes() {
       {/* Mentor Routes */}
       <Route path="/mentor" element={
         <ProtectedRoute allowedRoles={['MENTOR']}>
-          <MentorDashboard />
+          <MentorLayout />
         </ProtectedRoute>
-      } />
+      }>
+        <Route index element={<MentorDashboard />} />
+        <Route path="batches" element={<MentorDashboard />} />
+        <Route path="sessions" element={<MentorDashboard />} />
+        <Route path="mentorship" element={<MentorDashboard />} />
+        <Route path="forum" element={<MentorDashboard />} />
+        <Route path="assignments" element={<MentorDashboard />} />
+        <Route path="messages" element={<MentorDashboard />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
 
       {/* Admin Routes */}
       <Route path="/admin" element={
