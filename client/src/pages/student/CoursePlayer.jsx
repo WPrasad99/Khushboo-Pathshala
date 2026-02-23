@@ -12,6 +12,7 @@ import {
     FiSave
 } from 'react-icons/fi';
 import { resourceAPI } from '../../api';
+import { motion, AnimatePresence } from 'framer-motion';
 import './CoursePlayer.css';
 
 const CoursePlayer = () => {
@@ -316,39 +317,9 @@ const CoursePlayer = () => {
                         </div>
                     </article>
 
-                    <article className="course-detail-card card">
-                        <h3>Attachments</h3>
-                        <div className="course-attachment-list">
-                            {attachments.map((item) => (
-                                <a
-                                    key={item.id}
-                                    href={item.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="course-attachment-item"
-                                >
-                                    <span>{item.label}</span>
-                                    {item.isExternal ? <FiExternalLink /> : <FiDownload />}
-                                </a>
-                            ))}
-                        </div>
-                    </article>
 
-                    <article className="course-detail-card card">
-                        <h3>Related Sessions</h3>
-                        <div className="course-related-list">
-                            {relatedSessions.length > 0 ? (
-                                relatedSessions.map((video) => (
-                                    <button key={video.index} type="button" onClick={() => selectVideo(video.index)}>
-                                        <span>{video.title}</span>
-                                        <FiPlay />
-                                    </button>
-                                ))
-                            ) : (
-                                <p className="course-muted">No related sessions available.</p>
-                            )}
-                        </div>
-                    </article>
+
+
 
                     <article className="course-detail-card card">
                         <h3>Your Notes</h3>

@@ -6,7 +6,7 @@ import { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
     FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2, FiMenu, FiX,
-    FiSun, FiMoon
+    FiSun, FiMoon, FiCheckCircle
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingAnimation from '../../components/LoadingAnimation';
@@ -451,8 +451,12 @@ const AdminDashboard = () => {
                         <>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <h1 className="page-title-enterprise">Academy Overview</h1>
-                                    <p className="page-subtitle-enterprise">Real-time metrics and operational status.</p>
+                                    <h1 className="page-title-enterprise">👋 Hello, {user?.name?.split(' ')[0] || 'Admin'}!</h1>
+                                    <p className="page-subtitle-enterprise">
+                                        {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {' · '}
+                                        {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                    </p>
                                 </div>
                                 <span className="badge badge-primary">Live Monitoring</span>
                             </div>
@@ -583,15 +587,21 @@ const AdminDashboard = () => {
                                 <div className="announcements-grid">
                                     {announcements && announcements.length > 0 ? (
                                         announcements.slice(0, 3).map((ann) => (
-                                            <div key={ann.id} className="announcement-card">
-                                                <span className="announcement-category">Academy Notice</span>
-                                                <h4 className="announcement-title" title={ann.title}>{ann.title}</h4>
-                                                <p className="announcement-desc">{ann.content}</p>
-                                                <p className="announcement-meta">Published on {new Date(ann.createdAt).toLocaleDateString()}</p>
+                                            <div key={ann.id} className="announcement-card-modern">
+                                                <div className="ann-card-header">
+                                                    <span className={`ann-priority-dot ${ann.priority || 'normal'}`} />
+                                                    <span className="ann-priority-label">{ann.priority === 'high' ? 'High Priority' : ann.priority === 'low' ? 'Low' : 'Normal'}</span>
+                                                    <span className="ann-date">{new Date(ann.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                </div>
+                                                <h4 className="ann-title">{ann.title}</h4>
+                                                <p className="ann-content">{ann.content}</p>
+                                                <div className="ann-footer">
+                                                    <span className="ann-badge">📢 Academy Notice</span>
+                                                </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div style={{ gridColumn: '1 / -1', padding: '48px', textAlign: 'center', border: '1px dashed var(--admin-border-color)', borderRadius: 'var(--admin-radius-lg)' }}>
+                                        <div style={{ gridColumn: '1 / -1', padding: '48px', textAlign: 'center', border: '1px dashed var(--admin-border-color)', borderRadius: '14px' }}>
                                             <p style={{ color: 'var(--admin-text-secondary)', margin: 0 }}>No announcements broadcasted yet.</p>
                                         </div>
                                     )}

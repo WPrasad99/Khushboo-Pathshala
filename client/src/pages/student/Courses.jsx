@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
     FiBook,
     FiCheckCircle,
@@ -105,30 +106,9 @@ const Courses = () => {
 
     return (
         <div className="learning-page">
-            <section className="learning-hero card-hero">
-                <div>
-                    <h1>Learning Center</h1>
-                    <p>One workspace for sessions, resources, and career-focused coursework.</p>
-                </div>
 
-                <div className="learning-hero-metrics">
-                    <span>{summaryCounts.sessions} Sessions</span>
-                    <span>{summaryCounts.resources} Resources</span>
-                    <span>{summaryCounts.courses} Courses</span>
-                </div>
-            </section>
 
             <section className="learning-toolbar">
-                <form className="learning-search" onSubmit={(event) => event.preventDefault()}>
-                    <FiSearch />
-                    <input
-                        type="search"
-                        placeholder="Search title, topic, or mentor"
-                        value={searchQuery}
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                    />
-                </form>
-
                 <div className="learning-tab-row">
                     {tabConfig.map((tab) => {
                         const Icon = tab.icon;
@@ -182,14 +162,17 @@ const Courses = () => {
                                 <div className="learning-thumb">
                                     <img
                                         src={
-                                            item.thumbnailUrl && item.thumbnailUrl.startsWith('http')
-                                                ? item.thumbnailUrl
-                                                : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=640&h=360&fit=crop'
+                                            item.thumbnailUrl ||
+                                            (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg` : null) ||
+                                            (isSession ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80' : 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80')
                                         }
                                         alt={item.title}
-                                        onError={(event) => {
-                                            event.currentTarget.src =
-                                                'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=640&h=360&fit=crop';
+                                        onError={(e) => {
+                                            if (e.target.src.includes('maxresdefault')) {
+                                                e.target.src = e.target.src.replace('maxresdefault', 'mqdefault');
+                                            } else if (!e.target.src.includes('unsplash')) {
+                                                e.target.src = 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80';
+                                            }
                                         }}
                                     />
 
@@ -220,7 +203,7 @@ const Courses = () => {
                                     </div>
 
                                     <h3>{item.title}</h3>
-                                    <p>{item.description || 'Explore this guided learning module and improve your practical understanding.'}</p>
+
 
                                     <div className="learning-mentor-row">
                                         <img

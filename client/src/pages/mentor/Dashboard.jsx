@@ -66,7 +66,7 @@ const MentorDashboard = () => {
     const [startChatUser, setStartChatUser] = useState(null);
 
     // Theme Architecture State
-    const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
+    const [theme, setTheme] = useState('light');
 
     useEffect(() => {
         fetchData();
@@ -74,13 +74,10 @@ const MentorDashboard = () => {
 
     // Theme Application Effect
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('admin-theme', theme);
-    }, [theme]);
+        document.documentElement.setAttribute('data-theme', 'light');
+    }, []);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    };
+    const toggleTheme = () => { };
 
     useEffect(() => {
         if (socket) {
@@ -214,9 +211,7 @@ const MentorDashboard = () => {
                     </div>
 
                     <div className="navbar-right-actions">
-                        <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
-                            {theme === 'light' ? <FiMoon /> : <FiSun />}
-                        </button>
+
                         <button className="icon-btn" style={{ position: 'relative' }}>
                             <FiBell />
                             {unreadNotifications > 0 && <span className="notification-dot"></span>}

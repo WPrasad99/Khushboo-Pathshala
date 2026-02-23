@@ -59,6 +59,13 @@
     width: 100%;
     max-width: 320px;
     transition: var(--transition-normal);
+    margin-bottom: var(--space-24);
+}
+
+.learning-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20);
 }
 
 .courses-search:focus-within {
@@ -148,8 +155,9 @@
 
 .learning-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-24);
+    margin-top: 16px;
 }
 
 .learning-card {

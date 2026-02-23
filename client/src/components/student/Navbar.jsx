@@ -5,7 +5,6 @@ import api from '../../api';
 import {
     FiBell,
     FiChevronDown,
-    FiChevronRight,
     FiLogOut,
     FiMenu,
     FiMessageCircle,
@@ -26,7 +25,9 @@ const routeTitleMap = {
     '/student/mentor': 'Mentorship',
     '/student/forum': 'Forum',
     '/student/messages': 'Messages',
-    '/settings': 'Profile'
+    '/student/settings': 'Profile',
+    '/settings': 'Profile',
+    '/dashboard': 'Dashboard'
 };
 
 const quickSearchRoutes = [
@@ -36,7 +37,7 @@ const quickSearchRoutes = [
     { keywords: ['mentor', 'mentorship', 'meeting'], path: '/student/mentor' },
     { keywords: ['forum', 'discussion', 'question'], path: '/student/forum' },
     { keywords: ['message', 'chat'], path: '/student/messages' },
-    { keywords: ['profile', 'setting', 'account'], path: '/settings' }
+    { keywords: ['profile', 'setting', 'account'], path: '/student/settings' }
 ];
 
 const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
@@ -56,12 +57,8 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
     const profileRef = useRef(null);
 
     useEffect(() => {
-        const storedTheme = localStorage.getItem('kp-theme');
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        const resolvedTheme = storedTheme || systemTheme;
-
-        setTheme(resolvedTheme);
-        document.documentElement.setAttribute('data-theme', resolvedTheme);
+        setTheme('light');
+        document.documentElement.setAttribute('data-theme', 'light');
     }, []);
 
     useEffect(() => {
@@ -117,33 +114,11 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
-    const breadcrumbs = useMemo(() => {
-        const pathParts = location.pathname.split('/').filter(Boolean);
-
-        if (pathParts.length === 0) {
-            return [{ label: 'Overview', path: '/student' }];
-        }
-
-        if (location.pathname === '/settings') {
-            return [
-                { label: 'Student', path: '/student' },
-                { label: 'Profile', path: '/settings' }
-            ];
-        }
-
-        const fullPath = `/${pathParts.slice(0, 2).join('/')}`;
-        const currentLabel = routeTitleMap[fullPath] || routeTitleMap[location.pathname] || 'Overview';
-
-        return [
-            { label: 'Student', path: '/student' },
-            { label: currentLabel, path: location.pathname }
-        ];
-    }, [location.pathname]);
+    const pageTitle = routeTitleMap[location.pathname] || 'Overview';
 
     const toggleTheme = () => {
-        const nextTheme = theme === 'dark' ? 'light' : 'dark';
+        const nextTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(nextTheme);
-        localStorage.setItem('kp-theme', nextTheme);
         document.documentElement.setAttribute('data-theme', nextTheme);
     };
 
@@ -210,27 +185,6 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
     return (
         <header className="kp-topbar">
             <div className="kp-topbar-left">
-                <button className="kp-icon-btn kp-mobile-only" onClick={onOpenMobileNav} aria-label="Open navigation menu">
-                    <FiMenu />
-                </button>
-
-                <nav className="kp-breadcrumbs" aria-label="Breadcrumb">
-                    {breadcrumbs.map((crumb, index) => (
-                        <span key={crumb.path} className="kp-breadcrumb-item">
-                            {index > 0 && <FiChevronRight className="kp-breadcrumb-separator" />}
-                            <button
-                                type="button"
-                                className={`kp-breadcrumb-link ${index === breadcrumbs.length - 1 ? 'is-active' : ''}`}
-                                onClick={() => navigate(crumb.path)}
-                            >
-                                {crumb.label}
-                            </button>
-                        </span>
-                    ))}
-                </nav>
-            </div>
-
-            <div className="kp-global-search-wrapper">
                 <form className="kp-global-search" onSubmit={handleSearch}>
                     <FiSearch className="kp-search-icon" />
                     <input
@@ -244,6 +198,16 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
             </div>
 
             <div className="kp-topbar-actions">
+                <button
+                    type="button"
+                    className="icon-btn theme-toggle"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                    title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                >
+                    {theme === 'light' ? <FiMoon /> : <FiSun />}
+                </button>
+
                 <button
                     type="button"
                     className="icon-btn"
@@ -272,9 +236,9 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                         {showNotifications && (
                             <motion.div
                                 className="kp-dropdown-menu kp-notification-menu"
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 8 }}
+                                exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.18 }}
                             >
                                 <div className="kp-dropdown-header">
@@ -312,9 +276,7 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                     </AnimatePresence>
                 </div>
 
-                <button type="button" className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
-                    {theme === 'dark' ? <FiSun /> : <FiMoon />}
-                </button>
+
 
                 <div className="kp-dropdown-anchor" ref={profileRef}>
                     <button
@@ -335,18 +297,14 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                         {showProfileMenu && (
                             <motion.div
                                 className="kp-dropdown-menu kp-profile-menu"
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 8 }}
+                                exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.18 }}
                             >
-                                <button type="button" onClick={() => navigate('/settings')}>
+                                <button type="button" onClick={() => navigate('/student/settings')}>
                                     <FiUser />
                                     Profile
-                                </button>
-                                <button type="button" onClick={() => navigate('/settings')}>
-                                    <FiSettings />
-                                    Settings
                                 </button>
                                 <button type="button" onClick={handleLogout} className="is-danger">
                                     <FiLogOut />
@@ -357,11 +315,9 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                     </AnimatePresence>
                 </div>
 
-                <button type="button" className="icon-btn kp-collapse-btn" onClick={onToggleSidebar} aria-label="Collapse sidebar">
-                    <FiMenu />
-                </button>
+
             </div>
-        </header>
+        </header >
     );
 };
 

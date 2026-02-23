@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mentorshipAPI } from '../../api';
 import { FiCalendar, FiMessageCircle, FiUser } from 'react-icons/fi';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Dashboard.css';
 import './MentorProgram.css';
 

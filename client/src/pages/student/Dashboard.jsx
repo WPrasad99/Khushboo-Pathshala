@@ -164,12 +164,6 @@ const StudentDashboard = () => {
     if (isAssignmentsView) {
         return (
             <div className="student-dashboard-shell">
-                <section className="student-subpage-header card-hero">
-                    <div>
-                        <h1>Assignments</h1>
-                        <p>Track deadlines, submit confidently, and monitor grading progress.</p>
-                    </div>
-                </section>
                 <div className="student-subpage-content">
                     <StudentAssignmentSection />
                 </div>
@@ -199,7 +193,7 @@ const StudentDashboard = () => {
                 <section className="student-hero-section">
                     <div className="hero-text">
                         <h1>Hello, {user?.name?.split(' ')[0]} 👋</h1>
-                        <p>Here's what's happening with your learning today.</p>
+                        <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} | {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                     <div className="hero-actions">
                         <button type="button" className="btn-student-outline" onClick={() => navigate('/student/courses')}>

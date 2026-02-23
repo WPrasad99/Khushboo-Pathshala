@@ -75,16 +75,16 @@ function AppRoutes() {
         </ProtectedRoute>
       } /> */}
 
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
-      } />
 
-      {/* Shared Messaging Route - All Authenticated Users */}
+
       <Route path="/messages" element={
         <ProtectedRoute>
           <MessagingLayout />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <SettingsRedirect />
         </ProtectedRoute>
       } />
 
@@ -110,6 +110,7 @@ function AppRoutes() {
         <Route path="forum" element={<Forum />} />
 
         <Route path="assignments" element={<StudentDashboard />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       {/* Mentor Routes */}
@@ -132,6 +133,12 @@ function AppRoutes() {
     </Routes>
   );
 }
+
+const SettingsRedirect = () => {
+  const { user } = useAuth();
+  if (user?.role === 'STUDENT') return <Navigate to="/student/settings" replace />;
+  return <Settings />;
+};
 
 function App() {
   return (

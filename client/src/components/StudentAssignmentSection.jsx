@@ -543,104 +543,107 @@ const StudentAssignmentSection = () => {
         <div className="student-assignments-wrapper">
             <style>{`
             .student-assignments-wrapper {
-                padding: var(--space-24) 0;
+                padding: var(--space-8) 0;
             }
             .sa-filter-bar {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 gap: var(--space-16);
-                margin-bottom: var(--space-24);
+                margin-bottom: var(--space-32);
                 flex-wrap: wrap;
             }
-            .sa-tabs {
-                display: flex;
-                gap: var(--space-8);
-                background: var(--color-bg);
-                padding: var(--space-4);
-                border-radius: var(--radius-md);
-                border: 1px solid var(--color-border);
-            }
             .sa-tab {
-                padding: 6px 16px;
+                padding: 10px 24px;
                 border: none;
                 background: transparent;
-                border-radius: var(--radius-md);
-                color: 'var(--color-text-)'
+                border-radius: 12px;
+                color: var(--text-secondary);
                 font-size: var(--fs-body);
-                font-weight: var(--fw-medium);
+                font-weight: 500;
                 cursor: pointer;
-                transition: all var(--transition-fast);
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .sa-tab.is-active {
-                background: var(--color-surface);
-                color: 'var(--color-)'
-                font-weight: var(--fw-semibold);
-                box-shadow: var(--shadow-sm);
-            }
-            .sa-search {
-                position: relative;
-                min-width: 280px;
-            }
-            .sa-search input {
-                padding-left: 36px;
-            }
-            .sa-search-icon {
-                position: absolute;
-                left: 12px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: 'var(--color-text-)'
+                background: white;
+                color: var(--brand-primary);
+                font-weight: 700;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
             }
             .sa-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                gap: var(--space-24);
+                grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                gap: 28px;
             }
             .sa-card {
+                background: white;
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                border-radius: 20px;
+                overflow: hidden;
                 display: flex;
                 flex-direction: column;
-                padding: 0;
-                overflow: hidden;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            }
+            .sa-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+                border-color: rgba(99, 102, 241, 0.4);
             }
             .sa-card-header {
-                height: 120px;
-                padding: var(--space-20);
+                height: 100px;
+                padding: 24px;
                 display: flex;
                 align-items: flex-start;
                 justify-content: space-between;
                 position: relative;
             }
-            .sa-card-header.assignment { background: linear-gradient(135deg, var(--color-primary) 0%, #3730A3 100%); }
-            .sa-card-header.quiz { background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%); }
+            .sa-card-header.assignment { 
+                background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
+            }
+            .sa-card-header.quiz { 
+                background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); 
+            }
             .sa-card-header-badge {
-                background: rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(4px);
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(8px);
                 color: white;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 4px 12px;
+                border-radius: 30px;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
             }
             .sa-card-icon-wrap {
-                background: var(--color-surface);
-                padding: 8px;
-                border-radius: var(--radius-md);
-                box-shadow: var(--shadow-sm);
+                background: white;
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+                transform: translateY(12px);
             }
             .sa-card-body {
-                padding: var(--space-20);
+                padding: 32px 24px 24px;
                 flex: 1;
                 display: flex;
                 flex-direction: column;
             }
             .sa-card-title {
-                font-size: var(--fs-h3);
-                margin-bottom: var(--space-8);
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 12px;
+                line-height: 1.4;
             }
             .sa-card-desc {
-                font-size: var(--fs-body);
-                color: 'var(--color-text-)'
-                margin-bottom: var(--space-16);
+                font-size: 0.95rem;
+                color: #64748b;
+                margin-bottom: 24px;
+                line-height: 1.6;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
@@ -648,37 +651,44 @@ const StudentAssignmentSection = () => {
             }
             .sa-meta {
                 display: flex;
-                gap: var(--space-8);
+                gap: 12px;
                 flex-wrap: wrap;
                 margin-top: auto;
-                margin-bottom: var(--space-16);
+                margin-bottom: 24px;
+            }
+            .sa-badge {
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 6px;
             }
             .sa-modal-overlay {
                 position: fixed;
                 inset: 0;
-                background: rgba(15, 23, 42, 0.6);
+                background: rgba(15, 23, 42, 0.8);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
                 padding: var(--space-24);
-                backdrop-filter: blur(4px);
+                backdrop-filter: blur(10px);
             }
             .sa-modal-card {
-                background: var(--color-surface);
-                border-radius: var(--radius-lg);
-                padding: var(--space-32);
+                background: white;
+                border-radius: 28px;
+                padding: 40px;
                 width: 100%;
-                max-width: 600px;
-                max-height: 90vh;
-                overflow-y: auto;
-                box-shadow: var(--shadow-premium);
+                max-width: 620px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             }
             `}</style>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {/* Top Bar: Tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                {/* Top Bar: Tabs Only */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
                     {/* Tabs */}
                     <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-primary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
                         {[
@@ -705,19 +715,6 @@ const StudentAssignmentSection = () => {
                             </button>
                         ))}
                     </div>
-
-                    {/* Search */}
-                    <div className="courses-search" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
-                        <FiSearch style={{ color: 'var(--text-muted)' }} />
-                        <input
-                            type="text"
-                            className="search-input-student"
-                            placeholder="Search by title..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none' }}
-                        />
-                    </div>
                 </div>
             </div>
 
@@ -740,14 +737,14 @@ const StudentAssignmentSection = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 style={{
-                                    background: 'var(--bg-secondary)',
-                                    borderRadius: '16px',
-                                    border: '1px solid var(--border-subtle)',
+                                    background: 'white',
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(226, 232, 240, 0.8)',
                                     overflow: 'hidden',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    boxShadow: 'var(--admin-shadow-sm)',
-                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                     cursor: 'pointer'
                                 }}
                                 whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
@@ -756,8 +753,8 @@ const StudentAssignmentSection = () => {
                                     <span className="badge sa-card-header-badge">
                                         {isAssignment ? 'ASSIGNMENT' : 'QUIZ'}
                                     </span>
-                                    <div className="sa-card-icon-wrap" style={{ color: isAssignment ? 'var(--color-primary)' : 'var(--color-success)' }}>
-                                        {isAssignment ? <FiFileText size={20} /> : <FiCheckCircle size={20} />}
+                                    <div className="sa-card-icon-wrap" style={{ color: isAssignment ? '#6366f1' : '#10b981' }}>
+                                        {isAssignment ? <FiFileText size={22} /> : <FiCheckCircle size={22} />}
                                     </div>
                                 </div>
 
@@ -766,12 +763,12 @@ const StudentAssignmentSection = () => {
                                     <p className="sa-card-desc">{item.description}</p>
 
                                     <div className="sa-meta">
-                                        <span className="badge" style={{ background: statusInfo.bg, color: statusInfo.color }}>
-                                            {statusInfo.status}
+                                        <span className="sa-badge" style={{ background: statusInfo.bg, color: statusInfo.color }}>
+                                            {statusInfo.icon} {statusInfo.status}
                                         </span>
                                         {item.dueDate && (
-                                            <span className="badge" style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>
-                                                Due: {new Date(item.dueDate).toLocaleDateString()}
+                                            <span className="sa-badge" style={{ background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
+                                                <FiClock /> {new Date(item.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                             </span>
                                         )}
                                     </div>

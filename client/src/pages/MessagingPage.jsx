@@ -459,13 +459,31 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                 )}
             </div>
 
-            {/* Create Group Modal */}
             {showCreateModal && (
                 <CreateGroupModal
                     onClose={() => setShowCreateModal(false)}
-                    onGroupCreated={(group) => {
-                        fetchConversations();
+                    onGroupCreated={async (group) => {
+                        // 1. Close modal immediately
                         setShowCreateModal(false);
+                        // 2. Optimistically show the group right away
+                        setConversations(prev => [group, ...prev]);
+                        setSelectedConversation(group);
+                        setShowMobileSidebar(false);
+                        // 3. Re-fetch all conversations from backend after brief delay
+                        //    to ensure DB write is fully committed and shape matches
+                        setTimeout(async () => {
+                            try {
+                                const response = await chatAPI.getGroups();
+                                if (Array.isArray(response?.data)) {
+                                    setConversations(response.data);
+                                    // Re-select the same group from fresh data
+                                    const freshGroup = response.data.find(g => g.id === group.id);
+                                    if (freshGroup) setSelectedConversation(freshGroup);
+                                }
+                            } catch (err) {
+                                console.error('Failed to refresh groups after creation:', err);
+                            }
+                        }, 500);
                     }}
                 />
             )}

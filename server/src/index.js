@@ -529,7 +529,7 @@ app.post('/api/users/avatar', authenticateToken, upload.single('avatar'), valida
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const avatarUrl = `http://localhost:${PORT}/uploads/avatars/${req.file.filename}`;
+        const avatarUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
 
         const user = await prisma.user.update({
             where: { id: req.user.id },
@@ -2069,6 +2069,75 @@ app.get('/api/admin/reports', authenticateToken, requireRole('ADMIN'), async (re
     }
 });
 
+// ============ ANNOUNCEMENTS ============
+
+// Get all announcements
+app.get('/api/announcements', authenticateToken, async (req, res) => {
+    try {
+        const announcements = await prisma.announcement.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                createdBy: { select: { id: true, name: true, avatar: true } },
+                batches: {
+                    include: {
+                        batch: { select: { id: true, name: true } }
+                    }
+                }
+            }
+        });
+
+        res.json(announcements);
+    } catch (error) {
+        console.error('Get announcements error:', error);
+        res.status(500).json({ error: 'Failed to fetch announcements' });
+    }
+});
+
+// Create announcement (Admin only)
+app.post('/api/announcements', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+    try {
+        const { title, content, priority = 'normal', batchIds = [] } = req.body;
+
+        if (!title || !content) {
+            return res.status(400).json({ error: 'Title and content are required' });
+        }
+
+        const announcement = await prisma.announcement.create({
+            data: {
+                title,
+                content,
+                priority,
+                createdById: req.user.id,
+                ...(batchIds.length > 0 && {
+                    batches: {
+                        create: batchIds.map(batchId => ({
+                            batchId
+                        }))
+                    }
+                })
+            },
+            include: {
+                createdBy: { select: { id: true, name: true, avatar: true } },
+                batches: {
+                    include: {
+                        batch: { select: { id: true, name: true } }
+                    }
+                }
+            }
+        });
+
+        // Notify via socket if available
+        if (io) {
+            io.emit('announcement:created', announcement);
+        }
+
+        res.status(201).json(announcement);
+    } catch (error) {
+        console.error('Create announcement error:', error);
+        res.status(500).json({ error: 'Failed to create announcement' });
+    }
+});
+
 // Seed YouTube Playlists as Courses
 app.post('/api/seed-youtube-courses', async (req, res) => {
     try {
@@ -2346,76 +2415,73 @@ app.get('/api/chat/groups', authenticateToken, async (req, res) => {
         const userId = req.user.id;
 
         // --- AUTO-CREATE DEFAULT CONVERSATIONS START ---
-        // Fetch current user role
-        const currentUser = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { role: true }
-        });
-
-        if (currentUser) {
-            const targetIds = new Set();
-
-            // 1. Add all Admins (everyone should be able to chat with admin)
-            const admins = await prisma.user.findMany({
-                where: { role: 'ADMIN' },
-                select: { id: true }
+        // Wrapped in its own try-catch so failures here don't break group listing
+        try {
+            const currentUser = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { role: true }
             });
-            admins.forEach(a => targetIds.add(a.id));
 
-            // 2. Add Assigned Mentors (if user is Student)
-            if (currentUser.role === 'STUDENT') {
-                const mentorships = await prisma.mentorship.findMany({
-                    where: { menteeId: userId },
-                    select: { mentorId: true }
+            if (currentUser) {
+                const targetIds = new Set();
+
+                const admins = await prisma.user.findMany({
+                    where: { role: 'ADMIN' },
+                    select: { id: true }
                 });
-                mentorships.forEach(m => targetIds.add(m.mentorId));
-            }
+                admins.forEach(a => targetIds.add(a.id));
 
-            // 3. Add Students (if user is Mentor - optional, but user requested 'added in list')
-            // Note: This might spam mentor if they have many students, but requested behavior implies mutual visibility.
-            // For now, let's strictly follow "when student message to mentor... student should get added".
-            // But also "admin should gets added in student and mentor messaging list".
-            // So for Mentor, we won't auto-create chats with all students to avoid clutter,
-            // as the requirement says "when student message to mentor".
-        }
-
-        // Remove self and ensure no duplicates
-        targetIds.delete(userId);
-
-        // Ensure DM groups exist
-        for (const targetId of targetIds) {
-            // Check if group exists
-            const existingGroup = await prisma.chatGroup.findFirst({
-                where: {
-                    groupType: 'direct',
-                    AND: [
-                        { members: { some: { userId: userId } } },
-                        { members: { some: { userId: targetId } } }
-                    ]
+                if (currentUser.role === 'STUDENT') {
+                    const mentorships = await prisma.mentorship.findMany({
+                        where: { menteeId: userId },
+                        select: { mentorId: true }
+                    });
+                    mentorships.forEach(m => targetIds.add(m.mentorId));
                 }
-            });
 
-            if (!existingGroup) {
-                console.log(`Auto-creating DM between ${userId} and ${targetId}`);
-                try {
-                    await prisma.chatGroup.create({
-                        data: {
-                            name: 'Direct Message',
-                            groupType: 'direct',
-                            createdById: userId, // User acts as creator
-                            members: {
-                                create: [
-                                    { userId: userId, role: 'member', status: 'accepted' },
-                                    { userId: targetId, role: 'member', status: 'accepted' }
+                targetIds.delete(userId);
+
+                for (const targetId of targetIds) {
+                    try {
+                        const existingGroup = await prisma.chatGroup.findFirst({
+                            where: {
+                                groupType: 'direct',
+                                AND: [
+                                    { members: { some: { userId: userId } } },
+                                    { members: { some: { userId: targetId } } }
                                 ]
                             }
+                        });
+
+                        if (!existingGroup) {
+                            // Verify target user still exists before creating DM
+                            const targetUser = await prisma.user.findUnique({
+                                where: { id: targetId },
+                                select: { id: true }
+                            });
+                            if (targetUser) {
+                                await prisma.chatGroup.create({
+                                    data: {
+                                        name: 'Direct Message',
+                                        groupType: 'direct',
+                                        createdById: userId,
+                                        members: {
+                                            create: [
+                                                { userId: userId, role: 'member', status: 'accepted' },
+                                                { userId: targetId, role: 'member', status: 'accepted' }
+                                            ]
+                                        }
+                                    }
+                                });
+                            }
                         }
-                    });
-                } catch (err) {
-                    console.error('Error auto-creating DM:', err);
-                    // Continue to next target, don't fail the request
+                    } catch (err) {
+                        console.error(`Error auto-creating DM with ${targetId}:`, err.message);
+                    }
                 }
             }
+        } catch (autoCreateErr) {
+            console.error('Auto-create DMs failed (non-fatal):', autoCreateErr.message);
         }
         // --- AUTO-CREATE DEFAULT CONVERSATIONS END ---
 

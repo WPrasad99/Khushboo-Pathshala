@@ -123,24 +123,7 @@ const Settings = () => {
 
     return (
         <div className="settings-container">
-            {/* Header */}
-            <div className="settings-header">
-                <motion.button
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    onClick={() => navigate(-1)}
-                    className="back-btn"
-                >
-                    <FiArrowLeft size={20} />
-                </motion.button>
-                <motion.h1
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="settings-title"
-                >
-                    Settings
-                </motion.h1>
-            </div>
+
 
             {/* Main Settings Card */}
             <motion.div

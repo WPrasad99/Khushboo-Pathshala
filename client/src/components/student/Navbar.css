@@ -14,51 +14,51 @@
     -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow-xs);
     padding: 0 var(--space-20);
-    display: grid;
-    grid-template-columns: minmax(140px, 1fr) 420px minmax(180px, 1fr);
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: var(--space-16);
+    gap: var(--space-20);
 }
 
 .kp-topbar-left {
     display: flex;
     align-items: center;
     gap: var(--space-12);
+    flex: 1;
     min-width: 0;
 }
 
-/* ── Breadcrumbs ── */
-.kp-breadcrumbs {
+/* ── Page Title ── */
+.kp-page-title {
+    margin: 0;
+    font-size: var(--fs-h3, 1.125rem);
+    font-weight: var(--fw-bold, 700);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Icon Button (kp- prefix variant) ── */
+.kp-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
     display: flex;
     align-items: center;
-    gap: var(--space-4);
-    min-width: 0;
-}
-
-.kp-breadcrumb-item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-4);
-    min-width: 0;
-}
-
-.kp-breadcrumb-separator {
-    color: var(--text-muted);
-}
-
-.kp-breadcrumb-link {
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-weight: var(--fw-semibold);
-    font-size: var(--fs-small);
+    justify-content: center;
     cursor: pointer;
-    transition: color var(--dur-fast) var(--ease-standard);
-    white-space: nowrap;
+    color: var(--text-secondary);
+    transition: all var(--dur-fast) var(--ease-standard);
+    position: relative;
 }
 
-.kp-breadcrumb-link:hover {
-    color: var(--text-primary);
+.kp-icon-btn:hover {
+    background: var(--color-surface-muted);
+    color: var(--color-primary);
+    border-color: var(--color-border-hover);
 }
 
 /* ── Global Search Bar ── */
@@ -73,8 +73,8 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    max-width: 520px;
-    height: 40px;
+    max-width: 1200px;
+    height: 44px;
     border-radius: 999px;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -234,6 +234,9 @@
     border: 1px solid var(--color-border);
     z-index: 1001;
     overflow: hidden;
+    margin-top: 8px;
+    /* Ensure gap between header and menu */
+    transform-origin: top;
     animation: slideDown var(--dur-normal) var(--ease-decel);
 }
 
@@ -433,6 +436,9 @@
     box-shadow: var(--shadow-xl);
     padding: var(--space-8);
     z-index: 1000;
+    margin-top: 8px;
+    /* Ensure gap between header and menu */
+    transform-origin: top;
 }
 
 .kp-profile-menu button {
@@ -489,7 +495,7 @@
    SHELL CONTENT OVERRIDES
    ================================================================ */
 .kp-shell-content {
-    padding: var(--space-32);
+    padding: var(--space-20);
     min-height: calc(100vh - var(--navbar-height));
     overflow-x: hidden;
 }

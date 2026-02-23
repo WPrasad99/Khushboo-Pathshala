@@ -1,7 +1,7 @@
 .course-player-v2 {
     display: flex;
     flex-direction: column;
-    gap: var(--space-24);
+    gap: var(--space-12);
 }
 
 .course-player-header-v2 {
@@ -112,6 +112,11 @@
 .course-video-progress-card p {
     font-size: var(--fs-body);
     color: var(--color-text-secondary);
+}
+
+.course-lesson-list-card {
+    margin-top: var(--space-24);
+    /* Increased space between lesson details and navigator */
 }
 
 .course-lesson-list-card,
@@ -314,8 +319,16 @@
     padding: var(--space-24);
     font-size: var(--fs-body);
     resize: vertical;
-    min-height: 160px;
+    min-height: 460px;
+    /* Reduced to align with Lesson Navigator visual height */
     transition: all var(--transition-fast);
+}
+
+.course-detail-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+    padding-top: 10px;
 }
 
 .course-detail-card textarea:focus {

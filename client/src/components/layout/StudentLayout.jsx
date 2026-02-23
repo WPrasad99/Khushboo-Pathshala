@@ -33,7 +33,7 @@ const navigationGroups = [
     {
         label: 'Account',
         items: [
-            { to: '/settings', icon: FiSettings, label: 'Profile' }
+            { to: '/student/settings', icon: FiSettings, label: 'Profile' }
         ]
     }
 ];
@@ -73,15 +73,6 @@ const StudentLayout = () => {
                     <button className="kp-sidebar-brand" onClick={() => navigate('/student')}>
                         <img src="/logo.png" alt="Khushboo Pathshala" />
                         <span>Khushboo Pathshala</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        className="kp-sidebar-collapse"
-                        onClick={() => setIsCollapsed((state) => !state)}
-                        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                    >
-                        <FiChevronLeft />
                     </button>
                 </div>
 

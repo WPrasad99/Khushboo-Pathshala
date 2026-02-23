@@ -1,5 +1,5 @@
 .mentor-program-page {
-    padding: var(--space-32) 0;
+    /* Removed explicit padding to match forum (which relies on container) */
     min-height: 100vh;
 }
 
