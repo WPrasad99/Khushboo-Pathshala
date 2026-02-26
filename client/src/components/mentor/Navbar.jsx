@@ -6,7 +6,6 @@ import {
     FiBell,
     FiChevronDown,
     FiLogOut,
-    FiMenu,
     FiMessageCircle,
     FiMoon,
     FiSearch,
@@ -156,17 +155,16 @@ const MentorNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
     return (
         <header className="kp-topbar">
             <div className="kp-topbar-left">
-                <button
-                    className="mobile-toggle icon-btn"
-                    onClick={onOpenMobileNav}
-                    aria-label="Toggle navigation"
-                >
-                    <FiMenu />
-                </button>
-                <div className="kp-page-title">
-                    <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--admin-text-primary)' }}>
-                        {pageTitle}
-                    </h1>
+                <div className="kp-global-search-wrapper">
+                    <div className="kp-global-search">
+                        <FiSearch className="kp-search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Search students, batches, sessions..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 

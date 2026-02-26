@@ -258,6 +258,190 @@ app.put('/api/notifications/read', authenticateToken, async (req, res) => {
     }
 });
 
+// ============ MENTOR MEETING ROUTES ============
+
+// Get all meetings for the logged-in mentor
+app.get('/api/mentor/meetings', authenticateToken, async (req, res) => {
+    try {
+        const mentorId = req.user.id;
+        const meetings = await prisma.meeting.findMany({
+            where: {
+                mentorship: { mentorId }
+            },
+            include: {
+                mentorship: {
+                    include: {
+                        mentee: { select: { id: true, name: true, email: true, avatar: true } }
+                    }
+                }
+            },
+            orderBy: { meetingDate: 'desc' }
+        });
+
+        // Format for the frontend
+        const formatted = meetings.map(m => ({
+            id: m.id,
+            title: m.discussionSummary?.split('\n')[0] || 'Mentorship Meeting',
+            meetingDate: m.meetingDate,
+            duration: m.duration,
+            discussionSummary: m.discussionSummary,
+            remarks: m.remarks,
+            feedback: m.feedback,
+            mentee: m.mentorship.mentee,
+            createdAt: m.createdAt
+        }));
+
+        res.json(formatted);
+    } catch (error) {
+        console.error('Get mentor meetings error:', error);
+        res.status(500).json({ error: 'Failed to fetch meetings' });
+    }
+});
+
+// Schedule a new meeting for a batch (creates meeting for every student in the batch)
+app.post('/api/mentor/meetings', authenticateToken, async (req, res) => {
+    try {
+        const mentorId = req.user.id;
+        const { title, date, duration, mode, link, description, batchId, discussionSummary, remarks } = req.body;
+
+        if (!batchId || !date) {
+            return res.status(400).json({ error: 'Batch and date are required' });
+        }
+
+        // Get all students in the batch
+        const batchStudents = await prisma.batchStudent.findMany({
+            where: { batchId },
+            select: { studentId: true }
+        });
+
+        if (batchStudents.length === 0) {
+            return res.status(400).json({ error: 'No students found in this batch' });
+        }
+
+        const meetingDate = new Date(date);
+        const meetingDuration = parseInt(duration) || 60;
+        const summary = discussionSummary || description || title || 'Scheduled Meeting';
+        const meetingRemarks = remarks || link || '';
+
+        const createdMeetings = [];
+        const notifiedStudentIds = [];
+
+        for (const bs of batchStudents) {
+            // Find or create mentorship
+            let mentorship = await prisma.mentorship.findFirst({
+                where: { mentorId, menteeId: bs.studentId }
+            });
+
+            if (!mentorship) {
+                mentorship = await prisma.mentorship.create({
+                    data: { mentorId, menteeId: bs.studentId }
+                });
+            }
+
+            // Create the meeting
+            const meeting = await prisma.meeting.create({
+                data: {
+                    mentorshipId: mentorship.id,
+                    meetingDate,
+                    duration: meetingDuration,
+                    discussionSummary: summary,
+                    remarks: meetingRemarks
+                }
+            });
+
+            createdMeetings.push(meeting);
+            notifiedStudentIds.push(bs.studentId);
+        }
+
+        // Create notifications for each student
+        const formattedDate = meetingDate.toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        const mentorName = req.user.name || 'Your mentor';
+
+        // Get batch name for the notification
+        const batch = await prisma.batch.findUnique({ where: { id: batchId }, select: { name: true } });
+        const batchName = batch?.name || 'your batch';
+
+        for (const studentId of notifiedStudentIds) {
+            await prisma.notification.create({
+                data: {
+                    userId: studentId,
+                    title: `📅 New Meeting: ${title || 'Mentorship Meeting'}`,
+                    message: `${mentorName} scheduled a meeting for ${batchName} on ${formattedDate}. Duration: ${meetingDuration} mins.${meetingRemarks ? ' Link: ' + meetingRemarks : ''}`,
+                    type: 'info'
+                }
+            });
+
+            // Emit real-time socket notification if student is online
+            if (io) {
+                io.to(studentId).emit('notification', {
+                    title: `📅 New Meeting: ${title || 'Mentorship Meeting'}`,
+                    message: `Meeting scheduled on ${formattedDate}`
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Meeting scheduled for ${notifiedStudentIds.length} students`,
+            meetings: createdMeetings
+        });
+    } catch (error) {
+        console.error('Schedule meeting error:', error);
+        res.status(500).json({ error: 'Failed to schedule meeting' });
+    }
+});
+
+// ============ MENTORSHIP MEETING ROUTES (for students) ============
+
+// Get meetings for a student's mentorship
+app.get('/api/mentorship/meetings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { filter } = req.query;
+
+        const whereClause = {
+            mentorship: { menteeId: userId }
+        };
+
+        // Filter for upcoming meetings only
+        if (filter === 'upcoming') {
+            whereClause.meetingDate = { gte: new Date() };
+        }
+
+        const meetings = await prisma.meeting.findMany({
+            where: whereClause,
+            include: {
+                mentorship: {
+                    include: {
+                        mentor: { select: { id: true, name: true, avatar: true } }
+                    }
+                }
+            },
+            orderBy: { meetingDate: filter === 'upcoming' ? 'asc' : 'desc' }
+        });
+
+        const formatted = meetings.map(m => ({
+            id: m.id,
+            meetingDate: m.meetingDate,
+            duration: m.duration,
+            discussionSummary: m.discussionSummary,
+            remarks: m.remarks,
+            feedback: m.feedback,
+            mentor: m.mentorship.mentor,
+            createdAt: m.createdAt
+        }));
+
+        res.json(formatted);
+    } catch (error) {
+        console.error('Get mentorship meetings error:', error);
+        res.status(500).json({ error: 'Failed to fetch meetings' });
+    }
+});
+
 // Role-based access middleware
 const requireRole = (...roles) => {
     return (req, res, next) => {
@@ -1170,22 +1354,47 @@ app.get('/api/sessions/tracking', authenticateToken, async (req, res) => {
 app.get('/api/mentor/batches', authenticateToken, requireRole('MENTOR'), async (req, res) => {
     try {
         const mentorId = req.user.userId || req.user.id;
-        const batches = await prisma.batchMentor.findMany({
+        const batchMentors = await prisma.batchMentor.findMany({
             where: { mentorId },
             include: {
                 batch: {
                     include: {
-                        _count: { select: { students: true } }
+                        students: {
+                            include: {
+                                student: {
+                                    select: { id: true, name: true, email: true, avatar: true, createdAt: true }
+                                }
+                            }
+                        },
+                        mentors: {
+                            include: {
+                                mentor: {
+                                    select: { id: true, name: true, avatar: true }
+                                }
+                            }
+                        }
                     }
                 }
             }
         });
-        res.json(batches.map(bm => bm.batch));
+
+        const batches = batchMentors.map(bm => ({
+            ...bm.batch,
+            studentsCount: bm.batch.students.length,
+            students: bm.batch.students.map(bs => ({
+                ...bs.student,
+                joinedAt: bs.joinedAt
+            })),
+            assignedMentors: bm.batch.mentors.map(bm2 => bm2.mentor)
+        }));
+
+        res.json(batches);
     } catch (error) {
         console.error('Get mentor batches error:', error);
         res.status(500).json({ error: 'Failed to fetch batches' });
     }
 });
+
 
 // Get mentor's students
 app.get('/api/mentor/students', authenticateToken, requireRole('MENTOR'), async (req, res) => {
@@ -3932,8 +4141,9 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
 
         if (req.user.role === 'MENTOR') {
             // Mentors see assignments they created
+            const mentorId = req.user.id || req.user.userId;
             const where = {
-                createdById: req.user.userId
+                createdById: mentorId
             };
             if (batchId) {
                 where.batchId = batchId;
@@ -3960,13 +4170,19 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
                 orderBy: { createdAt: 'desc' }
             });
         } else if (req.user.role === 'STUDENT') {
-            // Students see assignments from batches they're in (created by their mentors)
+            // Students see ONLY assignments from batches they are enrolled in
+            const studentId = req.user.id || req.user.userId;
             const studentBatches = await prisma.batchStudent.findMany({
-                where: { studentId: req.user.userId },
+                where: { studentId },
                 select: { batchId: true }
             });
 
             const batchIds = studentBatches.map(b => b.batchId);
+
+            // If student is not in any batch, return empty
+            if (batchIds.length === 0) {
+                return res.json([]);
+            }
 
             assignments = await prisma.assignment.findMany({
                 where: {
@@ -3978,7 +4194,7 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
                         select: { id: true, name: true, avatar: true }
                     },
                     submissions: {
-                        where: { studentId: req.user.userId },
+                        where: { studentId },
                         select: {
                             id: true,
                             status: true,

@@ -151,8 +151,11 @@ const MentorDashboard = () => {
                     {activeTab === 'messages' && (
                         <div style={{
                             position: 'relative',
-                            height: 'calc(100vh - 120px)',
-                            margin: '-20px' // Offset layout padding
+                            height: 'calc(100vh - 100px)',
+                            margin: '0',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            background: 'var(--color-bg, #f8fafc)'
                         }}>
                             <MessagingPage initialChatUser={startChatUser} onClearInitialChatUser={handleClearStartChat} />
                         </div>
@@ -258,6 +261,15 @@ const OverviewSection = ({ data, studentsCount, setTab, announcements, meetingLo
 const BatchesSection = ({ batches }) => {
     const [selectedBatch, setSelectedBatch] = useState(null);
 
+    const batchColors = [
+        { gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', light: '#ede9fe', text: '#5b21b6' },
+        { gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', light: '#fce7f3', text: '#be185d' },
+        { gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', light: '#dbeafe', text: '#1d4ed8' },
+        { gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', light: '#d1fae5', text: '#065f46' },
+        { gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', light: '#fff7ed', text: '#c2410c' },
+        { gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', light: '#faf5ff', text: '#7e22ce' },
+    ];
+
     return (
         <div className="batches-container">
             <AnimatePresence>
@@ -268,7 +280,7 @@ const BatchesSection = ({ batches }) => {
                         exit={{ opacity: 0 }}
                         style={{
                             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                            background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+                            background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 1000,
                             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
                         }}
                         onClick={() => setSelectedBatch(null)}
@@ -281,7 +293,7 @@ const BatchesSection = ({ batches }) => {
                             style={{
                                 background: 'white',
                                 borderRadius: '24px',
-                                padding: '32px',
+                                padding: '0',
                                 width: '100%',
                                 maxWidth: '800px',
                                 maxHeight: '85vh',
@@ -289,159 +301,207 @@ const BatchesSection = ({ batches }) => {
                                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                             }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <div style={{ padding: '28px 32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#1e293b' }}>{selectedBatch.name}</h2>
-                                    <p style={{ margin: '4px 0 0', color: '#64748b' }}>{selectedBatch.studentsCount} Students • {selectedBatch.status}</p>
+                                    <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{selectedBatch.name}</h2>
+                                    <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+                                        {selectedBatch.studentsCount} Students &bull; {selectedBatch.assignedMentors?.length || 0} Mentor{selectedBatch.assignedMentors?.length !== 1 ? 's' : ''}
+                                    </p>
                                 </div>
-                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
-                                    <FiX size={20} />
+                                <button onClick={() => setSelectedBatch(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', transition: 'all 0.2s' }}>
+                                    <FiX size={18} />
                                 </button>
                             </div>
 
-                            <div style={{ overflowX: 'auto' }}>
-                                <table className="student-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Student</th>
-                                            <th style={{ padding: '16px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Joined Date</th>
-                                            <th style={{ padding: '16px', textAlign: 'right', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedBatch.students?.map(s => (
-                                            <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                <td style={{ padding: '16px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                        <img src={s.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                                                        <div>
-                                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</div>
-                                                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{s.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '16px', color: '#64748b' }}>{new Date(s.createdAt).toLocaleDateString()}</td>
-                                                <td style={{ padding: '16px', textAlign: 'right' }}>
-                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.5 }}>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiUser size={14} /></button>
-                                                        <button style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', cursor: 'not-allowed' }}><FiEdit2 size={14} /></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                            {/* Mentors Row */}
+                            {selectedBatch.assignedMentors && selectedBatch.assignedMentors.length > 0 && (
+                                <div style={{ padding: '20px 32px', borderBottom: '1px solid #f1f5f9', background: '#fafbfc' }}>
+                                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Mentors</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                        {selectedBatch.assignedMentors.map(m => (
+                                            <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '7px 14px' }}>
+                                                {m.avatar
+                                                    ? <img src={m.avatar} alt={m.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                                                    : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.7rem' }}>{m.name.charAt(0).toUpperCase()}</div>
+                                                }
+                                                <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#334155' }}>{m.name}</span>
+                                            </div>
                                         ))}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{ padding: '24px 32px' }}>
+                                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Students</div>
+                                {selectedBatch.students?.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                                        <FiUsers size={32} style={{ marginBottom: '8px', opacity: 0.5 }} />
+                                        <p style={{ margin: 0 }}>No students enrolled yet</p>
+                                    </div>
+                                ) : (
+                                    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ padding: '8px 16px', textAlign: 'left', color: '#94a3b8', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Student</th>
+                                                <th style={{ padding: '8px 16px', textAlign: 'left', color: '#94a3b8', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
+                                                <th style={{ padding: '8px 16px', textAlign: 'left', color: '#94a3b8', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Joined</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedBatch.students?.map(s => (
+                                                <tr key={s.id} style={{ background: '#f8fafc', borderRadius: '12px' }}>
+                                                    <td style={{ padding: '12px 16px', borderRadius: '12px 0 0 12px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            {s.avatar
+                                                                ? <img src={s.avatar} alt={s.name} style={{ width: '36px', height: '36px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
+                                                                : <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>{s.name?.charAt(0).toUpperCase() || '?'}</div>
+                                                            }
+                                                            <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem' }}>{s.name}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.85rem' }}>{s.email}</td>
+                                                    <td style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.85rem', borderRadius: '0 12px 12px 0' }}>
+                                                        {s.joinedAt ? new Date(s.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginBottom: '24px' }}>Your Batches</h2>
+            {/* Section Header */}
+            <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '6px' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Your Batches</h2>
+                    {batches && batches.length > 0 && (
+                        <div style={{
+                            padding: '4px 14px', borderRadius: '20px', background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+                            color: '#2563eb', fontWeight: 700, fontSize: '0.82rem', border: '1px solid #bfdbfe'
+                        }}>
+                            {batches.length} Batch{batches.length !== 1 ? 'es' : ''}
+                        </div>
+                    )}
+                </div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Manage and track all your assigned batches</p>
+            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
                 {batches && batches.length > 0 ? (
-                    batches.map(batch => (
-                        <motion.div
-                            key={batch.id}
-                            whileHover={{ y: -5 }}
-                            className="glass-card"
-                            style={{
-                                padding: '0',
-                                overflow: 'hidden',
-                                background: 'white',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '20px',
-                                height: '100%',
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            {/* Creative Header */}
-                            <div style={{
-                                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                                padding: '24px',
-                                borderBottom: '1px solid #e2e8f0',
-                                position: 'relative'
-                            }}>
-                                <div style={{
-                                    position: 'absolute', top: '20px', right: '20px',
-                                    background: '#dbeafe', color: '#1e40af',
-                                    padding: '4px 12px', borderRadius: '20px',
-                                    fontSize: '0.75rem', fontWeight: 700
-                                }}>
-                                    {batch.status}
-                                </div>
-                                <div style={{
-                                    width: '48px', height: '48px',
-                                    background: 'white', borderRadius: '12px',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginBottom: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                                }}>
-                                    <FiLayers size={24} color="#3b82f6" />
-                                </div>
-                                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>{batch.name}</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>Batch ID: #{batch.id.substring(0, 8)}</p>
-                            </div>
+                    batches.map((batch, index) => {
+                        const colorScheme = batchColors[index % batchColors.length];
+                        return (
+                            <motion.div
+                                key={batch.id}
+                                whileHover={{ y: -4, boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.12)' }}
+                                style={{
+                                    borderRadius: '20px',
+                                    overflow: 'hidden',
+                                    background: 'white',
+                                    border: '1px solid #f1f5f9',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.04)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => setSelectedBatch(batch)}
+                            >
+                                {/* Colored Top Bar */}
+                                <div style={{ height: '6px', background: colorScheme.gradient }} />
 
-                            {/* Body */}
-                            <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Students</div>
-                                        <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#334155' }}>{batch.studentsCount}</div>
+                                {/* Card Body */}
+                                <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                            <div style={{
+                                                width: '46px', height: '46px', borderRadius: '14px',
+                                                background: colorScheme.light,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}>
+                                                <FiLayers size={22} color={colorScheme.text} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{batch.name}</h3>
+                                                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>ID: #{batch.id.substring(0, 8)}</span>
+                                            </div>
+                                        </div>
+                                        <span style={{
+                                            padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700,
+                                            background: batch.status === 'active' ? '#d1fae5' : '#fef3c7',
+                                            color: batch.status === 'active' ? '#065f46' : '#92400e',
+                                            textTransform: 'capitalize'
+                                        }}>
+                                            {batch.status}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', textAlign: 'right' }}>Mentors</div>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingLeft: '8px' }}>
-                                            {batch.assignedMentors?.map((m, i) => (
-                                                <img
-                                                    key={m.id}
-                                                    src={m.avatar}
-                                                    alt={m.name}
-                                                    title={m.name}
-                                                    style={{
-                                                        width: '28px', height: '28px', borderRadius: '50%',
-                                                        border: '2px solid white', marginLeft: i > 0 ? '-10px' : '0',
-                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                    }}
-                                                />
-                                            ))}
+
+                                    {/* Stats Row */}
+                                    <div style={{
+                                        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
+                                        padding: '16px', background: '#f8fafc', borderRadius: '14px', marginBottom: '18px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <FiUsers size={16} color="#3b82f6" />
+                                            <div>
+                                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{batch.studentsCount}</div>
+                                                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Students</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ display: 'flex', paddingLeft: '4px' }}>
+                                                {batch.assignedMentors?.slice(0, 3).map((m, i) => (
+                                                    m.avatar
+                                                        ? <img
+                                                            key={m.id}
+                                                            src={m.avatar}
+                                                            alt={m.name}
+                                                            title={m.name}
+                                                            style={{ width: '26px', height: '26px', borderRadius: '50%', border: '2px solid white', marginLeft: i > 0 ? '-8px' : '0', objectFit: 'cover' }}
+                                                        />
+                                                        : <div
+                                                            key={m.id}
+                                                            title={m.name}
+                                                            style={{ width: '26px', height: '26px', borderRadius: '50%', border: '2px solid white', marginLeft: i > 0 ? '-8px' : '0', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, flexShrink: 0 }}
+                                                        >{m.name?.charAt(0).toUpperCase()}</div>
+                                                ))}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{batch.assignedMentors?.length || 0}</div>
+                                                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>Mentor{batch.assignedMentors?.length !== 1 ? 's' : ''}</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div style={{ marginTop: 'auto' }}>
+                                    {/* View Students Button */}
                                     <button
-                                        onClick={() => setSelectedBatch(batch)}
+                                        onClick={(e) => { e.stopPropagation(); setSelectedBatch(batch); }}
                                         style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            background: '#f8fafc',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '12px',
-                                            color: '#3b82f6',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                            transition: 'all 0.2s'
+                                            width: '100%', padding: '11px',
+                                            background: colorScheme.light, border: 'none',
+                                            borderRadius: '12px', color: colorScheme.text,
+                                            fontWeight: 600, fontSize: '0.85rem',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                            transition: 'all 0.2s', marginTop: 'auto'
                                         }}
-                                        onMouseOver={e => { e.target.style.background = '#e0f2fe'; e.target.style.borderColor = '#bae6fd'; }}
-                                        onMouseOut={e => { e.target.style.background = '#f8fafc'; e.target.style.borderColor = '#e2e8f0'; }}
                                     >
-                                        View Students <FiArrowRight />
+                                        View Students <FiArrowRight size={14} />
                                     </button>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))
+                            </motion.div>
+                        );
+                    })
                 ) : (
-                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                        <div style={{ background: '#f1f5f9', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                            <FiLayers size={32} opacity={0.5} />
+                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '80px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                        <div style={{ background: '#fff', width: '80px', height: '80px', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                            <FiLayers size={32} color="#94a3b8" />
                         </div>
-                        <h3>No Batches Assigned</h3>
-                        <p>You haven't been assigned to any batches yet.</p>
+                        <h3 style={{ margin: '0 0 8px 0', color: '#475569', fontWeight: 700 }}>No Batches Assigned</h3>
+                        <p style={{ margin: 0, fontSize: '0.9rem' }}>You haven't been assigned to any batches yet.</p>
                     </div>
                 )}
             </div>
@@ -549,90 +609,145 @@ const SessionsSection = ({ batches }) => {
 
     return (
         <div className="sessions-container">
-            <div className="glass-card" style={{ padding: 'var(--spacing-xl)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h3>Learning Sessions & Resources Management</h3>
+            {/* Section Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+                <div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Upload Sessions & Resources</h2>
+                    <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Share learning content with your students</p>
                 </div>
-
-                <div className="mentor-grid" style={{ marginBottom: '30px' }}>
-                    <div
-                        className="compact-upload-zone"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleOpenModal('SESSION')}
-                    >
-                        <FiUpload size={32} color="#3b82f6" />
-                        <h4 style={{ marginTop: '12px' }}>Upload Session Video</h4>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>MP4, WebM or YouTube link</p>
+                {uploads.length > 0 && (
+                    <div style={{ padding: '6px 16px', borderRadius: '20px', background: '#f0fdf4', color: '#16a34a', fontWeight: 700, fontSize: '0.85rem' }}>
+                        {uploads.length} Upload{uploads.length !== 1 ? 's' : ''}
                     </div>
-                    <div
-                        className="compact-upload-zone"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleOpenModal('RESOURCE')}
-                    >
-                        <FiFileText size={32} color="#10b981" />
-                        <h4 style={{ marginTop: '12px' }}>Upload Notes / Resources</h4>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>PDF, PPTX or External Links</p>
-                    </div>
-                </div>
+                )}
+            </div>
 
-                <div style={{ marginTop: '40px' }}>
-                    <h4>Your Uploaded Content</h4>
-                    {loading ? (
-                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Loading...</p>
-                    ) : uploads.length > 0 ? (
-                        <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
-                            {uploads.map(upload => (
-                                <div key={upload.id} className="glass-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                                        <div style={{
-                                            width: '80px',
-                                            height: '45px',
-                                            background: upload.type === 'SESSION' ? '#dbeafe' : '#d1fae5',
-                                            borderRadius: '8px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: upload.type === 'SESSION' ? '#1e40af' : '#065f46',
-                                            fontWeight: '700',
-                                            fontSize: '0.75rem'
-                                        }}>
-                                            {upload.type}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{upload.title}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                                Batch: {upload.batch?.name || 'N/A'} • {upload.duration} mins • {upload.studentCount || 0} students
-                                            </div>
-                                        </div>
+            {/* Upload Action Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '36px' }}>
+                <motion.div
+                    whileHover={{ y: -3, boxShadow: '0 12px 24px -6px rgba(59, 130, 246, 0.15)' }}
+                    onClick={() => handleOpenModal('SESSION')}
+                    style={{
+                        padding: '28px', borderRadius: '20px', cursor: 'pointer',
+                        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                        border: '1px solid #bfdbfe', transition: 'all 0.3s ease',
+                        display: 'flex', alignItems: 'center', gap: '20px'
+                    }}
+                >
+                    <div style={{
+                        width: '56px', height: '56px', borderRadius: '16px',
+                        background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 4px 8px rgba(59, 130, 246, 0.1)'
+                    }}>
+                        <FiUpload size={24} color="#3b82f6" />
+                    </div>
+                    <div>
+                        <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#1e40af' }}>Upload Session Video</h4>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#3b82f6' }}>MP4, WebM or YouTube link</p>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    whileHover={{ y: -3, boxShadow: '0 12px 24px -6px rgba(16, 185, 129, 0.15)' }}
+                    onClick={() => handleOpenModal('RESOURCE')}
+                    style={{
+                        padding: '28px', borderRadius: '20px', cursor: 'pointer',
+                        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                        border: '1px solid #bbf7d0', transition: 'all 0.3s ease',
+                        display: 'flex', alignItems: 'center', gap: '20px'
+                    }}
+                >
+                    <div style={{
+                        width: '56px', height: '56px', borderRadius: '16px',
+                        background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 4px 8px rgba(16, 185, 129, 0.1)'
+                    }}>
+                        <FiFileText size={24} color="#10b981" />
+                    </div>
+                    <div>
+                        <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#065f46' }}>Upload Notes / Resources</h4>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#10b981' }}>PDF, PPTX or External Links</p>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Uploaded Content List */}
+            <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px' }}>Your Uploaded Content</h3>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                        <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
+                        <p>Loading content...</p>
+                    </div>
+                ) : uploads.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {uploads.map(upload => (
+                            <motion.div
+                                key={upload.id}
+                                whileHover={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                                style={{
+                                    padding: '18px 20px', borderRadius: '16px',
+                                    background: 'white', border: '1px solid #f1f5f9',
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
+                                    <div style={{
+                                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
+                                        background: upload.type === 'SESSION' ? '#eff6ff' : '#f0fdf4',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}>
+                                        {upload.type === 'SESSION' ?
+                                            <FiUpload size={18} color="#3b82f6" /> :
+                                            <FiFileText size={18} color="#10b981" />
+                                        }
                                     </div>
-                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                        {upload.avgCompletion > 0 && (
-                                            <div style={{ textAlign: 'right', marginRight: '12px' }}>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                    {Math.round(upload.avgCompletion)}% Avg
-                                                </div>
-                                                <div style={{ width: '100px', height: '6px', background: '#e2e8f0', borderRadius: '3px', marginTop: '4px' }}>
-                                                    <div style={{ width: `${upload.avgCompletion}%`, height: '100%', background: '#3b82f6', borderRadius: '3px' }}></div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <button
-                                            className="action-icon-btn"
-                                            onClick={() => handleDelete(upload.id)}
-                                            style={{ color: '#ef4444' }}
-                                        >
-                                            <FiTrash2 />
-                                        </button>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{upload.title}</div>
+                                        <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                            <span style={{ padding: '2px 8px', borderRadius: '6px', background: upload.type === 'SESSION' ? '#eff6ff' : '#f0fdf4', color: upload.type === 'SESSION' ? '#2563eb' : '#16a34a', fontWeight: 600, fontSize: '0.7rem' }}>{upload.type}</span>
+                                            <span>{upload.batch?.name || 'N/A'}</span>
+                                            <span>•</span>
+                                            <span>{upload.duration} mins</span>
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0, marginLeft: '16px' }}>
+                                    {upload.avgCompletion > 0 && (
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
+                                                {Math.round(upload.avgCompletion)}%
+                                            </div>
+                                            <div style={{ width: '80px', height: '4px', background: '#e2e8f0', borderRadius: '2px', marginTop: '4px' }}>
+                                                <div style={{ width: `${upload.avgCompletion}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', borderRadius: '2px' }}></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => handleDelete(upload.id)}
+                                        style={{
+                                            padding: '8px', borderRadius: '10px', border: '1px solid #fee2e2',
+                                            background: '#fef2f2', color: '#ef4444', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            transition: 'all 0.15s'
+                                        }}
+                                    >
+                                        <FiTrash2 size={14} />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '60px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #e2e8f0' }}>
+                        <div style={{ background: '#fff', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <FiUpload size={24} color="#94a3b8" />
                         </div>
-                    ) : (
-                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>
-                            No uploads yet. Click above to upload your first session or resource!
-                        </p>
-                    )}
-                </div>
+                        <h4 style={{ margin: '0 0 6px 0', color: '#475569', fontWeight: 700 }}>No uploads yet</h4>
+                        <p style={{ margin: 0, fontSize: '0.85rem' }}>Click the cards above to upload your first session or resource!</p>
+                    </div>
+                )}
             </div>
 
             {/* Upload Modal */}
@@ -1271,132 +1386,128 @@ const ForumSection = ({ batches }) => {
 
     return (
         <div className="forum-container">
-            <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: 'linear-gradient(to bottom, #ffffff, #f8fafc)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <div>
-                        <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#1e293b' }}>Q&A / Discussion Forum</h3>
-                        <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Engage with your students and solve their queries</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div style={{ position: 'relative' }}>
-                            <select
-                                className="glass-input"
-                                style={{
-                                    width: '220px',
-                                    padding: '10px 16px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0',
-                                    background: 'white',
-                                    color: '#475569',
-                                    fontWeight: 500,
-                                    cursor: 'pointer',
-                                    appearance: 'none'
-                                }}
-                                value={selectedBatch}
-                                onChange={(e) => setSelectedBatch(e.target.value)}
-                            >
-                                <option value="">All My Batches</option>
-                                {batches?.map(b => (
-                                    <option key={b.id} value={b.id}>{b.name}</option>
-                                ))}
-                            </select>
-                            <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-                        </div>
-                    </div>
+            {/* Section Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+                <div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Q&A Forum</h2>
+                    <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Engage with your students and solve their queries</p>
                 </div>
-
-                <div className="forum-threads" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {loading ? (
-                        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                            <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
-                            <p>Loading discussions...</p>
-                        </div>
-                    ) : forumPosts.length > 0 ? (
-                        forumPosts.map(post => {
-                            return (
-                                <motion.div
-                                    key={post.id}
-                                    className="forum-thread-card-modern"
-                                    whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}
-                                    style={{
-                                        background: 'white',
-                                        borderRadius: '16px',
-                                        padding: '24px',
-                                        border: '1px solid #f1f5f9',
-                                        transition: 'all 0.2s ease',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}
-                                    onClick={() => handleViewPost(post.id)}
-                                >
-                                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                                        {/* Author Avatar or Initials */}
-                                        <div style={{ flexShrink: 0 }}>
-                                            {post.author?.avatar ? (
-                                                <img src={post.author.avatar} alt={post.author.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
-                                            ) : (
-                                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
-                                                    {post.author?.name?.charAt(0) || '?'}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                                <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 700, lineHeight: '1.4' }}>{post.title}</h4>
-                                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>
-                                                    {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                                </span>
-                                            </div>
-
-                                            <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: '#64748b', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {post.content}
-                                            </p>
-
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #f8fafc' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.85rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: post.answersCount > 0 ? '#3b82f6' : '#94a3b8', fontWeight: 500 }}>
-                                                        <FiMessageSquare /> {post.answersCount || 0} Replies
-                                                    </div>
-                                                    <div style={{ color: '#94a3b8' }}>
-                                                        Posted by <span style={{ color: '#475569', fontWeight: 600 }}>{post.author?.name}</span>
-                                                    </div>
-                                                </div>
-
-                                                <button
-                                                    style={{
-                                                        padding: '8px 20px',
-                                                        fontSize: '0.85rem',
-                                                        background: 'white',
-                                                        color: '#3b82f6',
-                                                        border: '1px solid #dbeafe',
-                                                        borderRadius: '8px',
-                                                        fontWeight: 600,
-                                                        cursor: 'pointer',
-                                                        transition: 'all 0.2s',
-                                                        display: 'flex', alignItems: 'center', gap: '6px'
-                                                    }}
-                                                    className="btn-reply-hover"
-                                                >
-                                                    View Thread <FiArrowRight size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            );
-                        })
-                    ) : (
-                        <div style={{ textAlign: 'center', padding: '80px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
-                            <div style={{ background: '#fff', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                <FiMessageSquare size={32} color="#94a3b8" />
-                            </div>
-                            <h3 style={{ margin: '0 0 8px 0', color: '#475569' }}>No discussions yet</h3>
-                            <p style={{ margin: 0, fontSize: '0.95rem' }}>When students ask questions, they will appear here.</p>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {forumPosts.length > 0 && (
+                        <div style={{ padding: '6px 16px', borderRadius: '20px', background: '#faf5ff', color: '#7c3aed', fontWeight: 700, fontSize: '0.85rem' }}>
+                            {forumPosts.length} Thread{forumPosts.length !== 1 ? 's' : ''}
                         </div>
                     )}
+                    <div style={{ position: 'relative' }}>
+                        <select
+                            style={{
+                                width: '200px', padding: '10px 36px 10px 16px',
+                                borderRadius: '12px', border: '1px solid #e2e8f0',
+                                background: 'white', color: '#475569', fontWeight: 500,
+                                cursor: 'pointer', appearance: 'none', fontSize: '0.85rem',
+                                fontFamily: 'inherit'
+                            }}
+                            value={selectedBatch}
+                            onChange={(e) => setSelectedBatch(e.target.value)}
+                        >
+                            <option value="">All My Batches</option>
+                            {batches?.map(b => (
+                                <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                        </select>
+                        <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                    </div>
                 </div>
+            </div>
+
+            {/* Thread Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                        <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
+                        <p>Loading discussions...</p>
+                    </div>
+                ) : forumPosts.length > 0 ? (
+                    forumPosts.map(post => (
+                        <motion.div
+                            key={post.id}
+                            whileHover={{ y: -2, boxShadow: '0 8px 24px -6px rgba(0, 0, 0, 0.08)' }}
+                            style={{
+                                background: 'white', borderRadius: '18px', padding: '22px 24px',
+                                border: '1px solid #f1f5f9', transition: 'all 0.2s ease',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => handleViewPost(post.id)}
+                        >
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                                {/* Avatar */}
+                                <div style={{ flexShrink: 0 }}>
+                                    {post.author?.avatar ? (
+                                        <img src={post.author.avatar} alt={post.author.name} style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem' }}>
+                                            {post.author?.name?.charAt(0) || '?'}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.02rem', color: '#0f172a', fontWeight: 700, lineHeight: '1.4' }}>{post.title}</h4>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                                            <span style={{
+                                                padding: '3px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 700,
+                                                background: post.answersCount > 0 ? '#d1fae5' : '#fef3c7',
+                                                color: post.answersCount > 0 ? '#065f46' : '#92400e'
+                                            }}>
+                                                {post.answersCount > 0 ? 'Answered' : 'Open'}
+                                            </span>
+                                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                                                {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <p style={{ margin: '0 0 14px 0', fontSize: '0.85rem', color: '#64748b', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                        {post.content}
+                                    </p>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.82rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: post.answersCount > 0 ? '#3b82f6' : '#94a3b8', fontWeight: 500 }}>
+                                                <FiMessageSquare size={14} /> {post.answersCount || 0} Replies
+                                            </div>
+                                            <span style={{ color: '#cbd5e1' }}>•</span>
+                                            <span style={{ color: '#94a3b8' }}>
+                                                by <span style={{ color: '#475569', fontWeight: 600 }}>{post.author?.name}</span>
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            style={{
+                                                padding: '7px 16px', fontSize: '0.8rem',
+                                                background: '#f8fafc', color: '#3b82f6',
+                                                border: '1px solid #e2e8f0', borderRadius: '10px',
+                                                fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                                                display: 'flex', alignItems: 'center', gap: '6px'
+                                            }}
+                                        >
+                                            View <FiArrowRight size={12} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '80px 40px', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                        <div style={{ background: '#fff', width: '72px', height: '72px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.04)' }}>
+                            <FiMessageSquare size={28} color="#94a3b8" />
+                        </div>
+                        <h3 style={{ margin: '0 0 8px 0', color: '#475569', fontWeight: 700 }}>No discussions yet</h3>
+                        <p style={{ margin: 0, fontSize: '0.9rem' }}>When students ask questions, they will appear here.</p>
+                    </div>
+                )}
             </div>
 
             {/* View & Reply Modal */}
@@ -1799,297 +1910,295 @@ const AssignmentsSection = ({ batches }) => {
 
     return (
         <div className="assignments-container">
-            <div className="glass-card" style={{ padding: 'var(--spacing-xl)', background: '#f8faff', border: '1px solid #edf2f7' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ margin: 0, color: '#1e3a8a' }}>Assignments & Quizzes</h3>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <button
-                            className="btn-glass-primary"
-                            onClick={() => setShowCreateQuiz(true)}
-                            style={{ background: '#10b981', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                        >
-                            <FiPlus /> Create Quiz
-                        </button>
-                        <button
-                            className="btn-glass-primary"
-                            onClick={() => setShowCreateForm(!showCreateForm)}
-                            style={{ background: '#3b82f6', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                        >
-                            <FiPlus /> {showCreateForm ? 'Cancel' : 'Create Assignment'}
-                        </button>
-                    </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: 0, color: '#1e3a8a' }}>Assignments & Quizzes</h3>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                        className="btn-glass-primary"
+                        onClick={() => setShowCreateQuiz(true)}
+                        style={{ background: '#10b981', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <FiPlus /> Create Quiz
+                    </button>
+                    <button
+                        className="btn-glass-primary"
+                        onClick={() => setShowCreateForm(!showCreateForm)}
+                        style={{ background: '#3b82f6', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <FiPlus /> {showCreateForm ? 'Cancel' : 'Create Assignment'}
+                    </button>
                 </div>
+            </div>
 
-                {/* Create Assignment Form */}
-                <AnimatePresence>
-                    {showCreateForm && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            style={{ overflow: 'hidden', marginBottom: '24px' }}
-                        >
-                            <form onSubmit={handleCreateAssignment} style={{ padding: '20px', background: 'white', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+            {/* Create Assignment Form */}
+            <AnimatePresence>
+                {showCreateForm && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        style={{ overflow: 'hidden', marginBottom: '24px' }}
+                    >
+                        <form onSubmit={handleCreateAssignment} style={{ padding: '20px', background: 'white', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+                            <div className="glass-form-group">
+                                <label className="glass-label">Title</label>
+                                <input
+                                    type="text"
+                                    className="glass-input"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="glass-form-group">
+                                <label className="glass-label">Description</label>
+                                <textarea
+                                    className="glass-input"
+                                    style={{ minHeight: '100px', resize: 'vertical' }}
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                                 <div className="glass-form-group">
-                                    <label className="glass-label">Title</label>
+                                    <label className="glass-label">Due Date</label>
                                     <input
-                                        type="text"
+                                        type="datetime-local"
                                         className="glass-input"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        value={formData.dueDate}
+                                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                                         required
                                     />
                                 </div>
                                 <div className="glass-form-group">
-                                    <label className="glass-label">Description</label>
-                                    <textarea
+                                    <label className="glass-label">Batch</label>
+                                    <select
                                         className="glass-input"
-                                        style={{ minHeight: '100px', resize: 'vertical' }}
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        value={formData.batchId}
+                                        onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
+                                        required
+                                    >
+                                        <option value="">Select Batch</option>
+                                        {batches?.map(b => (
+                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="glass-form-group">
+                                    <label className="glass-label">Max Marks</label>
+                                    <input
+                                        type="number"
+                                        className="glass-input"
+                                        value={formData.maxMarks}
+                                        onChange={(e) => setFormData({ ...formData, maxMarks: parseInt(e.target.value) })}
+                                        min="1"
                                         required
                                     />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-                                    <div className="glass-form-group">
-                                        <label className="glass-label">Due Date</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="glass-input"
-                                            value={formData.dueDate}
-                                            onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="glass-form-group">
-                                        <label className="glass-label">Batch</label>
-                                        <select
-                                            className="glass-input"
-                                            value={formData.batchId}
-                                            onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Batch</option>
-                                            {batches?.map(b => (
-                                                <option key={b.id} value={b.id}>{b.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="glass-form-group">
-                                        <label className="glass-label">Max Marks</label>
-                                        <input
-                                            type="number"
-                                            className="glass-input"
-                                            value={formData.maxMarks}
-                                            onChange={(e) => setFormData({ ...formData, maxMarks: parseInt(e.target.value) })}
-                                            min="1"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <button type="submit" style={{ width: '100%', background: '#3b82f6', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 600, marginTop: '16px', cursor: 'pointer' }}>
-                                    Create Assignment
-                                </button>
-                            </form>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            </div>
+                            <button type="submit" style={{ width: '100%', background: '#3b82f6', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 600, marginTop: '16px', cursor: 'pointer' }}>
+                                Create Assignment
+                            </button>
+                        </form>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                {/* Tabs & Search Bar */}
-                <div style={{ marginBottom: '32px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '6px', borderRadius: '12px' }}>
-                            <button
-                                onClick={() => setActiveTab('assignments')}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    background: activeTab === 'assignments' ? 'white' : 'transparent',
-                                    color: activeTab === 'assignments' ? '#3b82f6' : '#64748b',
-                                    fontWeight: activeTab === 'assignments' ? 700 : 500,
-                                    boxShadow: activeTab === 'assignments' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <FiFileText /> Assignments
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('quizzes')}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    background: activeTab === 'quizzes' ? 'white' : 'transparent',
-                                    color: activeTab === 'quizzes' ? '#3b82f6' : '#64748b',
-                                    fontWeight: activeTab === 'quizzes' ? 700 : 500,
-                                    boxShadow: activeTab === 'quizzes' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <FiCheckCircle /> Quizzes
-                            </button>
-                        </div>
+            {/* Tabs & Search Bar */}
+            <div style={{ marginBottom: '32px', marginTop: showCreateForm ? '0' : '0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', gap: '12px', background: '#f1f5f9', padding: '6px', borderRadius: '12px' }}>
+                        <button
+                            onClick={() => setActiveTab('assignments')}
+                            style={{
+                                padding: '10px 24px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: activeTab === 'assignments' ? 'white' : 'transparent',
+                                color: activeTab === 'assignments' ? '#3b82f6' : '#64748b',
+                                fontWeight: activeTab === 'assignments' ? 700 : 500,
+                                boxShadow: activeTab === 'assignments' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <FiFileText /> Assignments
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('quizzes')}
+                            style={{
+                                padding: '10px 24px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: activeTab === 'quizzes' ? 'white' : 'transparent',
+                                color: activeTab === 'quizzes' ? '#3b82f6' : '#64748b',
+                                fontWeight: activeTab === 'quizzes' ? 700 : 500,
+                                boxShadow: activeTab === 'quizzes' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <FiCheckCircle /> Quizzes
+                        </button>
                     </div>
-
-                    {/* Content Grid */}
-                    {activeTab === 'assignments' && (
-                        loading ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading assignments...</div>
-                        ) : assignments.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                                {assignments.map(assignment => {
-                                    const submissionsCount = assignment.submissions?.length || 0;
-                                    const pendingCount = assignment.submissions?.filter(s => s.status === 'PENDING').length || 0;
-
-                                    return (
-                                        <motion.div
-                                            key={assignment.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            style={{
-                                                background: 'white',
-                                                borderRadius: '16px',
-                                                border: '1px solid #e2e8f0',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                                                transition: 'transform 0.2s, box-shadow 0.2s'
-                                            }}
-                                            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                                        >
-                                            <div style={{
-                                                height: '100px',
-                                                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                padding: '20px',
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'flex-start'
-                                            }}>
-                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
-                                                    {assignment.batch?.name || 'General'}
-                                                </div>
-                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
-                                                    <FiFileText size={20} />
-                                                </div>
-                                            </div>
-
-                                            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
-                                                    {assignment.title}
-                                                </h4>
-                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
-                                                    {assignment.description}
-                                                </p>
-
-                                                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
-                                                        <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
-                                                        <span style={{ fontWeight: 600, color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
-                                                            {submissionsCount} Subs {pendingCount > 0 && `(${pendingCount} new)`}
-                                                        </span>
-                                                    </div>
-
-                                                    <button
-                                                        onClick={() => handleViewSubmissions(assignment.id)}
-                                                        style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                                    >
-                                                        View Submissions
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                                <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
-                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No assignments yet</h3>
-                                <p style={{ color: '#64748b', margin: 0 }}>Create your first assignment to get started.</p>
-                            </div>
-                        )
-                    )}
-
-                    {activeTab === 'quizzes' && (
-                        loading ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading quizzes...</div>
-                        ) : quizzes.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                                {quizzes.map(quiz => {
-                                    const submissionsCount = quiz.submissions?.length || 0;
-
-                                    return (
-                                        <motion.div
-                                            key={quiz.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            style={{
-                                                background: 'white',
-                                                borderRadius: '16px',
-                                                border: '1px solid #e2e8f0',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                                                transition: 'transform 0.2s, box-shadow 0.2s'
-                                            }}
-                                            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                                        >
-                                            <div style={{
-                                                height: '100px',
-                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                padding: '20px',
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'flex-start'
-                                            }}>
-                                                <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
-                                                    {quiz.questions?.length || 0} Questions
-                                                </div>
-                                                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#059669' }}>
-                                                    <FiCheckCircle size={20} />
-                                                </div>
-                                            </div>
-
-                                            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
-                                                    {quiz.title}
-                                                </h4>
-                                                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
-                                                    {quiz.description || 'No description provided.'}
-                                                </p>
-
-                                                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
-                                                        <span>⏱ {quiz.duration} mins</span>
-                                                        <span>🎯 {quiz.totalMarks} Marks</span>
-                                                        <span>👥 {submissionsCount} Attempts</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                                <FiCheckCircle size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
-                                <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No quizzes yet</h3>
-                                <p style={{ color: '#64748b', margin: 0 }}>Create a quiz to assess your students.</p>
-                            </div>
-                        )
-                    )}
                 </div>
+
+                {/* Content Grid */}
+                {activeTab === 'assignments' && (
+                    loading ? (
+                        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading assignments...</div>
+                    ) : assignments.length > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                            {assignments.map(assignment => {
+                                const submissionsCount = assignment.submissions?.length || 0;
+                                const pendingCount = assignment.submissions?.filter(s => s.status === 'PENDING').length || 0;
+
+                                return (
+                                    <motion.div
+                                        key={assignment.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            background: 'white',
+                                            borderRadius: '16px',
+                                            border: '1px solid #e2e8f0',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                                            transition: 'transform 0.2s, box-shadow 0.2s'
+                                        }}
+                                        whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                    >
+                                        <div style={{
+                                            height: '100px',
+                                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                            padding: '20px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start'
+                                        }}>
+                                            <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                {assignment.batch?.name || 'General'}
+                                            </div>
+                                            <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#2563eb' }}>
+                                                <FiFileText size={20} />
+                                            </div>
+                                        </div>
+
+                                        <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                {assignment.title}
+                                            </h4>
+                                            <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                {assignment.description}
+                                            </p>
+
+                                            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
+                                                    <span style={{ fontWeight: 600, color: pendingCount > 0 ? '#d97706' : '#64748b' }}>
+                                                        {submissionsCount} Subs {pendingCount > 0 && `(${pendingCount} new)`}
+                                                    </span>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => handleViewSubmissions(assignment.id)}
+                                                    style={{ width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                >
+                                                    View Submissions
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                            <FiFileText size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                            <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No assignments yet</h3>
+                            <p style={{ color: '#64748b', margin: 0 }}>Create your first assignment to get started.</p>
+                        </div>
+                    )
+                )}
+
+                {activeTab === 'quizzes' && (
+                    loading ? (
+                        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading quizzes...</div>
+                    ) : quizzes.length > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                            {quizzes.map(quiz => {
+                                const submissionsCount = quiz.submissions?.length || 0;
+
+                                return (
+                                    <motion.div
+                                        key={quiz.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            background: 'white',
+                                            borderRadius: '16px',
+                                            border: '1px solid #e2e8f0',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                                            transition: 'transform 0.2s, box-shadow 0.2s'
+                                        }}
+                                        whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                    >
+                                        <div style={{
+                                            height: '100px',
+                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                            padding: '20px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start'
+                                        }}>
+                                            <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                {quiz.questions?.length || 0} Questions
+                                            </div>
+                                            <div style={{ background: 'white', padding: '8px', borderRadius: '10px', color: '#059669' }}>
+                                                <FiCheckCircle size={20} />
+                                            </div>
+                                        </div>
+
+                                        <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <h4 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                {quiz.title}
+                                            </h4>
+                                            <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                                {quiz.description || 'No description provided.'}
+                                            </p>
+
+                                            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                                                    <span>⏱ {quiz.duration} mins</span>
+                                                    <span>🎯 {quiz.totalMarks} Marks</span>
+                                                    <span>👥 {submissionsCount} Attempts</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                            <FiCheckCircle size={48} style={{ marginBottom: '16px', color: '#94a3b8' }} />
+                            <h3 style={{ margin: '0 0 8px', color: '#1e293b' }}>No quizzes yet</h3>
+                            <p style={{ color: '#64748b', margin: 0 }}>Create a quiz to assess your students.</p>
+                        </div>
+                    )
+                )}
             </div>
 
             {/* Create Quiz Modal */}
