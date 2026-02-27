@@ -260,7 +260,7 @@ const Settings = () => {
                     <div className="form-section">
                         <div className="section-header">
                             <div className="section-icon">
-                                <FiUser size={20} color="#3b82f6" />
+                                <FiUser size={20} />
                             </div>
                             <h3>Profile Information</h3>
                         </div>
@@ -317,7 +317,7 @@ const Settings = () => {
                     <div className="form-section">
                         <div className="section-header">
                             <div className="section-icon">
-                                <FiLock size={20} color="#8b5cf6" />
+                                <FiLock size={20} />
                             </div>
                             <h3>Security & Password</h3>
                         </div>
