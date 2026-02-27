@@ -45,6 +45,7 @@ const validateUploadedFile = (req, res, next) => {
 };
 
 const app = express();
+app.set('trust proxy', 1);
 
 const session = require('express-session');
 const passport = require('passport');
@@ -52,7 +53,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: process.env.CLIENT_URL || "http://localhost:5173",
         methods: ["GET", "POST"]
     }
 });
@@ -101,7 +102,7 @@ app.use(xss()); // XSS payload prevention
 app.use(globalLimiter); // Protect API logic
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true
 }));
 app.use(express.json({ limit: '2mb' })); // Cap JSON payloads to 2MB to prevent large object parsing denial of service
@@ -136,7 +137,8 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: "/api/auth/google/callback",
+    proxy: true
 },
     async (accessToken, refreshToken, profile, done) => {
         try {
@@ -713,7 +715,7 @@ app.post('/api/users/avatar', authenticateToken, upload.single('avatar'), valida
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const avatarUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+        const avatarUrl = `/uploads/${req.file.filename}`;
 
         const user = await prisma.user.update({
             where: { id: req.user.id },
@@ -5332,14 +5334,14 @@ app.get('/api/student/courses', authenticateToken, async (req, res) => {
     try {
         const courses = await prisma.course.findMany({ include: { modules: { include: { lessons: true } } } });
         res.json(courses);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { console.error(error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.get('/api/student/courses/:id', authenticateToken, async (req, res) => {
     try {
         const course = await prisma.course.findUnique({ where: { id: req.params.id }, include: { modules: { include: { lessons: true } } } });
         res.json(course);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { console.error(error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.patch('/api/student/courses/:id/progress', authenticateToken, async (req, res) => {
@@ -5351,14 +5353,14 @@ app.patch('/api/student/courses/:id/progress', authenticateToken, async (req, re
             create: { studentId: req.user.id, courseId: req.params.id, completedLessons, completionPercentage }
         });
         res.json(progress);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { console.error(error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 app.get('/api/student/courses/:id/progress', authenticateToken, async (req, res) => {
     try {
         const progress = await prisma.courseProgress.findUnique({ where: { studentId_courseId: { studentId: req.user.id, courseId: req.params.id } } });
         res.json(progress || { completedLessons: 0, completionPercentage: 0 });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { console.error(error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
 // 3. Login Heatmap Tracking
@@ -5480,7 +5482,11 @@ io.on('connection', (socket) => {
     });
 });
 
+// ============ V2 MENTOR ROUTES ============
+app.use('/api/v2/mentor', authenticateToken, requireRole('MENTOR'), require('./routes/mentor.routes'));
+
 // ============ CENTRALIZED ERROR HANDLER ============
+app.use(require('./middlewares/error.middleware'));
 app.use((err, req, res, next) => {
     console.error('Unhandled Error:', err);
 

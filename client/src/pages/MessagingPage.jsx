@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage, FiArrowLeft } from 'react-icons/fi';
-import { chatAPI } from '../api';
+import { chatAPI, API_BASE } from '../api';
 import { socket } from '../api/socket';
 import { useAuth } from '../context/AuthContext';
 import CreateGroupModal from '../components/messaging/CreateGroupModal';
@@ -387,17 +387,17 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                                                                 {file.type === 'image' || (file.url && file.url.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
                                                                     <div
                                                                         className="attachment-image-container"
-                                                                        onClick={() => window.open(`http://localhost:5001${file.url}`, '_blank')}
+                                                                        onClick={() => window.open(`${API_BASE}${file.url}`, '_blank')}
                                                                     >
                                                                         <img
-                                                                            src={`http://localhost:5001${file.url}`}
+                                                                            src={`${API_BASE}${file.url}`}
                                                                             alt={file.name}
                                                                             className="attachment-image-preview"
                                                                         />
                                                                     </div>
                                                                 ) : (
                                                                     <a
-                                                                        href={`http://localhost:5001${file.url}`}
+                                                                        href={`${API_BASE}${file.url}`}
                                                                         download={file.name}
                                                                         className="attachment-file-card"
                                                                         target="_blank"

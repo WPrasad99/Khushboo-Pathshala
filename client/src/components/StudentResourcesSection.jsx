@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { userAPI } from '../api';
+import { userAPI, API_BASE } from '../api';
 import { FiFileText, FiDownload, FiFile, FiFolder } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
@@ -35,7 +35,7 @@ const StudentResourcesSection = () => {
     const getResourceLink = (url) => {
         if (!url) return '#';
         if (url.startsWith('http')) return url;
-        return `http://localhost:5001${url}`;
+        return `${API_BASE}${url}`;
     };
 
     if (loading) {

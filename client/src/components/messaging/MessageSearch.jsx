@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
+import { API_BASE } from '../../api';
 import './MessageSearch.css';
 
 const MessageSearch = ({ groupId, onSelectMessage, onClose }) => {
@@ -14,7 +15,7 @@ const MessageSearch = ({ groupId, onSelectMessage, onClose }) => {
         setLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:5001/api/chat/groups/${groupId}/messages/search?q=${encodeURIComponent(query)}`,
+                `${API_BASE}/api/chat/groups/${groupId}/messages/search?q=${encodeURIComponent(query)}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`

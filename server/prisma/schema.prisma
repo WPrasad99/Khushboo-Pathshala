@@ -29,83 +29,88 @@ datasource db {
 // }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  password        String
-  name            String
-  role            String    @default("STUDENT")
-  phone           String?
-  gender          String?
-  dateOfBirth     DateTime?
-  educationLevel  String?
-  avatar          String?
-  profileCompleted Boolean  @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  name             String
+  role             String    @default("STUDENT")
+  phone            String?
+  gender           String?
+  dateOfBirth      DateTime?
+  educationLevel   String?
+  avatar           String?
+  profileCompleted Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   // Relations
   uploadedResources   LearningResource[]
   sessionTrackings    SessionTracking[]
-  mentorships         Mentorship[]       @relation("MentorRelation")
-  menteeships         Mentorship[]       @relation("MenteeRelation")
+  mentorships         Mentorship[]           @relation("MentorRelation")
+  menteeships         Mentorship[]           @relation("MenteeRelation")
   forumPosts          ForumPost[]
   forumAnswers        ForumAnswer[]
   achievements        Achievement[]
   announcements       Announcement[]
   activities          Activity[]
   loginLogs           LoginLog[]
-  createdGroups       ChatGroup[]        @relation("GroupCreator")
+  createdGroups       ChatGroup[]            @relation("GroupCreator")
   groupMemberships    GroupMember[]
   chatMessages        ChatMessage[]
   notifications       Notification[]
   batchesAsStudent    BatchStudent[]
   batchesAsMentor     BatchMentor[]
-  createdAssignments  Assignment[]       @relation("AssignmentCreator")
+  createdAssignments  Assignment[]           @relation("AssignmentCreator")
   submissions         AssignmentSubmission[]
   reviewedSubmissions AssignmentSubmission[] @relation("SubmissionReviewer")
-  
+
   // Quiz Relations
-  createdQuizzes      Quiz[]             @relation("QuizCreator")
-  quizSubmissions     QuizSubmission[]
-  
-  messageReads        MessageRead[]
-  messageReactions    MessageReaction[]
+  createdQuizzes  Quiz[]           @relation("QuizCreator")
+  quizSubmissions QuizSubmission[]
+
+  messageReads     MessageRead[]
+  messageReactions MessageReaction[]
 
   // Missing integrations
-  courseProgresses    CourseProgress[]
-  answerVotes         AnswerVote[]
+  courseProgresses CourseProgress[]
+  answerVotes      AnswerVote[]
 }
 
 model LearningResource {
-  id            String           @id @default(uuid())
-  title         String
-  description   String
-  category      String
-  videoUrl      String
-  duration      Int              // Duration in minutes
-  thumbnailUrl  String?
-  lessonsCount  Int              @default(1)
-  lessons       Json?            // Array of { title, videoId, duration }
-  isHot         Boolean          @default(false)
-  type          String?          // 'SESSION', 'RESOURCE', or 'COURSE' (null = course for backward compatibility)
-  batchId       String?          // Association with batch for visibility control
-  uploadedById  String
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id           String    @id @default(uuid())
+  title        String
+  description  String
+  category     String
+  videoUrl     String
+  duration     Int // Duration in minutes
+  thumbnailUrl String?
+  lessonsCount Int       @default(1)
+  lessons      Json? // Array of { title, videoId, duration }
+  isHot        Boolean   @default(false)
+  type         String? // 'SESSION', 'RESOURCE', or 'COURSE' (null = course for backward compatibility)
+  batchId      String? // Association with batch for visibility control
+  uploadedById String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   // Relations
-  uploadedBy        User              @relation(fields: [uploadedById], references: [id])
-  batch             Batch?            @relation(fields: [batchId], references: [id])
-  sessionTrackings  SessionTracking[]
+  uploadedBy       User              @relation(fields: [uploadedById], references: [id])
+  batch            Batch?            @relation(fields: [batchId], references: [id])
+  sessionTrackings SessionTracking[]
+
+  @@index([uploadedById])
+  @@index([createdAt])
+  @@index([type])
 }
 
 model SessionTracking {
   id                   String   @id @default(uuid())
   userId               String
   resourceId           String
-  watchDuration        Int      @default(0)  // Watched duration in seconds
-  totalDuration        Int      // Total duration in seconds
-  dropOffPoint         Int      @default(0)  // Where user stopped watching (seconds)
+  watchDuration        Int      @default(0) // Watched duration in seconds
+  totalDuration        Int // Total duration in seconds
+  dropOffPoint         Int      @default(0) // Where user stopped watching (seconds)
   completionPercentage Float    @default(0)
   attendanceMarked     Boolean  @default(false)
   createdAt            DateTime @default(now())
@@ -117,29 +122,42 @@ model SessionTracking {
 }
 
 model Mentorship {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   mentorId   String
   menteeId   String
-  assignedAt DateTime @default(now())
+  assignedAt DateTime  @default(now())
+  deletedAt  DateTime?
+  status     String    @default("ACTIVE") // ACTIVE, INACTIVE
 
   // Relations
   mentor   User      @relation("MentorRelation", fields: [mentorId], references: [id])
   mentee   User      @relation("MenteeRelation", fields: [menteeId], references: [id])
   meetings Meeting[]
+
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([assignedAt])
+  @@index([status])
 }
 
 model Meeting {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   mentorshipId      String
   meetingDate       DateTime
-  duration          Int      // Duration in minutes
+  duration          Int // Duration in minutes
   discussionSummary String?
   feedback          String?
   remarks           String?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
+  deletedAt         DateTime?
+  status            String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
 
   // Relations
   mentorship Mentorship @relation(fields: [mentorshipId], references: [id])
+
+  @@index([mentorshipId])
+  @@index([meetingDate])
+  @@index([status])
 }
 
 model ForumPost {
@@ -157,20 +175,20 @@ model ForumPost {
 }
 
 model ForumAnswer {
-  id        String   @id @default(uuid())
-  postId    String
-  content   String
-  authorId  String
-  upvotes   Int      @default(0)
-  isAccepted Boolean @default(false)
+  id             String   @id @default(uuid())
+  postId         String
+  content        String
+  authorId       String
+  upvotes        Int      @default(0)
+  isAccepted     Boolean  @default(false)
   parentAnswerId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  post   ForumPost @relation(fields: [postId], references: [id])
-  author User      @relation(fields: [authorId], references: [id])
-  parentAnswer ForumAnswer? @relation("AnswerReplies", fields: [parentAnswerId], references: [id])
+  post         ForumPost     @relation(fields: [postId], references: [id])
+  author       User          @relation(fields: [authorId], references: [id])
+  parentAnswer ForumAnswer?  @relation("AnswerReplies", fields: [parentAnswerId], references: [id])
   replies      ForumAnswer[] @relation("AnswerReplies")
   votes        AnswerVote[]
 }
@@ -188,15 +206,15 @@ model AnswerVote {
 }
 
 model Announcement {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  priority  String   @default("normal") // low, normal, high
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  priority    String   @default("normal") // low, normal, high
   createdById String
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   // Relations
-  createdBy User @relation(fields: [createdById], references: [id])
+  createdBy User                @relation(fields: [createdById], references: [id])
   batches   AnnouncementBatch[]
 }
 
@@ -214,14 +232,13 @@ model AnnouncementBatch {
   @@unique([announcementId, batchId])
 }
 
-
 model Achievement {
-  id          String          @id @default(uuid())
+  id          String   @id @default(uuid())
   userId      String
   type        String
   title       String
   description String?
-  createdAt   DateTime        @default(now())
+  createdAt   DateTime @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id])
@@ -230,7 +247,7 @@ model Achievement {
 model Activity {
   id          String   @id @default(uuid())
   userId      String
-  type        String   // watched, completed, placement, achievement
+  type        String // watched, completed, placement, achievement
   title       String
   description String?
   createdAt   DateTime @default(now())
@@ -244,7 +261,7 @@ model Session {
   title       String
   description String?
   scheduledAt DateTime
-  duration    Int      // Duration in minutes
+  duration    Int // Duration in minutes
   type        String   @default("online") // online, offline
   createdAt   DateTime @default(now())
 }
@@ -253,10 +270,10 @@ model LoginLog {
   id        String   @id @default(uuid())
   userId    String
   loginDate DateTime @default(now())
-  
+
   // Relations
   user User @relation(fields: [userId], references: [id])
-  
+
   @@index([userId, loginDate])
 }
 
@@ -269,7 +286,7 @@ model ChatGroup {
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   createdBy User          @relation("GroupCreator", fields: [createdById], references: [id])
   batch     Batch?        @relation(fields: [batchId], references: [id])
@@ -284,11 +301,11 @@ model GroupMember {
   role     String   @default("member") // admin, member
   status   String   @default("pending") // pending, accepted, rejected
   joinedAt DateTime @default(now())
-  
+
   // Relations
   group ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user  User      @relation(fields: [userId], references: [id])
-  
+
   @@unique([groupId, userId])
 }
 
@@ -297,9 +314,9 @@ model ChatMessage {
   groupId     String
   senderId    String
   content     String
-  attachments Json?    // Array of {type, url, name, size, mimeType}
+  attachments Json? // Array of {type, url, name, size, mimeType}
   createdAt   DateTime @default(now())
-  
+
   // Relations
   group     ChatGroup         @relation(fields: [groupId], references: [id])
   sender    User              @relation(fields: [senderId], references: [id])
@@ -312,10 +329,10 @@ model MessageRead {
   messageId String
   userId    String
   readAt    DateTime @default(now())
-  
+
   message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
   user    User        @relation(fields: [userId], references: [id])
-  
+
   @@unique([messageId, userId])
 }
 
@@ -323,24 +340,24 @@ model MessageReaction {
   id        String   @id @default(uuid())
   messageId String
   userId    String
-  emoji     String   // '👍', '❤️', '😂', '😮', '😢', '🙏'
+  emoji     String // '👍', '❤️', '😂', '😮', '😢', '🙏'
   createdAt DateTime @default(now())
-  
+
   message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
   user    User        @relation(fields: [userId], references: [id])
-  
+
   @@unique([messageId, userId, emoji])
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   title     String
   message   String
-  type      String   @default("info") // info, success, warning, error
-  read      Boolean  @default(false)
+  type      String    @default("info") // info, success, warning, error
+  read      Boolean   @default(false)
   readAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id])
@@ -355,13 +372,13 @@ model Batch {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  students    BatchStudent[]
-  mentors     BatchMentor[]
-  assignments Assignment[]
-  resources   LearningResource[]
+  students      BatchStudent[]
+  mentors       BatchMentor[]
+  assignments   Assignment[]
+  resources     LearningResource[]
   announcements AnnouncementBatch[]
-  chatGroups  ChatGroup[]
-  courses     Course[]
+  chatGroups    ChatGroup[]
+  courses       Course[]
 }
 
 model BatchStudent {
@@ -391,33 +408,41 @@ model BatchMentor {
 }
 
 model Assignment {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String
   dueDate     DateTime
-  maxMarks    Int      @default(100)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  maxMarks    Int       @default(100)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  status      String    @default("ACTIVE")
+
   // Relations
   createdById String
-  createdBy   User     @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy   User   @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Cascade)
   batchId     String
-  batch       Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  
+  batch       Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
   submissions AssignmentSubmission[]
+
+  @@index([createdById])
+  @@index([batchId])
+  @@index([createdAt])
+  @@index([status])
 }
 
 model AssignmentSubmission {
-  id           String   @id @default(uuid())
-  content      String
-  submittedAt  DateTime @default(now())
-  status       String   @default("PENDING")
-  marks        Int?
-  feedback     String?
+  id              String    @id @default(uuid())
+  content         String
+  submittedAt     DateTime  @default(now())
+  status          String    @default("PENDING")
+  marks           Int?
+  feedback        String?
   rubricBreakdown Json?
-  reviewedAt   DateTime?
-  
+  reviewedAt      DateTime?
+  deletedAt       DateTime?
+
   // Relations
   assignmentId String
   assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
@@ -425,40 +450,43 @@ model AssignmentSubmission {
   student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   reviewedById String?
   reviewedBy   User?      @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
-  
+
   @@unique([assignmentId, studentId])
+  @@index([assignmentId])
+  @@index([studentId])
+  @@index([status])
 }
 
 model Quiz {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  duration    Int      // Duration in minutes
-  totalMarks  Int
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  duration     Int // Duration in minutes
+  totalMarks   Int
   passingMarks Int?
-  dueDate     DateTime?
-  batches     Json     // Array of Batch IDs to store which batches can access this quiz
-  questions   Json     // Array of { id, question, options: [], correctOption }
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  dueDate      DateTime?
+  batches      Json // Array of Batch IDs to store which batches can access this quiz
+  questions    Json // Array of { id, question, options: [], correctOption }
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
   createdById String
-  createdBy   User     @relation("QuizCreator", fields: [createdById], references: [id])
+  createdBy   User             @relation("QuizCreator", fields: [createdById], references: [id])
   submissions QuizSubmission[]
 }
 
 model QuizSubmission {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   quizId      String
-  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
   studentId   String
-  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  answers     Json     // { questionId: selectedOption }
+  student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  answers     Json // { questionId: selectedOption }
   score       Int?
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
   submittedAt DateTime?
-  status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, AUTO_SUBMITTED
-  
+  status      String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, AUTO_SUBMITTED
+
   @@unique([quizId, studentId])
 }
 
@@ -470,34 +498,34 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  batch       Batch?   @relation(fields: [batchId], references: [id])
-  modules     Module[]
-  progresses  CourseProgress[]
+  batch      Batch?           @relation(fields: [batchId], references: [id])
+  modules    Module[]
+  progresses CourseProgress[]
 }
 
 model Module {
-  id          String   @id @default(uuid())
-  courseId    String
-  title       String
-  orderIndex  Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  courseId   String
+  title      String
+  orderIndex Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
 }
 
 model Lesson {
-  id          String   @id @default(uuid())
-  moduleId    String
-  title       String
-  type        String   // video, pdf, quiz
-  url         String?
-  orderIndex  Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  moduleId   String
+  title      String
+  type       String // video, pdf, quiz
+  url        String?
+  orderIndex Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 }
 
 model CourseProgress {
@@ -508,8 +536,8 @@ model CourseProgress {
   completionPercentage Float    @default(0)
   lastAccessed         DateTime @default(now())
 
-  student              User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course               Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId])
 }

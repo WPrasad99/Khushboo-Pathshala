@@ -7,15 +7,21 @@ async function main() {
     console.log('🌱 Starting seed...');
 
     // Clear existing data (Order matters because of Foreign Keys)
-    await prisma.loginLog.deleteMany();
-    await prisma.notification.deleteMany();
-    await prisma.batchMentor.deleteMany();
-    await prisma.batchStudent.deleteMany();
-    await prisma.batch.deleteMany();
-
-    await prisma.activity.deleteMany();
-    await prisma.achievement.deleteMany();
-    await prisma.announcement.deleteMany();
+    await prisma.messageRead.deleteMany();
+    await prisma.messageReaction.deleteMany();
+    await prisma.chatMessage.deleteMany();
+    await prisma.groupMember.deleteMany();
+    await prisma.chatGroup.deleteMany();
+    await prisma.announcementBatch.deleteMany();
+    await prisma.assignmentSubmission.deleteMany();
+    await prisma.assignment.deleteMany();
+    await prisma.quizSubmission.deleteMany();
+    await prisma.quiz.deleteMany();
+    await prisma.lesson.deleteMany();
+    await prisma.module.deleteMany();
+    await prisma.courseProgress.deleteMany();
+    await prisma.course.deleteMany();
+    await prisma.answerVote.deleteMany();
     await prisma.forumAnswer.deleteMany();
     await prisma.forumPost.deleteMany();
     await prisma.meeting.deleteMany();
@@ -23,6 +29,15 @@ async function main() {
     await prisma.sessionTracking.deleteMany();
     await prisma.session.deleteMany();
     await prisma.learningResource.deleteMany();
+    await prisma.batchMentor.deleteMany();
+    await prisma.batchStudent.deleteMany();
+    await prisma.batch.deleteMany();
+    await prisma.activity.deleteMany();
+    await prisma.achievement.deleteMany();
+    await prisma.announcement.deleteMany();
+    await prisma.loginLog.deleteMany();
+    await prisma.notification.deleteMany();
+    
     // Now safe to delete users
     await prisma.user.deleteMany();
 

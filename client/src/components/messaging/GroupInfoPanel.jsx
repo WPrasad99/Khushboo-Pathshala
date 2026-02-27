@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiUserPlus, FiUserMinus, FiEdit2, FiLogOut } from 'react-icons/fi';
+import { API_BASE } from '../../api';
 import { motion } from 'framer-motion';
 import './GroupInfoPanel.css';
 
@@ -33,7 +34,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const fetchAvailableUsers = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/chat/users', {
+            const response = await fetch(`${API_BASE}/api/chat/users`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const users = await response.json();
@@ -46,7 +47,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const handleUpdateGroup = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}`, {
+            const response = await fetch(`${API_BASE}/api/chat/groups/${group.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
 
     const handleAddMember = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/members`, {
+            const response = await fetch(`${API_BASE}/api/chat/groups/${group.id}/members`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
         if (!confirm('Remove this member from the group?')) return;
 
         try {
-            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/members/${userId}`, {
+            const response = await fetch(`${API_BASE}/api/chat/groups/${group.id}/members/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -109,7 +110,7 @@ const GroupInfoPanel = ({ group, onClose, currentUserId, currentUser, onLeave })
         if (!confirm('Are you sure you want to leave this group?')) return;
 
         try {
-            const response = await fetch(`http://localhost:5001/api/chat/groups/${group.id}/leave`, {
+            const response = await fetch(`${API_BASE}/api/chat/groups/${group.id}/leave`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });

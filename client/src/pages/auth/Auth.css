@@ -1,28 +1,109 @@
 /* ================================================================
    AUTH PAGES — Login, Register, Role Selection
+   Premium SaaS Design · Unified Design System v3.0
    ================================================================ */
 
-/* ── Auth Container (Split Layout) ── */
+/* ── Keyframes ── */
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes authPulseGlow {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes authFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes authGradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+/* ================================================================
+   1. AUTH CONTAINER — SPLIT LAYOUT
+   ================================================================ */
 .auth-container-static {
-    background-color: var(--color-surface);
     display: flex;
     width: 100vw;
     height: 100vh;
     min-height: 600px;
+    background: var(--color-bg);
+    overflow: hidden;
+    position: relative;
 }
 
-/* ── Left Panel (Form) ── */
+
+/* ================================================================
+   2. LEFT PANEL — FORM SIDE
+   ================================================================ */
 .login-left-panel {
     width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-surface);
     position: relative;
     z-index: 2;
+    background: var(--color-bg);
+    overflow-y: auto;
 }
 
-/* ── Right Panel (Image) ── */
+/* Subtle decorative gradient blob behind the form */
+.login-left-panel::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-primary-soft) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0.5;
+    animation: authPulseGlow 6s ease-in-out infinite;
+    z-index: 0;
+}
+
+
+/* ================================================================
+   3. RIGHT PANEL — IMAGE SIDE
+   ================================================================ */
 .login-right-panel {
     width: 50%;
     position: relative;
@@ -38,66 +119,90 @@
     left: 0;
 }
 
-.image-gradient {
+/* Gradient overlay on the image for brand cohesion */
+.login-right-panel::after {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, rgba(79, 70, 229, 0.25), rgba(99, 102, 241, 0.35));
+    inset: 0;
+    background: linear-gradient(160deg,
+            rgba(79, 70, 229, 0.20) 0%,
+            rgba(99, 102, 241, 0.15) 30%,
+            rgba(129, 140, 248, 0.10) 60%,
+            transparent 100%);
     z-index: 1;
+    pointer-events: none;
 }
 
 
 /* ================================================================
-   FORM STYLES
+   4. LOGIN FORM — GLASSMORPHISM CARD
    ================================================================ */
 .slider-form,
 .static-login-form {
-    background-color: transparent;
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: flex-start;
     justify-content: center;
     flex-direction: column;
-    padding: 0 var(--space-48);
-    height: auto;
     width: 100%;
-    max-width: 580px;
+    max-width: 460px;
     margin: 0 auto;
+    padding: var(--space-40) var(--space-40);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: authFadeIn 0.5s var(--ease-decel) both;
 }
 
+/* Title */
 .slider-form h1,
 .static-login-form h1 {
     font-weight: var(--fw-bold);
-    margin-bottom: var(--space-32);
+    margin-bottom: var(--space-8);
     color: var(--text-primary);
-    font-size: var(--fs-display);
+    font-size: var(--fs-h1);
     align-self: center;
+    letter-spacing: -0.02em;
+}
+
+/* Subtitle below title (optional, for future use) */
+.static-login-form>p:first-of-type {
+    font-size: var(--fs-body);
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: var(--space-24);
+    width: 100%;
 }
 
 .static-login-form .form-field input {
-    padding: 14px var(--space-16);
-    font-size: var(--fs-body-lg);
+    padding: 13px var(--space-16);
+    font-size: var(--fs-body);
 }
 
 .static-login-form .auth-submit-btn {
-    padding: 14px var(--space-20);
-    font-size: var(--fs-body-lg);
-    margin-top: var(--space-16);
+    padding: 13px var(--space-20);
+    font-size: var(--fs-body);
+    margin-top: var(--space-8);
 }
 
 .static-login-form .google-login-btn {
-    padding: 14px;
+    padding: 12px;
     font-size: var(--fs-body);
 }
 
 .static-login-form .form-field label {
-    font-size: var(--fs-body);
-    margin-bottom: var(--space-8);
+    font-size: var(--fs-small);
+    margin-bottom: var(--space-6);
 }
 
 
-/* ── Auth Divider ── */
+/* ================================================================
+   5. AUTH DIVIDER
+   ================================================================ */
 .auth-divider {
     display: flex;
     align-items: center;
@@ -105,9 +210,9 @@
     width: 100%;
     margin: var(--space-20) 0;
     color: var(--text-muted);
-    font-size: var(--fs-small);
-    letter-spacing: 0.08em;
-    font-weight: var(--fw-medium);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-weight: var(--fw-semibold);
     text-transform: uppercase;
 }
 
@@ -123,42 +228,50 @@
 }
 
 
-/* ── Form Fields ── */
+/* ================================================================
+   6. FORM FIELDS
+   ================================================================ */
 .form-field {
     width: 100%;
-    margin: var(--space-10) 0;
+    margin: var(--space-8) 0;
     text-align: left;
 }
 
 .form-field label {
     display: block;
-    font-size: var(--fs-body);
+    font-size: var(--fs-small);
     font-weight: var(--fw-semibold);
     color: var(--text-primary);
     margin-bottom: var(--space-6);
 }
 
 .form-field input {
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--color-border);
-    padding: 15px var(--space-16);
+    background-color: var(--color-surface-muted);
+    border: 1.5px solid var(--color-border);
+    padding: 13px var(--space-16);
     margin: 0;
     width: 100%;
-    border-radius: var(--radius-md);
-    font-size: 16px;
+    border-radius: var(--radius-lg);
+    font-size: var(--fs-body);
     outline: none;
     transition: all var(--dur-fast) var(--ease-standard);
     color: var(--text-primary);
+    font-family: var(--font-sans);
+}
+
+.form-field input:hover {
+    border-color: var(--color-border-hover);
 }
 
 .form-field input:focus {
     background-color: var(--color-surface);
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-focus);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
 .form-field input::placeholder {
     color: var(--text-muted);
+    font-weight: var(--fw-regular);
 }
 
 
@@ -181,7 +294,9 @@
 }
 
 
-/* ── Role Selector ── */
+/* ================================================================
+   7. ROLE SELECTOR
+   ================================================================ */
 .role-selector {
     display: flex;
     gap: var(--space-10);
@@ -191,10 +306,10 @@
 
 .role-pill {
     flex: 1;
-    border: 1px solid var(--color-border);
+    border: 1.5px solid var(--color-border);
     background: var(--color-surface);
     padding: var(--space-12);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -209,6 +324,8 @@
 .role-pill:hover {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
 }
 
 .role-pill.active {
@@ -216,17 +333,20 @@
     background: var(--color-primary-soft);
     color: var(--color-primary);
     font-weight: var(--fw-semibold);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
 
-/* ── Auth Options Row ── */
+/* ================================================================
+   8. AUTH OPTIONS ROW
+   ================================================================ */
 .auth-options-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: var(--space-24);
-    font-size: var(--fs-body);
+    margin: var(--space-16) 0 var(--space-8);
+    font-size: var(--fs-small);
 }
 
 /* Modern Custom Checkbox */
@@ -238,7 +358,8 @@
     color: var(--text-secondary);
     white-space: nowrap;
     user-select: none;
-    font-size: var(--fs-body);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
 }
 
 /* Hide the native checkbox */
@@ -257,11 +378,10 @@
     width: 18px;
     height: 18px;
     min-width: 18px;
-    border: 2px solid var(--color-border);
-    border-radius: 5px;
-    background: var(--bg-tertiary);
+    border: 2px solid var(--color-border-hover);
+    border-radius: 6px;
+    background: var(--color-surface-muted);
     transition: all 0.2s ease;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .checkbox-label:has(input:checked)::before {
@@ -271,66 +391,88 @@
     background-size: 14px 14px;
     background-repeat: no-repeat;
     background-position: center;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
 .forgot-link {
     color: var(--color-primary);
     text-decoration: none;
-    font-weight: var(--fw-medium);
-    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-small);
+    transition: color var(--dur-fast) var(--ease-standard);
 }
 
 .forgot-link:hover {
+    color: var(--color-primary-hover);
     text-decoration: underline;
 }
 
 
-/* ── Auth Buttons ── */
+/* ================================================================
+   9. AUTH BUTTONS
+   ================================================================ */
 .auth-submit-btn {
     width: 100%;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     border: none;
-    background-color: var(--color-primary);
-    color: var(--text-white);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #6366F1 50%, #8B5CF6 100%);
+    background-size: 200% 200%;
+    color: #FFFFFF;
     font-size: var(--fs-body);
     font-weight: var(--fw-semibold);
-    padding: 14px;
+    padding: 13px;
     letter-spacing: 0.02em;
-    transition: background var(--dur-fast) var(--ease-standard),
-        transform var(--dur-fast) var(--ease-standard),
-        box-shadow var(--dur-fast) var(--ease-standard);
-    margin-top: var(--space-10);
+    transition: all var(--dur-normal) var(--ease-standard);
+    margin-top: var(--space-8);
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 48px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 14px -2px rgba(79, 70, 229, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-standard);
 }
 
 .auth-submit-btn:hover {
-    background-color: var(--color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    background-size: 100% 100%;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(79, 70, 229, 0.45);
+}
+
+.auth-submit-btn:hover::before {
+    opacity: 1;
 }
 
 .auth-submit-btn:active {
     transform: translateY(0) scale(0.99);
+    box-shadow: 0 2px 8px -2px rgba(79, 70, 229, 0.3);
 }
 
 .auth-submit-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .signup-btn {
-    background-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #6366F1 100%);
 }
 
 
-/* ── Google Login Button ── */
+/* ================================================================
+   10. GOOGLE LOGIN BUTTON
+   ================================================================ */
 .google-login-btn {
     width: 100%;
     display: flex;
@@ -338,25 +480,51 @@
     justify-content: center;
     gap: var(--space-12);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    padding: 14px;
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-10);
+    border: 1.5px solid var(--color-border);
+    padding: 12px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
     cursor: pointer;
     font-size: var(--fs-body);
     font-weight: var(--fw-semibold);
     color: var(--text-primary);
     transition: all var(--dur-fast) var(--ease-standard);
     min-height: 48px;
+    font-family: var(--font-sans);
 }
 
 .google-login-btn:hover {
     background-color: var(--color-surface-muted);
     border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.google-login-btn:active {
+    transform: translateY(0);
 }
 
 
-/* ── Toggle Text ── */
+/* ================================================================
+   11. AUTH ERROR
+   ================================================================ */
+.auth-error {
+    width: 100%;
+    padding: var(--space-12) var(--space-16);
+    background: var(--color-error-soft);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--color-error);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    margin-bottom: var(--space-8);
+    animation: authFadeIn 0.3s var(--ease-decel);
+}
+
+
+/* ================================================================
+   12. TOGGLE TEXT
+   ================================================================ */
 .auth-toggle-text {
     display: block;
     margin-top: var(--space-24);
@@ -371,14 +539,18 @@
     font-weight: var(--fw-semibold);
     cursor: pointer;
     margin-left: var(--space-6);
+    transition: color var(--dur-fast) var(--ease-standard);
 }
 
 .auth-toggle-text span:hover {
+    color: var(--color-primary-hover);
     text-decoration: underline;
 }
 
 
-/* ── Additional Info Page ── */
+/* ================================================================
+   13. ADDITIONAL INFO PAGE
+   ================================================================ */
 .additional-info-page {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -458,7 +630,9 @@
 }
 
 
-/* ── Password Toggle ── */
+/* ================================================================
+   14. PASSWORD TOGGLE
+   ================================================================ */
 .password-field {
     display: block;
     position: relative;
@@ -481,29 +655,37 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-sm);
+    transition: all var(--dur-fast) var(--ease-standard);
 }
 
 .password-toggle:hover {
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    background: var(--color-surface-muted);
 }
 
 
-/* ── Footer ── */
+/* ================================================================
+   15. AUTH FOOTER
+   ================================================================ */
 .auth-footer {
-    margin-top: auto;
-    padding-top: var(--space-32);
-    font-size: var(--fs-small);
+    margin-top: var(--space-24);
+    padding-top: var(--space-16);
+    font-size: 11px;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     font-weight: var(--fw-medium);
     text-align: center;
     width: 100%;
+    border-top: 1px solid var(--color-divider);
 }
 
 
-/* ── Login Loader ── */
+/* ================================================================
+   16. LOGIN LOADER
+   ================================================================ */
 .login-loader-overlay {
     position: fixed;
     top: 0;
@@ -526,29 +708,95 @@
 }
 
 
-/* ── Dark Theme ── */
-[data-theme="dark"] .auth-container-static,
+/* ================================================================
+   17. DARK THEME REFINEMENTS
+   ================================================================ */
+[data-theme="dark"] .auth-container-static {
+    background-color: var(--color-bg);
+}
+
 [data-theme="dark"] .login-left-panel {
     background-color: var(--color-bg);
 }
 
+[data-theme="dark"] .login-left-panel::before {
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+    opacity: 0.8;
+}
+
 [data-theme="dark"] .slider-form,
 [data-theme="dark"] .static-login-form {
-    background-color: transparent;
+    background: rgba(17, 24, 39, 0.7);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 [data-theme="dark"] .google-login-btn {
     background: var(--bg-tertiary);
-    border-color: var(--color-border);
+    border-color: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
 }
 
 [data-theme="dark"] .google-login-btn:hover {
     background: var(--color-surface-muted);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] .form-field input {
+    background-color: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .form-field input:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] .form-field input:focus {
+    background-color: rgba(30, 41, 59, 0.8);
+    border-color: var(--color-primary);
+}
+
+[data-theme="dark"] .auth-submit-btn {
+    background: linear-gradient(135deg, #6366F1 0%, #818CF8 50%, #A78BFA 100%);
+    box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="dark"] .auth-submit-btn:hover {
+    box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.5);
+}
+
+[data-theme="dark"] .checkbox-label::before {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .auth-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .login-right-panel::after {
+    background: linear-gradient(160deg,
+            rgba(99, 102, 241, 0.25) 0%,
+            rgba(129, 140, 248, 0.15) 30%,
+            rgba(17, 24, 39, 0.6) 80%,
+            rgba(11, 18, 32, 0.8) 100%);
 }
 
 
-/* ── Responsive ── */
+/* ================================================================
+   18. RESPONSIVE
+   ================================================================ */
+@media (max-width: 1024px) {
+    .login-left-panel {
+        width: 55%;
+    }
+
+    .login-right-panel {
+        width: 45%;
+    }
+}
+
 @media (max-width: 768px) {
     .auth-container-static {
         flex-direction: column;
@@ -557,23 +805,32 @@
     .login-left-panel {
         width: 100%;
         height: 100%;
-        padding: var(--space-40) var(--space-20);
+        padding: var(--space-32) var(--space-20);
     }
 
     .login-right-panel {
         display: none;
     }
 
+    .login-left-panel::before {
+        width: 400px;
+        height: 400px;
+    }
+
     .slider-form,
     .static-login-form {
-        padding: 0 var(--space-16);
+        padding: var(--space-32) var(--space-24);
         max-width: 100%;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        backdrop-filter: none;
     }
 
     .slider-form h1,
     .static-login-form h1 {
-        font-size: var(--fs-h1);
-        margin-bottom: var(--space-24);
+        font-size: var(--fs-h2);
+        margin-bottom: var(--space-20);
     }
 
     .additional-info-container {
@@ -583,5 +840,22 @@
 
     .info-form {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-left-panel {
+        padding: var(--space-24) var(--space-16);
+    }
+
+    .slider-form,
+    .static-login-form {
+        padding: var(--space-24) var(--space-16);
+    }
+
+    .auth-options-row {
+        flex-direction: column;
+        gap: var(--space-12);
+        align-items: flex-start;
     }
 }

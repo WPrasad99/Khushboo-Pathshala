@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { authAPI, userAPI } from '../../api';
+import { authAPI, userAPI, API_BASE } from '../../api';
 import LoadingAnimation from '../../components/LoadingAnimation';
 import './Auth.css';
 
@@ -73,7 +73,7 @@ const Login = () => {
 
     const handleGoogleLogin = () => {
         // Redirect to your backend's Google OAuth initiation endpoint
-        window.location.href = 'http://localhost:5001/api/auth/google';
+        window.location.href = `${API_BASE}/api/auth/google`;
     };
 
     return (
@@ -90,6 +90,7 @@ const Login = () => {
                 <div className="login-left-panel">
                     <form onSubmit={handleLogin} className="static-login-form">
                         <h1>Welcome Back</h1>
+                        <p>Sign in to continue your learning journey</p>
 
                         <button className="google-login-btn" type="button" onClick={handleGoogleLogin}>
                             <svg width="18" height="18" viewBox="0 0 24 24">
@@ -106,26 +107,30 @@ const Login = () => {
                         {error && <div className="auth-error">{error}</div>}
 
                         <div className="form-field">
-                            <label>Email Address</label>
+                            <label htmlFor="login-email">Email Address</label>
                             <input
+                                id="login-email"
                                 type="email"
-                                placeholder="Email Address"
+                                placeholder="you@example.com"
                                 value={loginEmail}
                                 onChange={(e) => setLoginEmail(e.target.value)}
                                 required
+                                autoComplete="email"
                             />
                         </div>
                         <div className="form-field password-field">
-                            <label>Password</label>
+                            <label htmlFor="login-password">Password</label>
                             <div className="password-input-wrapper">
                                 <input
+                                    id="login-password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Password"
+                                    placeholder="Enter your password"
                                     value={loginPassword}
                                     onChange={(e) => setLoginPassword(e.target.value)}
                                     required
+                                    autoComplete="current-password"
                                 />
-                                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">
                                     {showPassword ? <FiEyeOff /> : <FiEye />}
                                 </button>
                             </div>
@@ -136,11 +141,11 @@ const Login = () => {
                                 <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
                                 Keep me logged in
                             </label>
-                            <a href="#" className="forgot-link">Forgot your password?</a>
+                            <a href="#" className="forgot-link">Forgot password?</a>
                         </div>
 
                         <button type="submit" className="auth-submit-btn" disabled={loading}>
-                            {loading ? 'Logging in...' : 'Log In'}
+                            {loading ? 'Signing in...' : 'Sign In'}
                         </button>
 
                         <div className="auth-footer">Powered by Cybage Khushboo</div>
@@ -149,7 +154,7 @@ const Login = () => {
 
                 {/* Right Side - Image Panel */}
                 <div className="login-right-panel">
-                    <img src="/login-visual.png" alt="Login Visual" className="static-auth-image" />
+                    <img src="/login-visual.png" alt="Khushboo Pathshala - Learning Platform" className="static-auth-image" />
                 </div>
             </div>
         </>

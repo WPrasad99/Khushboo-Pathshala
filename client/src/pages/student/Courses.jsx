@@ -11,7 +11,7 @@ import {
     FiSearch,
     FiVideo
 } from 'react-icons/fi';
-import { resourceAPI } from '../../api';
+import { resourceAPI, API_BASE } from '../../api';
 import './Courses.css';
 
 const tabConfig = [
@@ -96,7 +96,7 @@ const Courses = () => {
         const isResource = item.type === 'RESOURCE';
 
         if (isResource) {
-            const resourceUrl = item.videoUrl?.startsWith('http') ? item.videoUrl : `http://localhost:5001${item.videoUrl}`;
+            const resourceUrl = item.videoUrl?.startsWith('http') ? item.videoUrl : `${API_BASE}${item.videoUrl}`;
             window.open(resourceUrl, '_blank');
             return;
         }
