@@ -487,6 +487,7 @@
 }
 
 /* 7. RESPONSIVE BEHAVIOR */
+/* 7. RESPONSIVE BEHAVIOR (Mobile Optimizations) */
 @media (max-width: 1024px) {
     .student-search-bar {
         width: 280px;
@@ -494,36 +495,121 @@
 }
 
 @media (max-width: 768px) {
+
+    /* 1) Responsive Architecture & Container Spacing */
     .student-header {
         padding: 0 16px;
+        height: auto;
+        min-height: 60px;
+        flex-wrap: wrap;
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
 
     .dashboard-content {
         padding: 16px;
+        gap: 16px;
     }
 
+    .student-main-content {
+        width: 100vw;
+        overflow-x: hidden;
+    }
+
+    /* 2) Layout Fold: Convert rows to columns */
     .student-hero-section {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
     }
 
+    /* 3) Typography for Mobile */
+    .hero-text h1 {
+        font-size: var(--fs-h2);
+        line-height: var(--lh-heading);
+    }
+
+    .hero-text p {
+        font-size: var(--fs-body);
+        line-height: var(--lh-snug);
+    }
+
+    /* 4) Touch Optimization & Buttons */
     .hero-actions {
         width: 100%;
-        justify-content: stretch;
+        flex-direction: column;
+        gap: 12px;
     }
 
-    .hero-actions button {
-        flex: 1;
+    .hero-actions button,
+    .btn-student-primary,
+    .btn-student-outline {
+        width: 100%;
         justify-content: center;
+        min-height: 44px;
+        /* Touch target size */
     }
 
+    /* 5) Grid to 1 Column */
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 
+    /* 6) Forms & Inputs */
     .student-search-bar {
-        display: none;
-        /* Hide on small mobile, rely on icon */
+        width: 100%;
+        /* Take full width on mobile if visible */
+        order: 3;
+        /* Move to next row in flex header */
+        margin-top: 8px;
+        min-height: 44px;
+        /* Touch friendly */
+    }
+
+    .header-right-actions {
+        margin-left: auto;
+    }
+
+    /* 7) Cards & Component Paddings */
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .dashboard-panel {
+        padding: 16px;
+        gap: 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .session-card {
+        flex-direction: column;
+        /* Stack date and detail */
+        align-items: flex-start;
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .session-date-box {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .date-day {
+        font-size: 16px;
+        margin-bottom: 0;
+    }
+
+    /* Hide long text overflows */
+    .session-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 }

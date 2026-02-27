@@ -800,12 +800,17 @@
 @media (max-width: 768px) {
     .auth-container-static {
         flex-direction: column;
+        height: 100%;
+        min-height: 100vh;
     }
 
     .login-left-panel {
-        width: 100%;
-        height: 100%;
-        padding: var(--space-32) var(--space-20);
+        width: 100vw;
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-20) var(--space-16);
+        justify-content: center;
+        overflow-x: hidden;
     }
 
     .login-right-panel {
@@ -813,24 +818,58 @@
     }
 
     .login-left-panel::before {
-        width: 400px;
-        height: 400px;
+        width: 150vw;
+        height: 150vw;
     }
 
     .slider-form,
     .static-login-form {
-        padding: var(--space-32) var(--space-24);
+        padding: var(--space-24) var(--space-16);
+        width: 100%;
         max-width: 100%;
-        border: none;
-        box-shadow: none;
-        background: transparent;
-        backdrop-filter: none;
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
+        background: var(--color-surface);
+        backdrop-filter: blur(20px);
+        margin: auto 0;
     }
 
     .slider-form h1,
     .static-login-form h1 {
         font-size: var(--fs-h2);
-        margin-bottom: var(--space-20);
+        margin-bottom: var(--space-8);
+        text-align: center;
+    }
+
+    /* Input sizing to defeat zoom */
+    .form-field input,
+    .static-login-form .form-field input {
+        font-size: 16px;
+        min-height: 48px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    /* Buttons scaled for thumb press */
+    .google-login-btn,
+    .auth-submit-btn,
+    .static-login-form .auth-submit-btn,
+    .static-login-form .google-login-btn {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    /* Role pills stacked horizontally but scrollable or fat */
+    .role-selector {
+        flex-direction: column;
+        /* Better than squished */
+        gap: var(--space-12);
+    }
+
+    .role-pill {
+        min-height: 48px;
+        flex-direction: row;
+        justify-content: center;
     }
 
     .additional-info-container {
@@ -841,21 +880,33 @@
     .info-form {
         grid-template-columns: 1fr;
     }
-}
 
-@media (max-width: 480px) {
-    .login-left-panel {
+    .additional-info-page {
         padding: var(--space-24) var(--space-16);
+        margin: var(--space-16);
     }
 
-    .slider-form,
-    .static-login-form {
-        padding: var(--space-24) var(--space-16);
+    .info-header h2 {
+        font-size: var(--fs-h2);
     }
 
     .auth-options-row {
         flex-direction: column;
-        gap: var(--space-12);
-        align-items: flex-start;
+        gap: var(--space-16);
+        align-items: center;
+        /* Center on mobile is cleaner */
+        margin-top: var(--space-20);
+        margin-bottom: var(--space-16);
+    }
+
+    .checkbox-label {
+        min-height: 44px;
+        /* touch target */
+    }
+
+    .forgot-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
     }
 }

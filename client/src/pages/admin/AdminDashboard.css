@@ -548,8 +548,19 @@
     color: var(--admin-text-muted);
 }
 
-/* Responsive Table */
+/* Responsive Table & Layout (Premium Touch Mode) */
 @media (max-width: 768px) {
+    .admin-page-container {
+        padding: 20px 16px;
+    }
+
+    .admin-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
     .admin-table-row {
         height: auto;
         padding: 16px 0;
@@ -564,13 +575,48 @@
     }
 
     .header-actions {
+        width: 100%;
         flex-direction: column;
     }
 
     .btn-admin-primary,
-    .btn-admin-outline {
+    .btn-admin-outline,
+    .btn-admin-secondary {
         width: 100%;
         justify-content: center;
+        min-height: 48px;
+        /* SaaS touch height */
+    }
+
+    /* Flow forms properly */
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .admin-input,
+    .admin-select,
+    .admin-textarea {
+        min-height: 48px;
+        font-size: 16px;
+        /* Stop auto-zoom */
+    }
+
+    .table-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .role-selector {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .btn-delete-ghost {
+        width: 100%;
+        min-height: 44px;
+        background: #FEE2E2;
+        color: var(--admin-danger);
     }
 }
 
