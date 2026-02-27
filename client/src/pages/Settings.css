@@ -146,10 +146,13 @@
 .bio-label {
     display: flex;
     align-items: center;
-    gap: 6px;
     font-size: 13px;
     font-weight: 700;
     color: #4F46E5;
+}
+
+.bio-label svg {
+    margin-right: 8px;
 }
 
 [data-theme="dark"] .bio-label {
@@ -298,9 +301,12 @@
 
 .section-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin-bottom: 28px;
+    width: 100%;
+    text-align: center;
 }
 
 .section-icon {
@@ -361,10 +367,13 @@
 .form-label {
     display: flex;
     align-items: center;
-    gap: 6px;
     font-size: 13px;
     font-weight: 600;
     color: #475569;
+}
+
+.form-label svg {
+    margin-right: 8px;
 }
 
 [data-theme="dark"] .form-label {
