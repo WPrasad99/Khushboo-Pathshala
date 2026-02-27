@@ -1,6 +1,6 @@
 import api from '../api';
 
-const MENTOR_V2_PREFIX = '/v2/mentor';
+const MENTOR_V2_PREFIX = '/mentor';
 
 export const mentorService = {
     getBatches: async () => {
