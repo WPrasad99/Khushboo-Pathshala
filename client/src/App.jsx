@@ -126,7 +126,7 @@ function AppRoutes() {
         <Route path="mentorship" element={<MentorDashboard />} />
         <Route path="forum" element={<MentorDashboard />} />
         <Route path="assignments" element={<MentorDashboard />} />
-        <Route path="messages" element={<MentorDashboard />} />
+        <Route path="messages" element={<MessagingPage />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
