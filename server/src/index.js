@@ -663,6 +663,9 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
                 dateOfBirth: true,
                 educationLevel: true,
                 avatar: true,
+                bio: true,
+                hobbies: true,
+                skills: true,
                 profileCompleted: true
             }
         });
@@ -675,7 +678,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
 // Update user profile
 app.put('/api/users/profile', authenticateToken, async (req, res) => {
     try {
-        const { phone, gender, dateOfBirth, educationLevel, name } = req.body;
+        const { phone, gender, dateOfBirth, educationLevel, name, bio, hobbies, skills } = req.body;
 
         const user = await prisma.user.update({
             where: { id: req.user.id },
@@ -685,6 +688,9 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
                 dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
                 educationLevel,
                 name,
+                bio,
+                hobbies,
+                skills,
                 profileCompleted: true
             },
             select: {
@@ -697,6 +703,9 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
                 dateOfBirth: true,
                 educationLevel: true,
                 avatar: true,
+                bio: true,
+                hobbies: true,
+                skills: true,
                 profileCompleted: true
             }
         });

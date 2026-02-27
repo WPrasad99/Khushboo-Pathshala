@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "bio" TEXT;
+ALTER TABLE "User" ADD COLUMN "hobbies" TEXT;
+ALTER TABLE "User" ADD COLUMN "skills" TEXT;
