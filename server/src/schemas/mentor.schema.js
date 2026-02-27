@@ -24,7 +24,10 @@ const getMeetingsSchema = z.object({
 
 const getStudentsSchema = z.object({
     query: z.object({
-        batchId: z.string().uuid().optional(),
+        batchId: z.preprocess(
+            (val) => (val === '' || val == null ? undefined : val),
+            z.string().uuid().optional()
+        ),
         search: z.string().optional(),
         status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
     }),

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { adminAPI, announcementAPI, batchAPI } from '../../api';
+import api, { adminAPI, announcementAPI, batchAPI } from '../../api';
 import {
     FiSearch, FiBell, FiLogOut, FiUsers, FiBook,
     FiCalendar, FiMessageSquare, FiMessageCircle, FiPlus, FiEdit2, FiBarChart2, FiLayers, FiSettings, FiMoreVertical, FiTrash2, FiMenu, FiX,
@@ -52,9 +52,12 @@ const AdminDashboard = () => {
     const [showBulkUserModal, setShowBulkUserModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [notifications, setNotifications] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [liveNotification, setLiveNotification] = useState(null);
 
     // Theme Architecture State
     const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
@@ -100,15 +103,42 @@ const AdminDashboard = () => {
     // Socket.IO Listeners
     useEffect(() => {
         if (socket) {
-            socket.on('notification', (data) => {
-                // Increment unread count or show toast
+            const handleNotification = (data) => {
                 setUnreadNotifications(prev => prev + 1);
-                // Optionally refetch data
                 fetchData();
-            });
+                if (data) {
+                    const title = data.title || data.name || 'New Notification';
+                    const message = data.message || data.content || data.description || 'You have a new update in your dashboard.';
+                    setLiveNotification({
+                        id: Date.now(),
+                        title,
+                        message,
+                        createdAt: new Date()
+                    });
+                    setTimeout(() => setLiveNotification(null), 5000);
+                }
+            };
+            const handleMessage = (data) => {
+                setUnreadMessages(prev => prev + 1);
+                if (data && data.sender) {
+                    setLiveNotification({
+                        id: Date.now(),
+                        title: `New message from ${data.sender?.name || 'User'}`,
+                        message: data.content || 'You received a new message.',
+                        createdAt: new Date()
+                    });
+                    setTimeout(() => setLiveNotification(null), 5000);
+                }
+            };
+
+            socket.on('notification', handleNotification);
+            socket.on('new_announcement', handleNotification);
+            socket.on('new_message_notification', handleMessage);
 
             return () => {
-                socket.off('notification');
+                socket.off('notification', handleNotification);
+                socket.off('new_announcement', handleNotification);
+                socket.off('new_message_notification', handleMessage);
             };
         }
     }, [socket]);
@@ -201,6 +231,48 @@ const AdminDashboard = () => {
     const handleLogout = () => {
         logout();
         navigate('/login');
+    };
+
+    const loadNotifications = async () => {
+        try {
+            const res = await api.get('/notifications');
+            setNotifications(res.data || []);
+            await api.put('/notifications/read');
+            setUnreadNotifications(0);
+        } catch (error) {
+            console.error('Failed to load notifications', error);
+        }
+    };
+
+    const handleToggleNotifications = async () => {
+        if (!showNotifications) {
+            await loadNotifications();
+        }
+        setShowNotifications(state => !state);
+    };
+
+    const handleDeleteNotification = async (event, id) => {
+        event.stopPropagation();
+        try {
+            await api.delete(`/notifications/${id}`);
+            setNotifications((current) => current.filter((item) => item.id !== id));
+        } catch (error) {
+            console.error('Failed to delete notification', error);
+        }
+    };
+
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = Date.now();
+        const minutesDiff = Math.floor((now - date.getTime()) / (1000 * 60));
+
+        if (minutesDiff < 1) return 'Just now';
+        if (minutesDiff < 60) return `${minutesDiff}m ago`;
+
+        const hoursDiff = Math.floor(minutesDiff / 60);
+        if (hoursDiff < 24) return `${hoursDiff}h ago`;
+
+        return `${Math.floor(hoursDiff / 24)}d ago`;
     };
 
     const stats = dashboardData?.stats || {};
@@ -334,7 +406,7 @@ const AdminDashboard = () => {
                         <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
                             {theme === 'light' ? <FiMoon /> : <FiSun />}
                         </button>
-                        <button className="icon-btn" style={{ position: 'relative' }} onClick={() => setShowNotifications(!showNotifications)}>
+                        <button className="icon-btn" style={{ position: 'relative' }} onClick={handleToggleNotifications}>
                             <FiBell />
                             {unreadNotifications > 0 && <span className="notification-dot"></span>}
                         </button>
@@ -412,29 +484,66 @@ const AdminDashboard = () => {
             <AnimatePresence>
                 {showNotifications && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="notification-dropdown-refined"
+                        className="kp-dropdown-menu kp-notification-menu"
+                        style={{ position: 'absolute', top: '70px', right: '140px', zIndex: 9999, width: '320px', background: 'var(--color-surface)', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.18 }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div className="kp-dropdown-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--color-border)' }}>
                             <h4 style={{ margin: 0 }}>Notifications</h4>
-                            <button className="btn-ghost btn-sm" onClick={() => setUnreadNotifications(0)}>Clear all</button>
+                            <button className="btn-ghost btn-sm" onClick={loadNotifications} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}>Refresh</button>
                         </div>
-                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            {unreadNotifications > 0 ? (
-                                <div className="mentee-card" style={{ marginBottom: '8px', cursor: 'pointer' }}>
-                                    <FiBell style={{ color: '#3B82F6' }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body)' }}>Real-time Update</div>
-                                        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-)' }}>New activity detected on the platform.</div>
+                        <div className="kp-notification-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {notifications.length > 0 ? (
+                                notifications.map((note) => (
+                                    <div key={note.id} className={`kp-notification-item ${!note.read ? 'is-unread' : ''}`} style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: '12px' }}>
+                                        <div className="kp-notification-body" style={{ flex: 1 }}>
+                                            <h5 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{note.title}</h5>
+                                            <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{note.message}</p>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatTime(note.createdAt)}</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(event) => handleDeleteNotification(event, note.id)}
+                                            className="kp-notification-delete"
+                                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+                                            aria-label="Delete notification"
+                                        >
+                                            <FiTrash2 />
+                                        </button>
                                     </div>
-                                </div>
+                                ))
                             ) : (
-                                <p style={{ textAlign: 'center', color: 'var(--color-text-)', fontSize: 'var(--fs-body)', padding: '20px 0' }}>
-                                    No new notifications
-                                </p>
+                                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <p>All caught up. No notifications right now.</p>
+                                </div>
                             )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {liveNotification && (
+                    <motion.div
+                        className="kp-notification-live-popup"
+                        style={{ position: 'fixed', top: '70px', right: '20px', zIndex: 99999, width: '320px', background: 'var(--color-surface)', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <div style={{ padding: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--color-primary-soft)', borderRadius: 'var(--radius-lg)' }}>
+                            <div style={{ flex: 1 }}>
+                                <h5 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: '600' }}>{liveNotification.title}</h5>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{liveNotification.message}</p>
+                                <span style={{ display: 'block', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now</span>
+                            </div>
+                            <button type="button" onClick={() => setLiveNotification(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '4px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+                                <FiX size={16} />
+                            </button>
                         </div>
                     </motion.div>
                 )}
@@ -626,7 +735,9 @@ const AdminDashboard = () => {
                     )}
 
                     {activeTab === 'batches' && (
-                        <BatchManagement onRefresh={fetchData} />
+                        <div className="admin-page-container">
+                            <BatchManagement onRefresh={fetchData} />
+                        </div>
                     )}
 
                     {activeTab === 'users' && (

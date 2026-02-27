@@ -53,8 +53,17 @@ export const useUploadSession = () => {
     return useMutation({
         mutationFn: mentorService.uploadSession,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['mentor', 'uploads', 'SESSION'] });
-            queryClient.invalidateQueries({ queryKey: ['mentor', 'uploads', 'COURSE'] });
+            queryClient.invalidateQueries({ queryKey: ['mentor', 'uploads'] });
+        }
+    });
+};
+
+export const useUploadResource = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: mentorService.uploadResource,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['mentor', 'uploads'] });
         }
     });
 };
@@ -74,5 +83,16 @@ export const useMentorAssignments = (batchId) => {
         queryKey: ['mentor', 'assignments', batchId],
         queryFn: () => mentorService.getAssignments(batchId),
         enabled: !!batchId,
+    });
+};
+
+export const useCreateAssignment = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: mentorService.createAssignment,
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['mentor', 'assignments', variables.batchId] });
+            queryClient.invalidateQueries({ queryKey: ['mentor', 'batches'] });
+        }
     });
 };

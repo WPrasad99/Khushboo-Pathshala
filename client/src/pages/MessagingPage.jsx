@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage, FiArrowLeft } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMoreVertical, FiUsers, FiUser, FiMessageCircle, FiCheck, FiCheckCircle, FiPlus, FiDownload, FiFile, FiImage, FiArrowLeft } from 'react-icons/fi';
 import { chatAPI, API_BASE } from '../api';
 import { socket } from '../api/socket';
 import { useAuth } from '../context/AuthContext';
@@ -32,13 +33,16 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
     const currentUserId = currentUser?.id;
     const currentUserName = currentUser?.name;
 
-    // Handle initial chat user (from Mentor Dashboard)
+    const { userId } = useParams();
+
+    // Handle initial chat user (from Mentor Dashboard or URL)
     useEffect(() => {
         const initDirectMessage = async () => {
-            if (initialChatUser?.id) {
+            const targetId = userId || initialChatUser?.id;
+            if (targetId) {
                 try {
                     // Try to find existing or create new DM
-                    const response = await chatAPI.createDirectMessage(initialChatUser.id);
+                    const response = await chatAPI.createDirectMessage(targetId);
                     if (response.data) {
                         const group = response.data;
                         // Refresh lists
@@ -47,7 +51,7 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                         setShowMobileSidebar(false); // Open chat view
 
                         // Clear the initial user in parent to prevent re-triggering
-                        if (onClearInitialChatUser) {
+                        if (onClearInitialChatUser && initialChatUser) {
                             onClearInitialChatUser();
                         }
                     }
@@ -57,10 +61,10 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
             }
         };
 
-        if (initialChatUser) {
+        if (userId || initialChatUser) {
             initDirectMessage();
         }
-    }, [initialChatUser]);
+    }, [userId, initialChatUser]);
 
     // Fetch conversations and contacts
     useEffect(() => {
@@ -144,7 +148,6 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
     // ... (logic)
 
     const handleConversationClick = async (conv) => {
-        // GROUPS ONLY: No placeholder or DM logic needed
         setShowGroupInfo(false);
         setShowUserInfo(false);
         setSelectedConversation(conv);
@@ -225,21 +228,15 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
     const getDisplayList = () => {
         if (!Array.isArray(conversations)) return [];
 
-        // GROUPS ONLY: Filter out all direct messages
-        const validConversations = conversations.filter(c => c.groupType !== 'direct');
-
-
-
-        const displayList = [...validConversations];
-
-        // GROUPS ONLY: No contact processing needed
+        const displayList = [...conversations];
 
         // Filter by search
-        // Search only within group names
         if (searchQuery) {
-            return displayList.filter(c =>
-                c.name?.toLowerCase().includes(searchQuery.toLowerCase())
-            );
+            return displayList.filter(c => {
+                const isDirect = c.groupType === 'direct';
+                const name = isDirect ? getOtherUser(c)?.name : c.name;
+                return name?.toLowerCase().includes(searchQuery.toLowerCase());
+            });
         }
 
         return displayList;
@@ -290,6 +287,9 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                     <AnimatePresence>
                         {filteredConversations.map(conv => {
                             const lastMessage = conv.messages?.[0];
+                            const isDirect = conv.groupType === 'direct';
+                            const otherUser = isDirect ? getOtherUser(conv) : null;
+                            const displayName = isDirect ? otherUser?.name || 'Unknown User' : conv.name;
 
                             return (
                                 <motion.div
@@ -301,14 +301,16 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                                     exit={{ opacity: 0, x: -20 }}
                                 >
                                     <div className="conversation-avatar">
-                                        <div className="avatar group-avatar">
-                                            <FiUsers />
-                                        </div>
+                                        {isDirect ? (
+                                            <div className="avatar user-avatar"><FiUser /></div>
+                                        ) : (
+                                            <div className="avatar group-avatar"><FiUsers /></div>
+                                        )}
                                     </div>
 
                                     <div className="conversation-info">
                                         <div className="conversation-top">
-                                            <h4>{conv.name}</h4>
+                                            <h4>{displayName}</h4>
                                             {lastMessage && (
                                                 <span className="conversation-time">
                                                     {formatTime(lastMessage.createdAt)}
@@ -342,22 +344,32 @@ const MessagingPage = ({ initialChatUser, onClearInitialChatUser }) => {
                             </button>
                             <div
                                 className="header-info"
-                                onClick={() => setShowGroupInfo(true)}
+                                onClick={() => {
+                                    if (selectedConversation.groupType === 'direct') setShowUserInfo(true);
+                                    else setShowGroupInfo(true);
+                                }}
                                 style={{ cursor: 'pointer' }}
                             >
                                 <div className="conversation-avatar">
-                                    <div className="avatar group-avatar">
-                                        <FiUsers />
-                                    </div>
+                                    {selectedConversation.groupType === 'direct' ? (
+                                        <div className="avatar user-avatar"><FiUser /></div>
+                                    ) : (
+                                        <div className="avatar group-avatar"><FiUsers /></div>
+                                    )}
                                 </div>
                                 <div>
-                                    <h3>{selectedConversation.name}</h3>
-                                    <p className="members-count">
-                                        {selectedConversation.members.length} members
-                                    </p>
+                                    <h3>{selectedConversation.groupType === 'direct' ? getOtherUser(selectedConversation)?.name || 'Unknown User' : selectedConversation.name}</h3>
+                                    {selectedConversation.groupType !== 'direct' && (
+                                        <p className="members-count">
+                                            {selectedConversation.members.length} members
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                            <button className="more-btn" onClick={() => setShowGroupInfo(true)}>
+                            <button className="more-btn" onClick={() => {
+                                if (selectedConversation.groupType === 'direct') setShowUserInfo(true);
+                                else setShowGroupInfo(true);
+                            }}>
                                 <FiMoreVertical />
                             </button>
                         </div>

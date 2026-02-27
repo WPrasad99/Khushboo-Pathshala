@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { chatbotAPI } from '../api';
+import { chatbotAPI, getApiErrorMessage } from '../api';
 import { FiMessageCircle, FiX, FiSend, FiTrash2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ChatBot.css';
@@ -117,18 +117,8 @@ const ChatBot = () => {
             console.error('Full error object:', error);
             console.error('==========================================');
 
-            // User-friendly error message
-            let errorText = 'Sorry, I encountered an error. Please try again.';
-
-            if (error.response?.data?.error) {
-                errorText = error.response.data.error;
-            } else if (error.response?.status === 500) {
-                errorText = 'The AI service is currently unavailable. Please try again in a moment.';
-            } else if (error.response?.status === 401 || error.response?.status === 403) {
-                errorText = 'Authentication error. Please log in again.';
-            } else if (!error.response) {
-                errorText = 'Cannot connect to the server. Please check your connection.';
-            }
+            // User-friendly error message (handles both { error: string } and { error: { message } } formats)
+            const errorText = getApiErrorMessage(error, 'Sorry, I encountered an error. Please try again.');
 
             const errorMessage = {
                 role: 'bot',

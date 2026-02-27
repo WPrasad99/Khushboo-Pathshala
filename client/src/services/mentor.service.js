@@ -34,6 +34,16 @@ export const mentorService = {
         return response.data;
     },
 
+    uploadResource: async (formData) => {
+        // We must remove the default Content-Type so axios can auto-set multipart/form-data with the correct boundary
+        const response = await api.post(`/mentor/resources/upload`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    },
+
     deleteUpload: async (id) => {
         const response = await api.delete(`/mentor/uploads/${id}`);
         return response.data;
@@ -43,4 +53,9 @@ export const mentorService = {
         const response = await api.get('/assignments', { params: { batchId, mentorMode: true } });
         return response.data;
     },
+
+    createAssignment: async (data) => {
+        const response = await api.post('/assignments', data);
+        return response.data;
+    }
 };

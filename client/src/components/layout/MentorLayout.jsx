@@ -50,7 +50,7 @@ const navigationGroups = [
 const MentorLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const isMessagesPage = location.pathname.includes('/messages');
+    const isMessagesPage = location.pathname.includes('/messages') || location.pathname.includes('/chat/');
 
     const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('kp-sidebar-collapsed') === 'true');
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { batchAPI, adminAPI } from '../../api';
+import { batchAPI, adminAPI, getApiErrorMessage } from '../../api';
 import { FiX, FiLayers, FiUsers, FiAward, FiCheck, FiSearch, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Modal.css';
@@ -46,7 +46,7 @@ const CreateBatchModal = ({ onClose, onSuccess }) => {
             onSuccess();
             onClose();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create batch');
+            setError(getApiErrorMessage(err, 'Failed to create batch'));
             setLoading(false);
         }
     };

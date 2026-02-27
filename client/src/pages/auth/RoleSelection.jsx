@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getApiErrorMessage } from '../../api';
 import { FiBook, FiUsers, FiSettings } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import './Auth.css';
@@ -58,7 +59,7 @@ const RoleSelection = ({ mode = 'register' }) => {
             await register(email, password, name, selectedRole);
             navigate('/complete-profile');
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to register. Please try again.');
+            setError(getApiErrorMessage(err, 'Failed to register. Please try again.'));
         } finally {
             setLoading(false);
         }

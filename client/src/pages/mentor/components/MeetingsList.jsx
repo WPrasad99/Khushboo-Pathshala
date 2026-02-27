@@ -4,7 +4,18 @@ import { Calendar, Clock, Users, Plus } from 'lucide-react';
 
 const MeetingsList = () => {
     const [filter, setFilter] = useState('upcoming');
-    const { data: meetingsData, isLoading } = useMentorMeetings({ limit: 50, filter });
+    const { data: meetingsData, isLoading, isError } = useMentorMeetings({ limit: 50, filter });
+
+    if (isError) {
+        return (
+            <div className="m-section">
+                <div className="m-empty-state">
+                    <h3 className="m-empty-state__title">Failed to load meetings</h3>
+                    <p className="m-empty-state__desc">Please refresh the page or try again later.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="m-section">

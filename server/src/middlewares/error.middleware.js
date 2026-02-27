@@ -1,31 +1,23 @@
-// Centralized Error Middleware
-const errorHandler = (err, req, res, next) => {
-    console.error(`[Error] ${err.name}: ${err.message}`);
+const errorMiddleware = (err, req, res, next) => {
+    console.error('API Error:', {
+        message: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        path: req.path,
+        method: req.method
+    });
 
-    // Zod validation errors
-    if (err.name === 'ZodError') {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation failed',
-            error: err.errors
-        });
-    }
+    const status = err.status || 500;
+    const message = err.message || 'An unexpected error occurred';
+    const code = err.code || 'INTERNAL_SERVER_ERROR';
 
-    // Prisma generic errors
-    if (err.code && err.code.startsWith('P')) {
-        return res.status(400).json({
-            success: false,
-            message: 'Database operation failed',
-            error: process.env.NODE_ENV === 'development' ? (err.meta || err.message) : undefined
-        });
-    }
-
-    // Default error
-    res.status(err.status || 500).json({
+    res.status(status).json({
         success: false,
-        message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        data: null,
+        error: {
+            code,
+            message
+        }
     });
 };
 
-module.exports = errorHandler;
+module.exports = errorMiddleware;

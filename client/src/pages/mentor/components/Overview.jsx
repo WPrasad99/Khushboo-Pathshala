@@ -20,13 +20,24 @@ const StatCard = ({ icon: Icon, title, value, subtitle, isLoading }) => {
 };
 
 const Overview = () => {
-    const { data: batchesData, isLoading: isLoadingBatches } = useMentorBatches();
-    const { data: meetingsData, isLoading: isLoadingMeetings } = useMentorMeetings({ limit: 5, filter: 'upcoming' });
+    const { data: batchesData, isLoading: isLoadingBatches, isError: isBatchesError } = useMentorBatches();
+    const { data: meetingsData, isLoading: isLoadingMeetings, isError: isMeetingsError } = useMentorMeetings({ limit: 5, filter: 'upcoming' });
 
-    const totalStudents = batchesData?.data?.reduce((acc, b) => acc + b.studentsCount, 0) || 0;
-    const totalBatches = batchesData?.data?.length || 0;
-    const totalResources = batchesData?.data?.reduce((acc, b) => acc + (b.resourcesCount || 0), 0) || 0;
-    const upcomingMeetings = meetingsData?.data?.items || [];
+    const batches = batchesData?.data ?? [];
+    const totalStudents = batches.reduce((acc, b) => acc + (b.studentsCount ?? 0), 0);
+    const totalBatches = batches.length;
+    const totalResources = batches.reduce((acc, b) => acc + (b.resourcesCount ?? 0), 0);
+    const upcomingMeetings = meetingsData?.data?.items ?? [];
+
+    if (isBatchesError || isMeetingsError) {
+        return (
+            <div className="m-section">
+                <div className="m-empty-state">
+                    <p className="m-empty-state__desc">Failed to load dashboard. Please refresh the page.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="m-section">

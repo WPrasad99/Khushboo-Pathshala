@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { authAPI, userAPI, API_BASE } from '../../api';
+import { authAPI, userAPI, API_BASE, getApiErrorMessage } from '../../api';
 import LoadingAnimation from '../../components/LoadingAnimation';
 import './Auth.css';
 
@@ -66,7 +66,7 @@ const Login = () => {
 
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to login. Please try again.');
+            setError(getApiErrorMessage(err, 'Failed to login. Please try again.'));
             setLoading(false);
         }
     };

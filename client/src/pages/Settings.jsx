@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { userAPI } from '../api';
+import { userAPI, getApiErrorMessage } from '../api';
 import { FiUser, FiLock, FiCheck, FiEdit2, FiArrowLeft, FiMail, FiPhone, FiShield, FiFileText, FiHeart, FiStar, FiX } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -115,7 +115,7 @@ const Settings = () => {
             setSuccessMsg('Password changed successfully!');
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (err) {
-            setErrorMsg(err.response?.data?.error || 'Failed to change password.');
+            setErrorMsg(getApiErrorMessage(err, 'Failed to change password.'));
         } finally {
             setLoading(false);
         }

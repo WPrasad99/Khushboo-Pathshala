@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { adminAPI } from '../../api';
+import { adminAPI, getApiErrorMessage } from '../../api';
 import { FiX, FiUpload, FiDownload, FiCheck, FiAlertCircle, FiUsers, FiLayers } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
@@ -72,7 +72,7 @@ const BulkUserModal = ({ onClose, onSuccess }) => {
             setStep(3);
             onSuccess();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create bulk users');
+            setError(getApiErrorMessage(err, 'Failed to create bulk users'));
         } finally {
             setLoading(false);
         }

@@ -62,10 +62,11 @@ class ErrorBoundary extends Component {
                     <p style={{
                         margin: '0 0 20px',
                         fontSize: '0.875rem',
-                        color: 'var(--admin-text-secondary, #64748b)',
-                        maxWidth: '400px'
+                        maxWidth: '400px',
+                        fontFamily: 'monospace',
+                        color: 'red'
                     }}>
-                        This section encountered an unexpected error. Please try refreshing or contact support if the issue persists.
+                        {this.state.error?.message || 'This section encountered an unexpected error.'}
                     </p>
                     <div style={{ display: 'flex', gap: '12px' }}>
                         <button

@@ -200,7 +200,7 @@ exports.scheduleMeeting = async (req, res, next) => {
         });
 
         if (batchStudents.length === 0) {
-            return res.status(400).json({ success: false, message: 'No students found in this batch' });
+            return res.status(400).json({ success: false, error: 'No students found in this batch' });
         }
 
         const meetingDate = new Date(date);
@@ -261,6 +261,128 @@ exports.scheduleMeeting = async (req, res, next) => {
             data: createdMeetings,
             message: `Meeting scheduled for ${createdMeetings.length} students`
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getAttendance = async (req, res, next) => {
+    try {
+        const mentorId = req.user.id;
+        const { batchId } = req.query;
+
+        const where = {
+            type: { in: ['ATTENDANCE_PRESENT', 'ATTENDANCE_ABSENT'] },
+            user: {
+                batchesAsStudent: { some: { batchId } }
+            }
+        };
+
+        const activities = await prisma.activity.findMany({
+            where,
+            include: { user: { select: { id: true, name: true, email: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json({ success: true, data: activities });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.markAttendance = async (req, res, next) => {
+    try {
+        const { date, records } = req.body;
+        if (!records || !Array.isArray(records)) {
+            return res.status(400).json({ success: false, error: 'Invalid records format' });
+        }
+
+        const stats = { success: 0, failed: 0 };
+        const activityDate = date ? new Date(date) : new Date();
+
+        for (const record of records) {
+            try {
+                const student = await prisma.user.findUnique({ where: { email: record.email } });
+                if (student) {
+                    await prisma.activity.create({
+                        data: {
+                            userId: student.id,
+                            type: record.status === 'Present' ? 'ATTENDANCE_PRESENT' : 'ATTENDANCE_ABSENT',
+                            title: `Attendance: ${activityDate.toLocaleDateString()}`,
+                            description: `Marked as ${record.status} by Mentor`,
+                            createdAt: activityDate
+                        }
+                    });
+                    stats.success++;
+                } else {
+                    stats.failed++;
+                }
+            } catch (err) {
+                stats.failed++;
+            }
+        }
+
+        res.json({ success: true, data: stats, message: 'Attendance processed' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.uploadResource = async (req, res, next) => {
+    try {
+        const { title, description, batchId, category, type } = req.body;
+        const mentorId = req.user.id;
+
+        if (!title || !batchId) {
+            return res.status(400).json({ success: false, error: 'Title and batchId are required' });
+        }
+
+        const resourceUrl = req.file ? `/uploads/${req.file.filename}` : req.body.videoUrl;
+
+        const resource = await prisma.learningResource.create({
+            data: {
+                title,
+                description: description || '',
+                videoUrl: resourceUrl || '',
+                type: type || 'RESOURCE',
+                batchId,
+                category: category || 'TECHNICAL_SKILLS',
+                uploadedById: mentorId
+            }
+        });
+
+        res.status(201).json({ success: true, data: resource });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getUploads = async (req, res, next) => {
+    try {
+        const mentorId = req.user.id;
+        const uploads = await prisma.learningResource.findMany({
+            where: { uploadedById: mentorId },
+            include: { batch: { select: { name: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json({ success: true, data: uploads });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.deleteUpload = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const mentorId = req.user.id;
+
+        const upload = await prisma.learningResource.findUnique({ where: { id } });
+        if (!upload || upload.uploadedById !== mentorId) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+
+        await prisma.learningResource.delete({ where: { id } });
+        res.json({ success: true, message: 'Deleted successfully' });
     } catch (error) {
         next(error);
     }

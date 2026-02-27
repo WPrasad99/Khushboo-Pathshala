@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { adminAPI } from '../../api';
+import { adminAPI, getApiErrorMessage } from '../../api';
 import { FiX, FiUser, FiMail, FiLock, FiPhone, FiCheck, FiShield } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Modal.css';
@@ -25,7 +25,7 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
             onSuccess();
             onClose();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create user');
+            setError(getApiErrorMessage(err, 'Failed to create user'));
         } finally {
             setLoading(false);
         }

@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMentorStudents, useMentorBatches } from '../../../hooks/mentor/useMentorQueries';
 import { Search, User, MessageCircle } from 'lucide-react';
 
 const MenteesList = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBatch, setSelectedBatch] = useState('');
-    const { data: studentsData, isLoading } = useMentorStudents({
+    const { data: studentsData, isLoading, isError } = useMentorStudents({
         search: searchTerm,
         batchId: selectedBatch || undefined
     });
 
     const { data: batchesData } = useMentorBatches();
+
+    if (isError) {
+        return (
+            <div className="m-section">
+                <div className="m-empty-state">
+                    <h3 className="m-empty-state__title">Failed to load mentees</h3>
+                    <p className="m-empty-state__desc">Please refresh the page or try again later.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="m-section">
@@ -65,7 +78,7 @@ const MenteesList = () => {
                                         <td>
                                             <div className="m-user-row">
                                                 <img
-                                                    src={student.avatar}
+                                                    src={student.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
                                                     alt={student.name}
                                                     className="m-user-avatar"
                                                 />
@@ -82,7 +95,10 @@ const MenteesList = () => {
                                             </div>
                                         </td>
                                         <td className="text-right">
-                                            <button className="m-btn m-btn--ghost">
+                                            <button
+                                                className="m-btn m-btn--ghost"
+                                                onClick={() => navigate(`/mentor/chat/${student.id}`)}
+                                            >
                                                 <MessageCircle size={16} />
                                                 Message
                                             </button>

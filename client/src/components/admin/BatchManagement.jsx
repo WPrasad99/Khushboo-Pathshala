@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { batchAPI } from '../../api';
-import { FiPlus, FiTrash2, FiUsers, FiAward, FiEye, FiMoreVertical, FiEdit2, FiX, FiMail, FiUser } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiUsers, FiAward, FiEye, FiMoreVertical, FiEdit2, FiX, FiMail, FiUser, FiLayers } from 'react-icons/fi';
 import CreateBatchModal from './CreateBatchModal';
 import EditBatchModal from './EditBatchModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -141,12 +141,17 @@ const BatchManagement = ({ onRefresh }) => {
 
     return (
         <div className="batch-management-container">
-            <div className="section-header">
-                <h3>Batches</h3>
-                <button className="btn-glass-primary" onClick={() => setShowCreateModal(true)}>
-                    <FiPlus /> Create Batch
-                </button>
-            </div>
+            <header className="admin-section-header" style={{ marginBottom: '24px' }}>
+                <div className="title-stack">
+                    <h1><FiLayers /> Batches</h1>
+                    <p>Organize students, assign mentors, and manage group access.</p>
+                </div>
+                <div className="header-actions">
+                    <button className="btn-admin-primary" onClick={() => setShowCreateModal(true)} style={{ gap: '8px' }}>
+                        <FiPlus /> Create Batch
+                    </button>
+                </div>
+            </header>
 
             {loading ? (
                 <div className="loading-spinner-container">

@@ -3384,10 +3384,7 @@ app.post('/api/chat/groups/:groupId/leave', authenticateToken, async (req, res) 
 // Create Batch
 app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (req, res) => {
     try {
-        const { name, description, studentIds, mentorIds, mentorId } = req.body;
-
-        // Handle both singular and plural mentor IDs for compatibility
-        const finalMentorIds = mentorIds || (mentorId ? [mentorId] : []);
+        const { name, description, studentIds, mentorIds } = req.body;
 
         const batch = await prisma.batch.create({
             data: {
@@ -3397,29 +3394,17 @@ app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (r
                     create: studentIds?.map(id => ({ studentId: id })) || []
                 },
                 mentors: {
-                    create: finalMentorIds.map(id => ({ mentorId: id }))
+                    create: mentorIds?.map(id => ({ mentorId: id })) || []
                 }
             },
             include: {
-                students: {
-                    include: { student: { select: { id: true, name: true, email: true, avatar: true } } }
-                },
-                mentors: {
-                    include: { mentor: { select: { id: true, name: true, email: true, avatar: true } } }
-                }
+                students: true,
+                mentors: true
             }
         });
 
-        // Add convenience mentor field for frontend
-        const responseBatch = {
-            ...batch,
-            mentor: batch.mentors[0]?.mentor || null,
-            students: batch.students.map(s => s.student)
-        };
-
         // Notify students and mentors in the batch
-        const finalStudentIds = studentIds || [];
-        finalStudentIds.forEach(id => {
+        studentIds?.forEach(id => {
             io.to(`user_${id}`).emit('notification', {
                 title: 'New Batch Assignment',
                 content: `You have been added to batch: ${batch.name}`,
@@ -3428,7 +3413,7 @@ app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (r
             });
         });
 
-        finalMentorIds.forEach(id => {
+        mentorIds?.forEach(id => {
             io.to(`user_${id}`).emit('notification', {
                 title: 'New Batch Assignment',
                 content: `You have been assigned to batch: ${batch.name}`,
@@ -3437,7 +3422,7 @@ app.post('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (r
             });
         });
 
-        res.status(201).json(responseBatch);
+        res.status(201).json(batch);
     } catch (error) {
         console.error('Create batch error:', error);
         res.status(500).json({ error: 'Failed to create batch' });
@@ -3462,15 +3447,7 @@ app.get('/api/admin/batches', authenticateToken, requireRole('ADMIN'), async (re
             },
             orderBy: { createdAt: 'desc' }
         });
-
-        // Format for frontend
-        const formattedBatches = batches.map(batch => ({
-            ...batch,
-            mentor: batch.mentors[0]?.mentor || null,
-            students: batch.students.map(s => s.student)
-        }));
-
-        res.json(formattedBatches);
+        res.json(batches);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch batches' });
     }
@@ -3495,14 +3472,7 @@ app.get('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async
             }
         });
         if (!batch) return res.status(404).json({ error: 'Batch not found' });
-
-        const responseBatch = {
-            ...batch,
-            mentor: batch.mentors[0]?.mentor || null,
-            students: batch.students.map(s => s.student)
-        };
-
-        res.json(responseBatch);
+        res.json(batch);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch batch' });
     }
@@ -3511,57 +3481,12 @@ app.get('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async
 // Update Batch (Name/Desc/Status)
 app.put('/api/admin/batches/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
     try {
-        const { name, description, status, studentIds, mentorIds, mentorId } = req.body;
-
-        // Handle both singular and plural mentor IDs
-        const finalMentorIds = mentorIds || (mentorId ? [mentorId] : null);
-
-        const updateData = { name, description, status };
-
-        const batch = await prisma.$transaction(async (tx) => {
-            // Update basic info
-            const b = await tx.batch.update({
-                where: { id: req.params.id },
-                data: updateData
-            });
-
-            // Update students if provided
-            if (studentIds) {
-                await tx.batchStudent.deleteMany({ where: { batchId: req.params.id } });
-                await tx.batchStudent.createMany({
-                    data: studentIds.map(id => ({ batchId: req.params.id, studentId: id }))
-                });
-            }
-
-            // Update mentors if provided
-            if (finalMentorIds) {
-                await tx.batchMentor.deleteMany({ where: { batchId: req.params.id } });
-                await tx.batchMentor.createMany({
-                    data: finalMentorIds.map(id => ({ batchId: req.params.id, mentorId: id }))
-                });
-            }
-
-            return tx.batch.findUnique({
-                where: { id: req.params.id },
-                include: {
-                    students: {
-                        include: { student: { select: { id: true, name: true, email: true, avatar: true } } }
-                    },
-                    mentors: {
-                        include: { mentor: { select: { id: true, name: true, email: true, avatar: true } } }
-                    }
-                }
-            });
+        const { name, description, status } = req.body;
+        const batch = await prisma.batch.update({
+            where: { id: req.params.id },
+            data: { name, description, status }
         });
-
-        // Format for frontend
-        const responseBatch = {
-            ...batch,
-            mentor: batch.mentors[0]?.mentor || null,
-            students: batch.students.map(s => s.student)
-        };
-
-        res.json(responseBatch);
+        res.json(batch);
     } catch (error) {
         res.status(500).json({ error: 'Failed to update batch' });
     }

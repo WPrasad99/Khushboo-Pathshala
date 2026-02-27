@@ -34,11 +34,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       return <Navigate to="/complete-profile" replace />;
     } */
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to appropriate dashboard
-    if (user.role === 'STUDENT') return <Navigate to="/student" replace />;
-    if (user.role === 'MENTOR') return <Navigate to="/mentor" replace />;
-    if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+  const role = user?.role;
+  if (allowedRoles && role && !allowedRoles.includes(role)) {
+    if (role === 'STUDENT') return <Navigate to="/student" replace />;
+    if (role === 'MENTOR') return <Navigate to="/mentor" replace />;
+    if (role === 'ADMIN') return <Navigate to="/admin" replace />;
   }
 
   return children;
@@ -127,6 +127,7 @@ function AppRoutes() {
         <Route path="forum" element={<MentorDashboard />} />
         <Route path="assignments" element={<MentorDashboard />} />
         <Route path="messages" element={<MessagingPage />} />
+        <Route path="chat/:userId" element={<MessagingPage />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
@@ -153,11 +154,11 @@ const SettingsRedirect = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ErrorBoundary>
+      <ErrorBoundary>
+        <AuthProvider>
           <AppRoutes />
-        </ErrorBoundary>
-      </AuthProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </Router>
   );
 }
