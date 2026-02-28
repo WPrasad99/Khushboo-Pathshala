@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../config/prisma');
 
+// GET /api/notifications/unread-count — fetch unread count
+router.get('/unread-count', async (req, res, next) => {
+    try {
+        const count = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
+        });
+        res.json({ success: true, count });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // GET /api/notifications — fetch current user's notifications
 router.get('/', async (req, res, next) => {
     try {

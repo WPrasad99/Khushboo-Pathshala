@@ -122,6 +122,7 @@ app.use('/api/assignments', authenticateToken, require('./routes/assignment.rout
 app.use('/api/chatbot', authenticateToken, require('./routes/chatbot.routes'));
 app.use('/api/notifications', authenticateToken, require('./routes/notification.routes'));
 app.use('/api/sessions', authenticateToken, require('./routes/session.routes'));
+app.use('/api/roadmaps', authenticateToken, require('./routes/roadmap.routes'));
 
 // ── Socket.IO Events ──────────────────────────────────
 io.on('connection', (socket) => {

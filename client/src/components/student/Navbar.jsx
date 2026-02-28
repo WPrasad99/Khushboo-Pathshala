@@ -67,7 +67,7 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
         const fetchUnread = async () => {
             try {
                 const res = await api.get('/notifications/unread-count');
-                setUnreadNotifications(res.data.count || 0);
+                setUnreadNotifications(res.count || 0);
             } catch (error) {
                 console.error('Failed to fetch unread count', error);
             }

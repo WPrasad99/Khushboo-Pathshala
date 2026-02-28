@@ -12,6 +12,7 @@ import Forum from './pages/student/Forum';
 import MentorDashboard from './pages/mentor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import Settings from './pages/Settings';
+import Roadmap from './pages/student/Roadmap';
 import Loading from './components/Loading';
 import MessagingPage from './pages/MessagingPage';
 import MessagingLayout from './components/layout/MessagingLayout';
@@ -106,6 +107,7 @@ function AppRoutes() {
         <Route path="courses" element={<Courses />} />
         <Route path="courses/:courseId" element={<CoursePlayer />} />
         <Route path="resources" element={<StudentDashboard />} />
+        <Route path="roadmap" element={<Roadmap />} />
         <Route path="mentor" element={<MentorProgram />} />
         <Route path="messages" element={<MessagingPage />} />
         <Route path="forum" element={<Forum />} />
