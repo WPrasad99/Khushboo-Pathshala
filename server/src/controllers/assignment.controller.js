@@ -72,12 +72,23 @@ exports.getAssignments = async (req, res, next) => {
             include: {
                 batch: { select: { id: true, name: true } },
                 createdBy: { select: { id: true, name: true } },
-                _count: { select: { submissions: true } }
+                _count: { select: { submissions: true } },
+                submissions: role === 'STUDENT' ? {
+                    where: { studentId: userId },
+                    select: { id: true, status: true, submittedAt: true, marks: true, feedback: true }
+                } : false
             },
             orderBy: { createdAt: 'desc' }
         });
 
-        res.json({ success: true, data: assignments });
+        // Clean up: if false was used (for non-students), remove the key or handle it
+        const result = assignments.map(a => {
+            const assignment = { ...a };
+            if (role !== 'STUDENT') delete assignment.submissions;
+            return assignment;
+        });
+
+        res.json({ success: true, data: result });
     } catch (error) {
         next(error);
     }
@@ -100,6 +111,7 @@ exports.getAssignmentDetails = async (req, res, next) => {
                 },
                 createdBy: { select: { id: true, name: true } },
                 submissions: {
+                    where: role === 'STUDENT' ? { studentId: userId } : undefined,
                     include: { student: { select: { id: true, name: true, avatar: true } } }
                 }
             }
@@ -145,19 +157,24 @@ exports.submitAssignment = async (req, res, next) => {
             return res.status(403).json({ success: false, error: 'You are not eligible to submit this assignment.' });
         }
 
-        let submissionContent = content || '';
+        // Handle content: If both file and text exist, combine them or favor file for path
+        let finalContent = content || '';
         if (file) {
-            submissionContent = `/uploads/${file.filename}`;
+            const filePath = `/uploads/${file.filename}`;
+            // If there's content text, we can prefix it or just store the path
+            // For now, let's keep it simple: if there's a file, the content is the path. 
+            // In a real app, we might have separate fields for fileUrl and studentComment.
+            finalContent = filePath;
         }
 
-        if (!submissionContent) {
+        if (!finalContent) {
             return res.status(400).json({ success: false, error: 'Content or file is required.' });
         }
 
         const submission = await prisma.assignmentSubmission.upsert({
             where: { assignmentId_studentId: { assignmentId: id, studentId } },
-            update: { content: submissionContent, status: 'PENDING', submittedAt: new Date() },
-            create: { assignmentId: id, studentId, content: submissionContent, status: 'PENDING' }
+            update: { content: finalContent, status: 'PENDING', submittedAt: new Date() },
+            create: { assignmentId: id, studentId, content: finalContent, status: 'PENDING' }
         });
 
         res.json({ success: true, data: submission });

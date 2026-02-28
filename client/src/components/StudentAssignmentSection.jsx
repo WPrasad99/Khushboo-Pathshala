@@ -102,23 +102,26 @@ const StudentAssignmentSection = () => {
         const submission = assignment.submissions?.[0];
         if (!submission) {
             const isOverdue = new Date(assignment.dueDate) < new Date();
-            if (isOverdue) return { status: 'Overdue', color: '#dc2626', bg: '#fee2e2', icon: <FiAlertCircle /> };
-            return { status: 'Pending', color: '#d97706', bg: '#fef3c7', icon: <FiClock /> };
+            if (isOverdue) return { status: 'Overdue', color: 'var(--color-error)', bg: 'var(--color-error-soft)', icon: <FiAlertCircle /> };
+            return { status: 'Pending', color: 'var(--color-warning)', bg: 'var(--color-warning-soft)', icon: <FiClock /> };
         }
-        if (submission.status === 'PENDING') return { status: 'Submitted', color: '#3b82f6', bg: '#eff6ff', icon: <FiCheckCircle /> };
-        if (submission.status === 'APPROVED') return { status: 'Approved', color: '#059669', bg: '#d1fae5', icon: <FiCheckCircle /> };
-        return { status: 'Rejected', color: '#dc2626', bg: '#fee2e2', icon: <FiAlertCircle /> };
+        if (submission.status === 'PENDING') return { status: 'Submitted', color: 'var(--color-primary)', bg: 'var(--color-primary-soft)', icon: <FiCheckCircle /> };
+        if (submission.status === 'APPROVED' || submission.status === 'REVIEWED') {
+            const marksStr = submission.marks !== null ? ` (${submission.marks}/${assignment.maxMarks})` : '';
+            return { status: `Approved${marksStr}`, color: 'var(--color-success)', bg: 'var(--color-success-soft)', icon: <FiCheckCircle /> };
+        }
+        return { status: 'Rejected', color: 'var(--color-error)', bg: 'var(--color-error-soft)', icon: <FiAlertCircle /> };
     };
 
     const getQuizStatus = (quiz) => {
         if (!quiz.submission) {
             const isOverdue = new Date(quiz.dueDate) < new Date();
-            if (isOverdue) return { status: 'Overdue', color: '#dc2626', bg: '#fee2e2', icon: <FiAlertCircle /> };
-            return { status: 'Not Started', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
+            if (isOverdue) return { status: 'Overdue', color: 'var(--color-error)', bg: 'var(--color-error-soft)', icon: <FiAlertCircle /> };
+            return { status: 'Not Started', color: 'var(--text-muted)', bg: 'var(--bg-tertiary)', icon: <FiClock /> };
         }
-        if (quiz.submission.status === 'IN_PROGRESS') return { status: 'In Progress', color: '#d97706', bg: '#fef3c7', icon: <FiClock /> };
-        if (quiz.submission.status === 'COMPLETED') return { status: `Score: ${quiz.submission.score}/${quiz.totalMarks}`, color: '#059669', bg: '#d1fae5', icon: <FiCheckCircle /> };
-        return { status: 'Unknown', color: 'var(--color-text-)', bg: '#f1f5f9', icon: <FiClock /> };
+        if (quiz.submission.status === 'IN_PROGRESS') return { status: 'In Progress', color: 'var(--color-warning)', bg: 'var(--color-warning-soft)', icon: <FiClock /> };
+        if (quiz.submission.status === 'COMPLETED') return { status: `Score: ${quiz.submission.score}/${quiz.totalMarks}`, color: 'var(--color-success)', bg: 'var(--color-success-soft)', icon: <FiCheckCircle /> };
+        return { status: 'Unknown', color: 'var(--text-muted)', bg: 'var(--bg-tertiary)', icon: <FiClock /> };
     };
 
     // --- Filtering Logic ---
@@ -287,11 +290,11 @@ const StudentAssignmentSection = () => {
         const isCurrent = currentQuestionIndex === idx;
         const isVisited = visitedQuestions.has(idx);
 
-        if (isCurrent) return '#3b82f6'; // Blue
-        if (isMarked) return '#8b5cf6'; // Purple
-        if (isAnswered) return '#10b981'; // Green
-        if (isVisited && !isAnswered) return '#ef4444'; // Red (Visited but not answered)
-        return '#cbd5e1'; // Grey (Not Visited)
+        if (isCurrent) return 'var(--color-primary)'; // Blue
+        if (isMarked) return 'var(--color-secondary)'; // Purple
+        if (isAnswered) return 'var(--color-success)'; // Green
+        if (isVisited && !isAnswered) return 'var(--color-error)'; // Red (Visited but not answered)
+        return 'var(--border-subtle)'; // Grey (Not Visited)
     };
 
     const toggleMarkForReview = () => {
@@ -347,7 +350,7 @@ const StudentAssignmentSection = () => {
                     <h2 style={{ margin: 0, fontSize: 'var(--fs-h3)', color: 'var(--text-primary)', fontWeight: 'var(--fw-semibold)' }}>
                         Online Test - {quizData.title}
                     </h2>
-                    <div style={{ fontSize: 'var(--fs-body)', color: 'var(--color-text-)' }}>
+                    <div style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)' }}>
                         Attempt 1
                     </div>
                 </div>
@@ -373,8 +376,8 @@ const StudentAssignmentSection = () => {
                                     key={idx}
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-                                        background: answers[currentQuestion.id] === idx ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
-                                        border: `1px solid ${answers[currentQuestion.id] === idx ? 'var(--primary-500)' : 'var(--border-subtle)'}`,
+                                        background: answers[currentQuestion.id] === idx ? 'var(--color-primary-soft)' : 'var(--bg-secondary)',
+                                        border: `1px solid ${answers[currentQuestion.id] === idx ? 'var(--color-primary)' : 'var(--color-border)'}`,
                                         borderRadius: '8px', cursor: 'pointer', transition: 'all 0.1s'
                                     }}
                                 >
@@ -383,20 +386,20 @@ const StudentAssignmentSection = () => {
                                         name={`question_${currentQuestion.id}`}
                                         checked={answers[currentQuestion.id] === idx}
                                         onChange={() => handleAnswerSelect(currentQuestion.id, idx)}
-                                        style={{ accentColor: '#3b82f6', width: '18px', height: '18px' }}
+                                        style={{ accentColor: 'var(--color-primary)', width: '18px', height: '18px' }}
                                     />
-                                    <span style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--color-text-)' }}>{option}</span>
+                                    <span style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--text-primary)' }}>{option}</span>
                                 </label>
                             ))}
                         </div>
 
                         {/* Bottom Control Bar */}
-                        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+                        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
                             <div style={{ display: 'flex', gap: '12px' }}>
                                 <button
                                     onClick={toggleMarkForReview}
                                     style={{
-                                        padding: '10px 20px', background: markedForReview.has(currentQuestion.id) ? '#7c3aed' : '#8b5cf6',
+                                        padding: '10px 20px', background: markedForReview.has(currentQuestion.id) ? 'var(--color-secondary-dark)' : 'var(--color-secondary)',
                                         color: 'white', border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
@@ -405,8 +408,8 @@ const StudentAssignmentSection = () => {
                                 <button
                                     onClick={handleClearResponse}
                                     style={{
-                                        padding: '10px 20px', background: 'transparent', color: '#ef4444',
-                                        border: '1px solid #ef4444', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
+                                        padding: '10px 20px', background: 'transparent', color: 'var(--color-error)',
+                                        border: '1px solid var(--color-error)', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
                                     Clear Response
@@ -418,7 +421,7 @@ const StudentAssignmentSection = () => {
                                     onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
                                     disabled={currentQuestionIndex === 0}
                                     style={{
-                                        padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none',
+                                        padding: '10px 24px', background: 'var(--color-primary)', color: 'white', border: 'none',
                                         borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
                                         opacity: currentQuestionIndex === 0 ? 0.5 : 1
                                     }}
@@ -434,7 +437,7 @@ const StudentAssignmentSection = () => {
                                         }
                                     }}
                                     style={{
-                                        padding: '10px 24px', background: currentQuestionIndex === totalQuestions - 1 ? '#10b981' : '#3b82f6',
+                                        padding: '10px 24px', background: currentQuestionIndex === totalQuestions - 1 ? 'var(--color-success)' : 'var(--color-primary)',
                                         color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'var(--fw-semibold)', cursor: 'pointer'
                                     }}
                                 >
@@ -444,12 +447,12 @@ const StudentAssignmentSection = () => {
                         </div>
 
                         {/* Legend */}
-                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: 'var(--fs-small)', color: 'var(--color-text-)', justifyContent: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div> Current</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}></div> Answered</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}></div> Not Answered</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }}></div> Marked for Review</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#cbd5e1' }}></div> Not Visited</div>
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: 'var(--fs-small)', color: 'var(--text-secondary)', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-primary)' }}></div> Current</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-success)' }}></div> Answered</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-error)' }}></div> Not Answered</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-secondary)' }}></div> Marked for Review</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--border-subtle)' }}></div> Not Visited</div>
                         </div>
                     </div>
 
@@ -458,7 +461,7 @@ const StudentAssignmentSection = () => {
                         {/* Timer Section */}
                         <div style={{ padding: '24px', background: 'var(--bg-tertiary)', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
                             <div style={{ marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Time Left</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? 'var(--admin-status-danger)' : 'var(--text-primary)', fontFamily: 'monospace' }}>
+                            <div style={{ fontSize: '2rem', fontWeight: 700, color: timeLeft < 60 ? 'var(--color-error)' : 'var(--text-primary)', fontFamily: 'monospace' }}>
                                 {formatTime(timeLeft)}
                             </div>
                         </div>
@@ -481,7 +484,7 @@ const StudentAssignmentSection = () => {
                                             borderRadius: '4px',
                                             border: 'none',
                                             background: getQuestionStatusColor(idx),
-                                            color: getQuestionStatusColor(idx) === '#cbd5e1' ? '#475569' : 'white',
+                                            color: getQuestionStatusColor(idx) === 'var(--border-subtle)' ? 'var(--text-secondary)' : 'white',
                                             fontWeight: 'var(--fw-semibold)',
                                             fontSize: 'var(--fs-body-lg)',
                                             cursor: 'pointer',
@@ -497,13 +500,13 @@ const StudentAssignmentSection = () => {
                             </div>
                         </div>
 
-                        <div style={{ padding: '20px', borderTop: '1px solid #cbd5e1' }}>
+                        <div style={{ padding: '20px', borderTop: '1px solid var(--color-border)' }}>
                             <button
                                 onClick={handleSubmitQuiz}
                                 style={{
-                                    width: '100%', padding: 'var(--space-20)', background: '#10b981', color: 'white',
+                                    width: '100%', padding: 'var(--space-20)', background: 'var(--color-success)', color: 'white',
                                     border: 'none', borderRadius: '24px', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--fs-body-lg)',
-                                    cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                    cursor: 'pointer', boxShadow: 'var(--shadow-md)'
                                 }}
                             >
                                 Submit Test
@@ -524,15 +527,15 @@ const StudentAssignmentSection = () => {
                     animate={{ scale: 1 }}
                     style={{
                         maxWidth: '500px', margin: '0 auto', padding: '40px',
-                        background: 'var(--bg-secondary)', borderRadius: '16px', border: '2px solid var(--primary-500)'
+                        background: 'var(--bg-secondary)', borderRadius: '16px', border: '2px solid var(--color-primary)'
                     }}
                 >
-                    <FiCheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px' }} />
-                    <h2 style={{ margin: '0 0 16px', color: '#1e3a8a' }}>Quiz Submitted!</h2>
-                    <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: '#3b82f6', margin: '0 0 8px' }}>
+                    <FiCheckCircle size={64} style={{ color: 'var(--color-success)', marginBottom: '20px' }} />
+                    <h2 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Quiz Submitted!</h2>
+                    <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: 'var(--color-primary)', margin: '0 0 8px' }}>
                         Your Score: {result.score}/{result.totalMarks}
                     </p>
-                    <p style={{ color: 'var(--color-text-)' }}>Redirecting to list...</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>Redirecting to list...</p>
                 </motion.div>
             </div>
         );
@@ -565,10 +568,10 @@ const StudentAssignmentSection = () => {
                 transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .sa-tab.is-active {
-                background: white;
-                color: var(--brand-primary);
+                background: var(--color-surface);
+                color: var(--color-primary);
                 font-weight: 700;
-                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+                box-shadow: var(--shadow-md);
             }
             .sa-grid {
                 display: grid;
@@ -703,10 +706,10 @@ const StudentAssignmentSection = () => {
                                     padding: '8px 20px',
                                     borderRadius: '8px',
                                     border: 'none',
-                                    background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
-                                    color: activeTab === tab.id ? 'var(--primary-500)' : 'var(--text-muted)',
+                                    background: activeTab === tab.id ? 'var(--color-surface)' : 'transparent',
+                                    color: activeTab === tab.id ? 'var(--color-primary)' : 'var(--text-muted)',
                                     fontWeight: activeTab === tab.id ? 700 : 500,
-                                    boxShadow: activeTab === tab.id ? 'var(--admin-shadow-sm)' : 'none',
+                                    boxShadow: activeTab === tab.id ? 'var(--shadow-sm)' : 'none',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s'
                                 }}
@@ -737,43 +740,56 @@ const StudentAssignmentSection = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 style={{
-                                    background: 'white',
+                                    background: 'var(--bg-secondary)',
+                                    border: '1px solid var(--border-subtle)',
                                     borderRadius: '20px',
-                                    border: '1px solid rgba(226, 232, 240, 0.8)',
                                     overflow: 'hidden',
+                                    boxShadow: 'var(--shadow-sm)',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)',
+                                    height: '100%',
                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    cursor: 'pointer'
+                                    position: 'relative',
+                                    userSelect: 'none'
                                 }}
-                                whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                whileHover={{ y: -8, boxShadow: 'var(--shadow-lg)', borderColor: 'var(--color-primary)' }}
                             >
-                                <div className={`sa-card-header ${isAssignment ? 'assignment' : 'quiz'}`}>
-                                    <span className="badge sa-card-header-badge">
-                                        {isAssignment ? 'ASSIGNMENT' : 'QUIZ'}
-                                    </span>
-                                    <div className="sa-card-icon-wrap" style={{ color: isAssignment ? '#6366f1' : '#10b981' }}>
-                                        {isAssignment ? <FiFileText size={22} /> : <FiCheckCircle size={22} />}
+                                {/* Type Ribbon */}
+                                <div style={{
+                                    position: 'absolute', top: '12px', right: '12px', zIndex: 5,
+                                    padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
+                                    background: isAssignment ? 'var(--color-primary-soft)' : 'var(--color-success-soft)',
+                                    color: isAssignment ? 'var(--color-primary)' : 'var(--color-success)',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    {item.type}
+                                </div>
+
+                                <div style={{ padding: '24px 24px 16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                        <div style={{ padding: '12px', background: isAssignment ? 'var(--color-primary-soft)' : 'var(--color-success-soft)', borderRadius: '14px', color: isAssignment ? 'var(--color-primary)' : 'var(--color-success)' }}>
+                                            {isAssignment ? <FiFileText size={22} /> : <FiClock size={22} />}
+                                        </div>
+                                    </div>
+                                    <h3 style={{ margin: '0 0 8px', fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: '1.4' }}>{item.title}</h3>
+                                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.8rem' }}>
+                                        {item.description}
+                                    </p>
+                                </div>
+
+                                <div style={{ padding: '0 24px 24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                        <FiCalendar />
+                                        <span>Deadline: {new Date(item.dueDate).toLocaleDateString()}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600, ...statusInfo }}>
+                                        <span style={{ fontSize: '1.1rem' }}>{statusInfo.icon}</span>
+                                        <span>{statusInfo.status}</span>
                                     </div>
                                 </div>
 
-                                <div className="sa-card-body">
-                                    <h3 className="sa-card-title">{item.title}</h3>
-                                    <p className="sa-card-desc">{item.description}</p>
-
-                                    <div className="sa-meta">
-                                        <span className="sa-badge" style={{ background: statusInfo.bg, color: statusInfo.color }}>
-                                            {statusInfo.icon} {statusInfo.status}
-                                        </span>
-                                        {item.dueDate && (
-                                            <span className="sa-badge" style={{ background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
-                                                <FiClock /> {new Date(item.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Actions */}
+                                {/* Actions */}
+                                <div style={{ padding: '0 24px 24px' }}>
                                     {isAssignment ? (
                                         !item.submissions?.[0] ? (
                                             <button
@@ -784,14 +800,31 @@ const StudentAssignmentSection = () => {
                                                 Submit Assignment
                                             </button>
                                         ) : (
-                                            <button
-                                                className={`btn ${item.submissions[0].status === 'REJECTED' ? 'btn-primary' : 'btn-secondary'}`}
-                                                style={{ width: '100%' }}
-                                                disabled={item.submissions[0].status !== 'REJECTED'}
-                                                onClick={() => { if (item.submissions[0].status === 'REJECTED') { setSelectedAssignment(item); setShowSubmitModal(true); } }}
-                                            >
-                                                {item.submissions[0].status === 'REJECTED' ? 'Resubmit' : 'Submitted'}
-                                            </button>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ width: '100%' }}
+                                                    onClick={() => {
+                                                        const sub = item.submissions[0];
+                                                        if (sub.content.startsWith('/uploads/')) {
+                                                            window.open(`${import.meta.env.VITE_API_BASE}${sub.content}`, '_blank');
+                                                        } else {
+                                                            alert(`Your submission: ${sub.content}`);
+                                                        }
+                                                    }}
+                                                >
+                                                    View My Submission
+                                                </button>
+                                                {item.submissions[0].status === 'REJECTED' && (
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        style={{ width: '100%' }}
+                                                        onClick={() => { setSelectedAssignment(item); setShowSubmitModal(true); }}
+                                                    >
+                                                        Resubmit
+                                                    </button>
+                                                )}
+                                            </div>
                                         )
                                     ) : (
                                         canStartQuiz ? (
@@ -874,7 +907,7 @@ const StudentAssignmentSection = () => {
 
                                 <div style={{ display: 'flex', gap: '16px' }}>
                                     <button type="button" onClick={() => setShowSubmitModal(false)} style={{ flex: 1, padding: '14px', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                                    <button type="submit" style={{ flex: 1, padding: '14px', background: 'var(--brand-primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={!selectedFile && !submissionContent}>
+                                    <button type="submit" style={{ flex: 1, padding: '14px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={!selectedFile && !submissionContent}>
                                         <FiSend /> Submit Assignment
                                     </button>
                                 </div>

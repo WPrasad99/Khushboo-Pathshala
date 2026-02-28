@@ -29,6 +29,10 @@
   --color-primary-active: #3730A3;
   --color-primary-soft: #EEF2FF;
   --color-primary-ring: rgba(79, 70, 229, 0.25);
+  --color-secondary: #8B5CF6;
+  --color-secondary-hover: #7C3AED;
+  --color-secondary-active: #6D28D9;
+  --color-secondary-soft: #F5F3FF;
 
   /* ── Color Palette — Semantic ── */
   --color-success: #059669;
@@ -214,6 +218,9 @@
   --color-primary-active: #6366F1;
   --color-primary-soft: rgba(99, 102, 241, 0.15);
   --color-primary-ring: rgba(129, 140, 248, 0.3);
+  --color-secondary: #A78BFA;
+  --color-secondary-hover: #C4B5FD;
+  --color-secondary-soft: rgba(167, 139, 250, 0.15);
 
   --color-success: #34D399;
   --color-success-soft: rgba(52, 211, 153, 0.15);

@@ -4,7 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import {
     FiBell,
+    FiBookOpen,
+    FiCheckCircle,
     FiChevronDown,
+    FiFileText,
     FiLogOut,
     FiMenu,
     FiMessageCircle,
@@ -14,6 +17,7 @@ import {
     FiSun,
     FiTrash2,
     FiUser,
+    FiVideo,
     FiX
 } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -209,6 +213,16 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
         return `${Math.floor(hoursDiff / 24)}d ago`;
     };
 
+    const getNotificationIcon = (title = '', type = '') => {
+        const t = title.toLowerCase();
+        if (t.includes('resource') || type === 'RESOURCE') return <FiBookOpen style={{ color: '#3b82f6' }} />;
+        if (t.includes('session') || t.includes('video') || type === 'SESSION') return <FiVideo style={{ color: '#10b981' }} />;
+        if (t.includes('assignment') || type === 'ASSIGNMENT') return <FiFileText style={{ color: '#f59e0b' }} />;
+        if (t.includes('meeting') || t.includes('schedule') || type === 'MEETING') return <FiCalendar style={{ color: '#8b5cf6' }} />;
+        if (t.includes('quiz') || type === 'QUIZ') return <FiCheckCircle style={{ color: '#ec4899' }} />;
+        return <FiBell style={{ color: 'var(--text-muted)' }} />;
+    };
+
     return (
         <header className="kp-topbar">
             <div className="kp-topbar-left">
@@ -287,41 +301,181 @@ const StudentNavbar = ({ onOpenMobileNav, onToggleSidebar }) => {
                         {showNotifications && (
                             <motion.div
                                 className="kp-dropdown-menu kp-notification-menu"
-                                style={{ position: 'absolute', top: '70px', right: '0', zIndex: 9999, width: '320px', background: 'var(--color-surface)', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '70px',
+                                    right: '0',
+                                    zIndex: 9999,
+                                    width: '360px',
+                                    background: 'var(--color-surface)',
+                                    boxShadow: 'var(--shadow-xl)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    overflow: 'hidden'
+                                }}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.18 }}
                             >
-                                <div className="kp-dropdown-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--color-border)' }}>
-                                    <h4 style={{ margin: 0 }}>Notifications</h4>
-                                    <button className="btn-ghost btn-sm" onClick={loadNotifications} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}>Refresh</button>
+                                <div className="kp-dropdown-header" style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '16px 20px',
+                                    borderBottom: '1px solid var(--color-border)',
+                                    background: 'var(--color-surface-soft)'
+                                }}>
+                                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>Notifications</h4>
+                                    <button
+                                        className="btn-ghost"
+                                        onClick={loadNotifications}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--color-primary)',
+                                            fontSize: '0.85rem',
+                                            fontWeight: '500'
+                                        }}
+                                    >
+                                        Refresh
+                                    </button>
                                 </div>
-                                <div className="kp-notification-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                <div className="kp-notification-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                     {notifications.length > 0 ? (
                                         notifications.map((note) => (
-                                            <div key={note.id} className={`kp-notification-item ${!note.read ? 'is-unread' : ''}`} style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: '12px' }}>
-                                                <div className="kp-notification-body" style={{ flex: 1 }}>
-                                                    <h5 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{note.title}</h5>
-                                                    <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{note.message}</p>
-                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatTime(note.createdAt)}</span>
+                                            <div
+                                                key={note.id}
+                                                className={`kp-notification-item ${!note.read ? 'is-unread' : ''}`}
+                                                style={{
+                                                    padding: '16px 20px',
+                                                    borderBottom: '1px solid var(--color-border)',
+                                                    display: 'flex',
+                                                    gap: '16px',
+                                                    transition: 'all 0.2s',
+                                                    background: !note.read ? 'var(--color-primary-soft)' : 'transparent',
+                                                    cursor: 'pointer',
+                                                    position: 'relative'
+                                                }}
+                                            >
+                                                <div className="kp-notification-icon-wrapper" style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '10px',
+                                                    background: 'var(--color-surface)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '1.2rem',
+                                                    flexShrink: 0,
+                                                    boxShadow: 'var(--shadow-sm)',
+                                                    border: '1px solid var(--color-border)'
+                                                }}>
+                                                    {getNotificationIcon(note.title, note.type)}
+                                                </div>
+                                                <div className="kp-notification-body" style={{ flex: 1, minWidth: 0, paddingRight: '24px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                                                        <h5 style={{
+                                                            margin: 0,
+                                                            fontSize: '0.9rem',
+                                                            color: 'var(--text-primary)',
+                                                            fontWeight: !note.read ? '700' : '600',
+                                                            lineHeight: '1.3',
+                                                            wordBreak: 'break-word'
+                                                        }}>
+                                                            {note.title}
+                                                        </h5>
+                                                        {!note.read && (
+                                                            <span style={{
+                                                                width: '8px',
+                                                                height: '8px',
+                                                                borderRadius: '50%',
+                                                                background: 'var(--color-primary)',
+                                                                flexShrink: 0,
+                                                                marginTop: '4px'
+                                                            }} />
+                                                        )}
+                                                    </div>
+                                                    <p style={{
+                                                        margin: '4px 0 8px',
+                                                        fontSize: '0.825rem',
+                                                        color: 'var(--text-secondary)',
+                                                        lineHeight: '1.5',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: '2',
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        {note.message}
+                                                    </p>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '500' }}>
+                                                            {formatTime(note.createdAt)}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={(event) => handleDeleteNotification(event, note.id)}
-                                                    className="kp-notification-delete"
-                                                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+                                                    className="kp-notification-delete-btn"
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '12px',
+                                                        right: '12px',
+                                                        border: 'none',
+                                                        background: 'transparent',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--text-muted)',
+                                                        padding: '6px',
+                                                        borderRadius: '6px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        transition: 'all 0.2s',
+                                                        opacity: 0,
+                                                        zIndex: 2
+                                                    }}
                                                     aria-label="Delete notification"
                                                 >
-                                                    <FiTrash2 />
+                                                    <FiTrash2 size={14} />
                                                 </button>
                                             </div>
                                         ))
                                     ) : (
-                                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                            <p>All caught up. No notifications right now.</p>
+                                        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                            <FiBell size={32} style={{ marginBottom: '12px', opacity: 0.3 }} />
+                                            <p style={{ fontSize: '0.9rem' }}>All caught up. No notifications right now.</p>
                                         </div>
                                     )}
+                                </div>
+                                <div style={{ padding: '12px 16px', textAlign: 'center', borderTop: '1px solid var(--color-border)', background: 'var(--color-surface-soft)' }}>
+                                    <button
+                                        className="btn-mark-all"
+                                        style={{
+                                            width: '100%',
+                                            padding: '8px',
+                                            background: 'transparent',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            color: 'var(--text-secondary)',
+                                            fontSize: '0.8rem',
+                                            fontWeight: '600',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onClick={async () => {
+                                            try {
+                                                await api.put('/notifications/read');
+                                                setUnreadNotifications(0);
+                                                loadNotifications();
+                                            } catch (err) { }
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary-soft)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                                    >
+                                        Mark all as read
+                                    </button>
                                 </div>
                             </motion.div>
                         )}
