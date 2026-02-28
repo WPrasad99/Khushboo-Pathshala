@@ -8,7 +8,8 @@ import {
     FiMessageSquare,
     FiSettings,
     FiUsers,
-    FiMessageCircle
+    FiMessageCircle,
+    FiMap
 } from 'react-icons/fi';
 import Navbar from '../student/Navbar';
 import ChatBot from '../ChatBot';
@@ -19,6 +20,7 @@ const navigationGroups = [
         items: [
             { to: '/student', icon: FiHome, label: 'Overview', end: true },
             { to: '/student/courses', icon: FiBook, label: 'Learning' },
+            { to: '/student/roadmap', icon: FiMap, label: 'AI Roadmap' },
             { to: '/student/assignments', icon: FiFileText, label: 'Assignments' }
         ]
     },

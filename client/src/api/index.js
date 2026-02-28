@@ -224,4 +224,10 @@ export const chatbotAPI = {
         api.post('/chatbot/ask', { question, conversationHistory })
 };
 
+export const roadmapAPI = {
+    generate: (topic, days) => api.post('/roadmaps/generate', { topic, days }),
+    getHistory: () => api.get('/roadmaps/history'),
+    delete: (id) => api.delete(`/roadmaps/${id}`)
+};
+
 export default api;
