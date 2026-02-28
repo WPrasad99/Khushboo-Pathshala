@@ -89,7 +89,7 @@ const Settings = () => {
         setLoading(true);
         try {
             const formData = new FormData();
-            formData.append('avatar', avatarFile);
+            formData.append('file', avatarFile);
             await userAPI.uploadAvatar(formData);
             window.location.reload();
         } catch (err) {
