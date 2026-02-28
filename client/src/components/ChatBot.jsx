@@ -76,19 +76,18 @@ const ChatBot = () => {
             // Make API request
             const response = await chatbotAPI.askQuestion(userMessage.content, conversationHistory);
 
-            console.log('[ChatBot] API Response received:', {
-                status: response.status,
-                hasAnswer: !!response.data?.answer
-            });
+            console.log('[ChatBot] API Response received:', response.data);
+
+            const answer = response.data?.message || response.data?.answer;
 
             // Validate response
-            if (!response.data || !response.data.answer) {
+            if (!response.data || !answer) {
                 throw new Error('Invalid response format from server');
             }
 
             const botMessage = {
                 role: 'bot',
-                content: response.data.answer,
+                content: answer,
                 timestamp: new Date()
             };
 
