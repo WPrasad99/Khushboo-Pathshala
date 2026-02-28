@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useMentorBatches, useMentorStudents } from '../../../hooks/mentor/useMentorQueries';
-import { Users, BookOpen, ClipboardList, Mail, Phone, Calendar, X } from 'lucide-react';
+import { Users, BookOpen, ClipboardList, Mail, Phone, Calendar, X, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../../components/admin/Modal.css';
 
@@ -17,6 +17,7 @@ const BatchDetailsModal = ({ batch, onClose }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
+                style={{ zIndex: 1000 }}
             >
                 <motion.div
                     className="glass-modal large"
@@ -24,16 +25,16 @@ const BatchDetailsModal = ({ batch, onClose }) => {
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     onClick={(e) => e.stopPropagation()}
-                    style={{ maxWidth: '900px', width: '95%' }}
+                    style={{ maxWidth: '1000px', width: '95%', borderRadius: 'var(--radius-2xl)' }}
                 >
-                    <div className="modal-header" style={{ padding: '24px 32px' }}>
+                    <div className="modal-header" style={{ padding: 'var(--space-24) var(--space-32)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <h2 style={{ fontSize: 'var(--fs-h3)', margin: 0 }}>{batch.name}</h2>
-                            <p style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', margin: 0 }}>
-                                Batch Overview & Mentees
+                            <h2 style={{ fontSize: 'var(--fs-h2)', margin: 0, color: 'var(--color-primary)' }}>{batch.name}</h2>
+                            <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', margin: 0 }}>
+                                Batch Management & Student Performance
                             </p>
                         </div>
-                        <button onClick={onClose} className="modal-close-btn">
+                        <button onClick={onClose} className="m-btn m-btn--ghost" style={{ padding: '8px', minHeight: 'unset' }}>
                             <X size={20} />
                         </button>
                     </div>
@@ -42,54 +43,57 @@ const BatchDetailsModal = ({ batch, onClose }) => {
                         {/* Batch Stats Row */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                            gap: '12px',
-                            padding: '20px 32px',
+                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gap: 'var(--space-16)',
+                            padding: 'var(--space-24) var(--space-32)',
                             background: 'var(--color-surface-muted)',
                             borderBottom: '1px solid var(--color-border)'
                         }}>
-                            <div className="batch-stat" style={{ flex: 1, background: 'var(--color-surface)', padding: '12px' }}>
-                                <Users size={18} color="var(--color-primary)" />
-                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h4)' }}>{batch.studentsCount}</span>
-                                <span className="batch-stat__label" style={{ fontSize: '10px' }}>Total Mentees</span>
+                            <div className="batch-stat" style={{ background: 'var(--color-surface)', padding: 'var(--space-16)', borderRadius: 'var(--radius-lg)' }}>
+                                <Users size={20} color="var(--color-primary)" />
+                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h3)' }}>{batch.studentsCount}</span>
+                                <span className="batch-stat__label">Total Mentees</span>
                             </div>
-                            <div className="batch-stat" style={{ flex: 1, background: 'var(--color-surface)', padding: '12px' }}>
-                                <BookOpen size={18} color="var(--color-info)" />
-                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h4)' }}>{batch.resourcesCount}</span>
-                                <span className="batch-stat__label" style={{ fontSize: '10px' }}>Resources</span>
+                            <div className="batch-stat" style={{ background: 'var(--color-surface)', padding: 'var(--space-16)', borderRadius: 'var(--radius-lg)' }}>
+                                <BookOpen size={20} color="var(--color-info)" />
+                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h3)' }}>{batch.resourcesCount}</span>
+                                <span className="batch-stat__label">Resources</span>
                             </div>
-                            <div className="batch-stat" style={{ flex: 1, background: 'var(--color-surface)', padding: '12px' }}>
-                                <ClipboardList size={18} color="var(--color-warning)" />
-                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h4)' }}>{batch.assignmentsCount}</span>
-                                <span className="batch-stat__label" style={{ fontSize: '10px' }}>Assignments</span>
+                            <div className="batch-stat" style={{ background: 'var(--color-surface)', padding: 'var(--space-16)', borderRadius: 'var(--radius-lg)' }}>
+                                <ClipboardList size={20} color="var(--color-warning)" />
+                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h3)' }}>{batch.assignmentsCount}</span>
+                                <span className="batch-stat__label">Assignments</span>
                             </div>
-                            <div className="batch-stat" style={{ flex: 1, background: 'var(--color-surface)', padding: '12px' }}>
-                                <Calendar size={18} color="var(--color-success)" />
-                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h4)' }}>
-                                    {new Date(batch.assignedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                            <div className="batch-stat" style={{ background: 'var(--color-surface)', padding: 'var(--space-16)', borderRadius: 'var(--radius-lg)' }}>
+                                <Calendar size={20} color="var(--color-success)" />
+                                <span className="batch-stat__val" style={{ fontSize: 'var(--fs-h3)' }}>
+                                    {new Date(batch.assignedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </span>
-                                <span className="batch-stat__label" style={{ fontSize: '10px' }}>Assigned Date</span>
+                                <span className="batch-stat__label">Date Assigned</span>
                             </div>
                         </div>
 
                         {/* Students Section */}
-                        <div style={{ padding: '24px 32px' }}>
-                            <h3 className="m-section-title" style={{ marginBottom: '16px', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
-                                <Users size={18} /> Mentees in this Batch
-                            </h3>
+                        <div style={{ padding: 'var(--space-32)' }}>
+                            <div className="flex-between" style={{ marginBottom: 'var(--space-20)' }}>
+                                <h3 className="m-section-title" style={{ margin: 0, fontSize: 'var(--fs-h3)' }}>
+                                    <Users size={20} /> Mentees Directory
+                                </h3>
+                                <div className="m-badge m-badge--info">{students.length} Total</div>
+                            </div>
 
                             {isLoading ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {[1, 2, 3].map(i => <div key={i} className="m-skeleton m-skeleton--h60" style={{ borderRadius: '12px' }} />)}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-12)' }}>
+                                    {[1, 2, 3].map(i => <div key={i} className="m-skeleton m-skeleton--h40" />)}
                                 </div>
                             ) : students.length > 0 ? (
-                                <div className="m-table-wrap" style={{ borderRadius: '12px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+                                <div className="m-table-wrap" style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
                                     <table className="m-table">
                                         <thead>
                                             <tr>
-                                                <th>Student</th>
-                                                <th>Contact</th>
-                                                <th className="text-right">Attendance</th>
+                                                <th>Student Name</th>
+                                                <th>Contact Info</th>
+                                                <th className="text-right">Progess</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -97,37 +101,35 @@ const BatchDetailsModal = ({ batch, onClose }) => {
                                                 <tr key={student.id}>
                                                     <td>
                                                         <div className="m-user-row">
-                                                            <img
-                                                                src={student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=random`}
-                                                                className="m-user-avatar"
-                                                                alt={student.name}
-                                                            />
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <span className="m-user-name" style={{ fontSize: 'var(--fs-body)' }}>{student.name}</span>
-                                                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{student.educationLevel || 'Student'}</span>
+                                                            <div className="m-user-avatar" style={{ background: 'var(--color-primary-soft)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                                                                {student.name[0]}
+                                                            </div>
+                                                            <div>
+                                                                <span className="m-user-name">{student.name}</span>
+                                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{student.educationLevel || 'Undergraduate'}</div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-                                                                <Mail size={12} color="var(--text-muted)" />
-                                                                <span style={{ color: 'var(--text-secondary)' }}>{student.email}</span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--fs-small)' }}>
+                                                                <Mail size={12} style={{ color: 'var(--text-muted)' }} />
+                                                                <span>{student.email}</span>
                                                             </div>
                                                             {student.phone && (
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-                                                                    <Phone size={11} color="var(--text-muted)" />
-                                                                    <span style={{ color: 'var(--text-muted)' }}>{student.phone}</span>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                                    <Phone size={11} />
+                                                                    <span>{student.phone}</span>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </td>
                                                     <td className="text-right">
-                                                        <div className="m-progress-wrap" style={{ justifyContent: 'flex-end' }}>
-                                                            <div className="m-progress-bar" style={{ width: '60px' }}>
+                                                        <div className="m-progress-wrap" style={{ justifyContent: 'flex-end', gap: '12px' }}>
+                                                            <div className="m-progress-bar" style={{ width: '80px' }}>
                                                                 <div className="m-progress-fill" style={{ width: `${student.attendanceAvg || 0}%` }} />
                                                             </div>
-                                                            <span className="m-progress-text" style={{ fontSize: '11px' }}>{student.attendanceAvg || 0}%</span>
+                                                            <span className="m-progress-text">{student.attendanceAvg || 0}%</span>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -136,17 +138,17 @@ const BatchDetailsModal = ({ batch, onClose }) => {
                                     </table>
                                 </div>
                             ) : (
-                                <div style={{ textAlign: 'center', padding: '32px', background: 'var(--color-surface-muted)', borderRadius: '16px' }}>
-                                    <Users size={32} style={{ opacity: 0.3, marginBottom: '12px' }} />
-                                    <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 'var(--fs-body)' }}>No students found in this batch.</p>
+                                <div className="m-empty-state" style={{ background: 'transparent' }}>
+                                    <Users size={40} />
+                                    <p className="m-empty-state__desc">No students enrolled in this batch yet.</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="modal-actions" style={{ padding: '16px 32px' }}>
-                        <button onClick={onClose} className="m-btn m-btn--secondary" style={{ width: '100px' }}>
-                            Close
+                    <div className="modal-actions" style={{ padding: 'var(--space-20) var(--space-32)', borderTop: '1px solid var(--color-border)', justifyContent: 'flex-end' }}>
+                        <button onClick={onClose} className="m-btn m-btn--primary">
+                            Done
                         </button>
                     </div>
                 </motion.div>
@@ -168,8 +170,9 @@ const BatchesList = () => {
         return (
             <div className="m-section">
                 <div className="m-empty-state">
-                    <h3 className="m-empty-state__title">Failed to load batches</h3>
-                    <p className="m-empty-state__desc">Please refresh the page or try again later.</p>
+                    <h3 className="m-empty-state__title">Data Sync Error</h3>
+                    <p className="m-empty-state__desc">We encountered an issue while fetching your batch data. Please try again.</p>
+                    <button className="m-btn m-btn--secondary" onClick={() => window.location.reload()}>Retry Sync</button>
                 </div>
             </div>
         );
@@ -177,10 +180,15 @@ const BatchesList = () => {
 
     if (isLoading) {
         return (
-            <div className="m-grid-2">
-                {[1, 2, 3, 4].map(key => (
-                    <div key={key} className="m-skeleton m-skeleton--h200" />
-                ))}
+            <div className="m-section">
+                <div className="mentor-page-header">
+                    <div className="m-skeleton m-skeleton--h40" style={{ width: '200px' }} />
+                </div>
+                <div className="m-grid-3">
+                    {[1, 2, 3].map(key => (
+                        <div key={key} className="m-skeleton m-skeleton--h200" />
+                    ))}
+                </div>
             </div>
         );
     }
@@ -190,24 +198,36 @@ const BatchesList = () => {
     if (batches.length === 0) {
         return (
             <div className="m-empty-state">
-                <Users size={48} />
-                <h3 className="m-empty-state__title">No Batches Assigned</h3>
-                <p className="m-empty-state__desc">You haven't been assigned to any learning batches yet. Please contact your administrator.</p>
-                <button className="m-btn m-btn--primary">Contact Admin</button>
+                <Users size={64} style={{ color: 'var(--color-primary)', opacity: 0.2 }} />
+                <h3 className="m-empty-state__title">No Active Batches</h3>
+                <p className="m-empty-state__desc">You haven't been assigned to any learning groups. Check back soon or contact support.</p>
+                <button className="m-btn m-btn--primary">Request Access</button>
             </div>
         );
     }
 
     return (
         <div className="m-section">
-            <div className="mentor-page-header">
-                <h2 className="mentor-page-title">Assigned Batches</h2>
-            </div>
+            <header className="mentor-page-header">
+                <div>
+                    <h2 className="mentor-page-title">Active Batches</h2>
+                    <p className="mentor-page-subtitle">Oversee your assigned student groups and track their collective progress.</p>
+                </div>
+                <div className="mentor-header-actions">
+                    <button className="m-btn m-btn--secondary">
+                        <Filter size={18} />
+                        Filter
+                    </button>
+                </div>
+            </header>
 
             <div className="m-grid-3">
                 {batches.map((batch) => (
-                    <div
+                    <motion.div
                         key={batch.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -4 }}
                         className="m-card m-card--interactive batch-card"
                         onClick={() => handleBatchClick(batch)}
                     >
@@ -218,7 +238,7 @@ const BatchesList = () => {
                                     {batch.status}
                                 </span>
                             </div>
-                            <p className="batch-card__desc">{batch.description || 'No description provided'}</p>
+                            <p className="batch-card__desc">{batch.description || 'No specific course description provided for this batch.'}</p>
                         </div>
 
                         <div className="batch-card__stats">
@@ -238,7 +258,7 @@ const BatchesList = () => {
                                 <span className="batch-stat__label">Tasks</span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 

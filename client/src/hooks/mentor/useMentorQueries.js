@@ -96,3 +96,21 @@ export const useCreateAssignment = () => {
         }
     });
 };
+
+export const useMentorQuizzes = (batchId) => {
+    return useQuery({
+        queryKey: ['mentor', 'quizzes', batchId],
+        queryFn: () => mentorService.getQuizzes(batchId),
+        enabled: !!batchId,
+    });
+};
+
+export const useCreateQuiz = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: mentorService.createQuiz,
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['mentor', 'quizzes', variables.batchId] });
+        }
+    });
+};

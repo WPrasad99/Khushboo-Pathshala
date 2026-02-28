@@ -57,5 +57,15 @@ export const mentorService = {
     createAssignment: async (data) => {
         const response = await api.post('/assignments', data);
         return response.data;
+    },
+
+    getQuizzes: async (batchId) => {
+        const response = await api.get('/quizzes/mentor', { params: { batchId } });
+        return response.data;
+    },
+
+    createQuiz: async (quizData) => {
+        const response = await api.post('/quizzes', quizData);
+        return response.data;
     }
 };

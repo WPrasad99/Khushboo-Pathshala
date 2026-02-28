@@ -29,129 +29,446 @@
 
 
 /* ================================================================
-   1. MENTOR CONTAINER
+   1. MENTOR CONTAINER — Redesigned for 3-Column Intelligent Grid
    ================================================================ */
 .mentor-container {
-    max-width: var(--content-max-width, 1320px);
+    max-width: var(--content-max-width, 1440px);
     margin: 0 auto;
     padding: var(--space-24);
     display: flex;
     flex-direction: column;
+    gap: var(--space-32);
+    animation: mentorFadeIn 0.5s var(--ease-decel) both;
+}
+
+/* Redesigned Grid System for Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: var(--space-24);
-    animation: mentorFadeIn 0.4s var(--ease-decel) both;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 340px;
+        /* Main content + Right sidebar */
+    }
+
+    .dashboard-main {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-32);
+    }
+}
+
+@media (min-width: 1440px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 380px;
+    }
 }
 
 
 /* ================================================================
-   2. PAGE HEADER — Section title + actions row
+   2. SMART SUMMARY HEADER — Glassmorphism + Greeting
    ================================================================ */
-.mentor-page-header {
+.summary-header {
+    background: var(--gradient-header);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-32);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-16);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
 }
 
-.mentor-page-title {
-    font-size: var(--fs-h2);
-    font-weight: var(--fw-bold);
+.summary-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--color-primary-soft) 0%, transparent 70%);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.summary-content h1 {
+    font-size: var(--fs-display);
+    font-weight: var(--fw-extrabold);
     color: var(--text-primary);
-    letter-spacing: -0.02em;
     margin: 0;
+    letter-spacing: -0.03em;
 }
 
-.mentor-page-subtitle {
-    font-size: var(--fs-body);
-    color: var(--text-secondary);
-    margin-top: var(--space-4);
-}
-
-.mentor-header-actions {
+.summary-insight {
     display: flex;
     align-items: center;
+    gap: var(--space-8);
+    margin-top: var(--space-8);
+    color: var(--text-secondary);
+    font-weight: var(--fw-medium);
+}
+
+.insight-badge {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    text-transform: uppercase;
+}
+
+.summary-actions {
+    display: flex;
     gap: var(--space-12);
+}
+
+@media (max-width: 768px) {
+    .summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-24);
+        padding: var(--space-24);
+    }
+
+    .summary-actions {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: var(--space-8);
+    }
 }
 
 
 /* ================================================================
-   3. CARD SYSTEM — Unified card component
+   3. KPI METRIC CARDS — Version 2.0 (Upgraded)
    ================================================================ */
-.m-card {
+.stat-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-20);
+}
+
+@media (min-width: 1280px) {
+    .stat-grid-v2 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-grid-v2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-card-v2 {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    padding: var(--space-20);
-    box-shadow: var(--shadow-xs);
-    transition: box-shadow var(--dur-normal) var(--ease-standard),
-        transform var(--dur-normal) var(--ease-standard),
-        border-color var(--dur-normal) var(--ease-standard);
+    padding: var(--space-24);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    transition: all var(--dur-normal) var(--ease-standard);
+    position: relative;
+    box-shadow: var(--shadow-sm);
 }
 
-.m-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-border-hover);
+.stat-card-v2:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-primary-soft);
 }
 
-.m-card--interactive:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+.stat-card-v2__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
-.m-card--flat {
-    box-shadow: none;
-    border-color: var(--color-border);
+.stat-card-v2__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-h3);
 }
 
-.m-card--flat:hover {
+.stat-trend {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-pill);
+}
+
+.stat-trend--up {
+    color: var(--color-success);
+    background: var(--color-success-soft);
+}
+
+.stat-card-v2__body {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-card-v2__value {
+    font-size: var(--fs-h1);
+    font-weight: var(--fw-extrabold);
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.stat-card-v2__label {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+    font-weight: var(--fw-medium);
+}
+
+.stat-card-v2__progress {
+    height: 4px;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-top: var(--space-8);
+}
+
+.stat-progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-pill);
+    transition: width 1s var(--ease-decel);
+}
+
+/* ================================================================
+   4. STUDENT PERFORMANCE & ATTENTION SECTION
+   ================================================================ */
+.performance-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-24);
+}
+
+@media (min-width: 1024px) {
+    .performance-section {
+        grid-template-columns: 1.5fr 1fr;
+    }
+}
+
+.performance-card {
+    padding: var(--space-24);
+}
+
+.chart-placeholder {
+    height: 240px;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-12);
+    padding-top: var(--space-20);
+}
+
+.chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    height: 100%;
+}
+
+.chart-bar {
+    width: 100%;
+    background: var(--color-primary-soft);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: all var(--dur-slow) var(--ease-standard);
+    position: relative;
+}
+
+.chart-bar:hover {
+    background: var(--color-primary);
+    cursor: pointer;
+}
+
+.chart-bar::after {
+    content: attr(data-value);
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+.chart-bar:hover::after {
+    opacity: 1;
+}
+
+.chart-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: var(--fw-medium);
+}
+
+.risk-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+}
+
+.risk-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-12);
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-lg);
+    transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.risk-item:hover {
+    transform: translateX(4px);
+    background: var(--bg-secondary);
     box-shadow: var(--shadow-sm);
 }
 
 
 /* ================================================================
-   4. STAT CARDS — Overview metric cards
+   5. UPGOING MEETINGS — Version 2.0 (Premium Cards)
    ================================================================ */
-.stat-grid {
+.meetings-grid-v2 {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--space-16);
 }
 
-@media (min-width: 640px) {
-    .stat-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .stat-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-.stat-card {
-    background: var(--color-surface);
+.meeting-card-v2 {
+    background: var(--bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     padding: var(--space-20);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-12);
+    justify-content: space-between;
+    align-items: center;
     transition: all var(--dur-normal) var(--ease-standard);
-    position: relative;
-    overflow: hidden;
 }
 
-.stat-card::before {
+.meeting-card-v2:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.meeting-user {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+}
+
+.meeting-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid var(--color-primary-soft);
+}
+
+.meeting-info h4 {
+    margin: 0;
+    font-size: var(--fs-body-lg);
+    font-weight: var(--fw-bold);
+    color: var(--text-primary);
+}
+
+.meeting-time-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin-top: var(--space-4);
+    color: var(--text-secondary);
+    font-size: var(--fs-small);
+}
+
+.countdown-badge {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+    padding: var(--space-2) var(--space-8);
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: var(--fw-bold);
+    text-transform: uppercase;
+}
+
+.meeting-actions {
+    display: flex;
+    gap: var(--space-8);
+}
+
+
+/* ================================================================
+   6. ACTIVITY TIMELINE — Right Sidebar Column
+   ================================================================ */
+.timeline {
+    position: relative;
+    padding-left: var(--space-24);
+}
+
+.timeline::before {
     content: '';
     position: absolute;
+    left: 7px;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-primary), #8B5CF6);
-    opacity: 0;
-    transition: opacity var(--dur-normal) var(--ease-standard);
+    bottom: 0;
+    width: 2px;
+    background: var(--color-divider);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: var(--space-24);
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 3px solid var(--color-primary);
+    z-index: 1;
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.timeline-title {
+    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+}
+
+.timeline-time {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+}
+
+.timeline-desc {
+    font-size: var(--fs-small);
+    color: var(--text-secondary);
 }
 
 .stat-card:hover {
