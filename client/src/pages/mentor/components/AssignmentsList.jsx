@@ -191,10 +191,10 @@ const AssignmentsList = () => {
 
     // Set selectedBatch to first batch when batches load (only once)
     useEffect(() => {
-        if (initialSetDone.current || !batches?.data?.length) return;
+        if (initialSetDone.current || !batches || batches.length === 0) return;
         initialSetDone.current = true;
-        setSelectedBatch(batches.data[0].id);
-    }, [batches?.data]);
+        setSelectedBatch(batches[0].id);
+    }, [batches]);
 
     const { data: assignmentsData, isLoading, isError } = useMentorAssignments(selectedBatch);
     const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
@@ -221,7 +221,7 @@ const AssignmentsList = () => {
                         onChange={(e) => setSelectedBatch(e.target.value)}
                     >
                         <option value="">Select Batch...</option>
-                        {batches?.data?.map(b => (
+                        {Array.isArray(batches) && batches.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                         ))}
                     </select>
@@ -278,7 +278,7 @@ const AssignmentsList = () => {
             {showCreateModal && (
                 <CreateAssignmentModal
                     batchId={selectedBatch}
-                    batches={batches?.data || []}
+                    batches={Array.isArray(batches) ? batches : []}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={() => { }}
                 />

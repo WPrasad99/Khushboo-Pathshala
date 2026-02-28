@@ -193,7 +193,7 @@ const SessionsList = () => {
     const deleteUpload = useDeleteUpload();
 
     const uploads = Array.isArray(uploadsData) ? uploadsData : [];
-    const batches = batchesData?.data || [];
+    const batches = Array.isArray(batchesData) ? batchesData : [];
 
     const handleDelete = async (e, id) => {
         e.stopPropagation();

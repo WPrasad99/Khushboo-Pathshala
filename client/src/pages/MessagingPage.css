@@ -338,6 +338,7 @@
     font-size: var(--fs-body);
     line-height: var(--lh-body);
     word-wrap: break-word;
+    color: inherit;
 }
 
 .message-meta {

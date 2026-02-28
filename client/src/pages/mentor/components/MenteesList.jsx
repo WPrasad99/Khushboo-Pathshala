@@ -13,6 +13,8 @@ const MenteesList = () => {
     });
 
     const { data: batchesData } = useMentorBatches();
+    const batches = Array.isArray(batchesData) ? batchesData : [];
+    const students = Array.isArray(studentsData) ? studentsData : [];
 
     if (isError) {
         return (
@@ -36,7 +38,7 @@ const MenteesList = () => {
                         onChange={(e) => setSelectedBatch(e.target.value)}
                     >
                         <option value="">All Batches</option>
-                        {batchesData?.data?.map(b => (
+                        {batches.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                         ))}
                     </select>
@@ -72,8 +74,8 @@ const MenteesList = () => {
                                         <td colSpan={4}><div className="m-skeleton m-skeleton--h40" /></td>
                                     </tr>
                                 ))
-                            ) : studentsData?.data?.length > 0 ? (
-                                studentsData.data.map(student => (
+                            ) : students.length > 0 ? (
+                                students.map(student => (
                                     <tr key={student.id}>
                                         <td>
                                             <div className="m-user-row">

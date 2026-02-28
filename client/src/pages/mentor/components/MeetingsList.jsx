@@ -43,8 +43,8 @@ const MeetingsList = () => {
                     Array(6).fill(0).map((_, i) => (
                         <div key={i} className="m-skeleton m-skeleton--h160" />
                     ))
-                ) : meetingsData?.data?.items?.length > 0 ? (
-                    meetingsData.data.items.map((mtg) => (
+                ) : meetingsData?.items?.length > 0 ? (
+                    meetingsData.items.map((mtg) => (
                         <div key={mtg.id} className="m-card m-card--interactive">
                             <div>
                                 <div className="batch-card__head">

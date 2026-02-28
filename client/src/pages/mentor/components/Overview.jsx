@@ -23,11 +23,11 @@ const Overview = () => {
     const { data: batchesData, isLoading: isLoadingBatches, isError: isBatchesError } = useMentorBatches();
     const { data: meetingsData, isLoading: isLoadingMeetings, isError: isMeetingsError } = useMentorMeetings({ limit: 5, filter: 'upcoming' });
 
-    const batches = batchesData?.data ?? [];
+    const batches = Array.isArray(batchesData) ? batchesData : [];
     const totalStudents = batches.reduce((acc, b) => acc + (b.studentsCount ?? 0), 0);
     const totalBatches = batches.length;
     const totalResources = batches.reduce((acc, b) => acc + (b.resourcesCount ?? 0), 0);
-    const upcomingMeetings = meetingsData?.data?.items ?? [];
+    const upcomingMeetings = meetingsData?.items ?? [];
 
     if (isBatchesError || isMeetingsError) {
         return (

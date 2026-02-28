@@ -232,6 +232,11 @@
     border-bottom-left-radius: var(--radius-xs);
 }
 
+.message-content p {
+    color: inherit;
+    margin: 0;
+}
+
 .error-message .message-content {
     background: var(--color-error);
     color: var(--text-white);

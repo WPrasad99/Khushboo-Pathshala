@@ -7,7 +7,7 @@ import '../../../components/admin/Modal.css';
 
 const BatchDetailsModal = ({ batch, onClose }) => {
     const { data: studentsData, isLoading } = useMentorStudents({ batchId: batch.id });
-    const students = studentsData?.data || [];
+    const students = Array.isArray(studentsData) ? studentsData : [];
 
     return createPortal(
         <AnimatePresence>
@@ -185,7 +185,7 @@ const BatchesList = () => {
         );
     }
 
-    const batches = batchesData?.data || [];
+    const batches = Array.isArray(batchesData) ? batchesData : [];
 
     if (batches.length === 0) {
         return (
